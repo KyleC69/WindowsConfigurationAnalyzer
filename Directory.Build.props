@@ -1,0 +1,9 @@
+<Project>
+<PropertyGroup>
+	<TargetFramework>net9.0</TargetFramework>
+	<RootNamespace>KC.WindowsConfigurationAnalyzer</RootNamespace>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	</PropertyGroup>
+</Project>
