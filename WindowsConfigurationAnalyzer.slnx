@@ -1,3 +1,22 @@
 <Solution>
-  <Project Path="Analyzer/Analyzer.csproj" Id="8038afdc-b468-40ec-9b01-26c2f8cec4bb" />
+  <Configurations>
+    <Platform Name="x64" />
+
+  </Configurations>
+  <Project Path="Analyzer/Analyzer.csproj" Id="8038afdc-b468-40ec-9b01-26c2f8cec4bb">
+    <Platform Solution="Release|*" Project="x64" />
+
+  </Project>
+  <Project Path="Interface.Core/Interface.Core.csproj">
+    <Platform Project="x64" />
+
+  </Project>
+  <Project Path="Interface/Interface.csproj">
+    <Platform Project="x64" />
+
+  </Project>
+  <Project Path="Tests/Tests.csproj">
+    <Platform Solution="Release|*" Project="x64" />
+
+  </Project>
 </Solution>

@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	  <TargetFramework>net9.0</TargetFramework>
+	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	  <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
+	  <TargetPlatformVersion>10.0.19041</TargetPlatformVersion>
+    <RootNamespace>Interface.Core</RootNamespace>
+	  <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+  </ItemGroup>
+</Project>

@@ -17,12 +17,11 @@ public interface IAnalyzerContext
  ITimeProvider Time { get; }
  ActionLogger ActionLogger { get; }
 
- // Optional readers (stubs for now; implementations added later)
- IRegistryReader? Registry { get; }
- ICimReader? Cim { get; }
- IEventLogReader? EventLog { get; }
- IFirewallReader? Firewall { get; }
- IEnvReader? Environment { get; }
+ IRegistryReader Registry { get; }
+ ICimReader Cim { get; }
+ IEventLogReader EventLog { get; }
+ IFirewallReader Firewall { get; }
+ IEnvReader Environment { get; }
 }
 
 public interface IExporter
@@ -42,9 +41,37 @@ public interface IRule
  Finding? Evaluate(AnalyzerResult result);
 }
 
-// Reader stubs (contracts only)
-public interface IRegistryReader { }
-public interface ICimReader { }
-public interface IEventLogReader { }
-public interface IFirewallReader { }
-public interface IEnvReader { }
+// Reader contracts
+public interface IRegistryReader
+{
+ object? GetValue(string hiveAndPath, string name);
+ IEnumerable<string> EnumerateSubKeys(string hiveAndPath);
+ IEnumerable<string> EnumerateValueNames(string hiveAndPath);
+}
+
+public interface ICimReader
+{
+ IEnumerable<IDictionary<string, object?>> Query(string wql, string? scope = null);
+}
+
+public sealed record EventLogSummary(string LogName, int EntryCount, DateTimeOffset? LastWriteTimeUtc);
+public interface IEventLogReader
+{
+ EventLogSummary? GetSummary(string logName);
+}
+
+public interface IFirewallReader
+{
+ IEnumerable<string> GetProfiles();
+ IEnumerable<object> GetRules();
+}
+
+public interface IEnvReader
+{
+ string MachineName { get; }
+ string OSVersionString { get; }
+ bool Is64BitOS { get; }
+ string UserName { get; }
+ string UserDomainName { get; }
+ IReadOnlyDictionary<string, string?> GetEnvironmentVariables();
+}

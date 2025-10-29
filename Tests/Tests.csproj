@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+	 <TargetFramework>net9.0</TargetFramework>
+	 <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	 <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
+	 <TargetPlatformVersion>10.0.19041</TargetPlatformVersion>
+ <IsPackable>false</IsPackable>
+ <Nullable>enable</Nullable>
+ <ImplicitUsings>enable</ImplicitUsings>
+	 <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	 <Platforms>x64</Platforms>
+ </PropertyGroup>
+ <ItemGroup>
+ <ProjectReference Include="..\Analyzer\Analyzer.csproj" />
+ <PackageReference Include="xunit" Version="2.9.0" />
+ <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+ <PackageReference Include="FluentAssertions" Version="6.12.0" />
+ </ItemGroup>
+</Project>

@@ -4,14 +4,14 @@
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
 		<TargetPlatformVersion>10.0.19041</TargetPlatformVersion>
-		<OutputType>WinExe</OutputType>
+		<OutputType>Library</OutputType>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseRidGraph>false</UseRidGraph>
 		<RootNamespace>Analyzer</RootNamespace>
 		<UseWinUI>true</UseWinUI>
 		<WinUISDKReferences>false</WinUISDKReferences>
-		<ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+		<Platforms>x64</Platforms>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
@@ -22,6 +22,8 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+		<PackageReference Include="System.Management" Version="9.0.0" />
+		<PackageReference Include="System.Diagnostics.EventLog" Version="9.0.0" />
 	</ItemGroup>
 
 </Project>

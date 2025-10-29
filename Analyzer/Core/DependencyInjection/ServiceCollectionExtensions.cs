@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WindowsConfigurationAnalyzer.Contracts;
 using WindowsConfigurationAnalyzer.Infrastructure;
+using WindowsConfigurationAnalyzer.Readers;
 
 namespace WindowsConfigurationAnalyzer;
 
@@ -17,29 +18,26 @@ public static class ServiceCollectionExtensions
  return new ActionLogger(logger);
  });
 
- // Context factory (basic)
- services.AddScoped<IAnalyzerContext, DefaultAnalyzerContext>();
+ // Readers
+ services.AddSingleton<IEnvReader, EnvironmentReader>();
+ services.AddSingleton<IRegistryReader, RegistryReader>();
+ services.AddSingleton<ICimReader, CimReader>();
+ services.AddSingleton<IEventLogReader, EventLogReader>();
+ services.AddSingleton<IFirewallReader, FirewallReader>();
+
+ // Context
+ services.AddScoped<IAnalyzerContext>(sp =>
+ new WindowsConfigurationAnalyzer.Context.AnalyzerContext(
+ sp.GetRequiredService<ILoggerFactory>().CreateLogger("WCA"),
+ sp.GetRequiredService<ITimeProvider>(),
+ sp.GetRequiredService<ActionLogger>(),
+ sp.GetRequiredService<IRegistryReader>(),
+ sp.GetRequiredService<ICimReader>(),
+ sp.GetRequiredService<IEventLogReader>(),
+ sp.GetRequiredService<IFirewallReader>(),
+ sp.GetRequiredService<IEnvReader>()
+ ));
 
  return services;
  }
-}
-
-internal sealed class DefaultAnalyzerContext : IAnalyzerContext
-{
- public DefaultAnalyzerContext(ILoggerFactory loggerFactory, ITimeProvider time, ActionLogger actionLogger)
- {
- Logger = loggerFactory.CreateLogger("WCA");
- Time = time;
- ActionLogger = actionLogger;
- }
-
- public ILogger Logger { get; }
- public ITimeProvider Time { get; }
- public ActionLogger ActionLogger { get; }
-
- public IRegistryReader? Registry => null;
- public ICimReader? Cim => null;
- public IEventLogReader? EventLog => null;
- public IFirewallReader? Firewall => null;
- public IEnvReader? Environment => null;
 }

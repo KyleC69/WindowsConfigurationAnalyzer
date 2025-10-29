@@ -15,11 +15,11 @@ public sealed class OSAnalyzer : IAnalyzerModule
 
  var info = new
  {
- MachineName = Environment.MachineName,
- OSVersion = Environment.OSVersion.VersionString,
- Is64BitOperatingSystem = Environment.Is64BitOperatingSystem,
- UserDomainName = Environment.UserDomainName,
- UserName = Environment.UserName
+ MachineName = context.Environment.MachineName,
+ OSVersion = context.Environment.OSVersionString,
+ Is64BitOperatingSystem = context.Environment.Is64BitOS,
+ UserDomainName = context.Environment.UserDomainName,
+ UserName = context.Environment.UserName
  };
 
  var summary = new { Name = info.OSVersion, Is64Bit = info.Is64BitOperatingSystem };

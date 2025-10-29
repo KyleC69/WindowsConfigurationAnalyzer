@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "Interface (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "Interface (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}
