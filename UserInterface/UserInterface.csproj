@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<UseWinUI>true</UseWinUI>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		
+		<ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
+		<RootNamespace>KC.WindowsConfigurationAnalyzer.$(MSBuildProjectName)</RootNamespace>
+		<WindowsPackageType>None</WindowsPackageType>
+		<Authors>Kyle Crowder</Authors>
+	</PropertyGroup>
+
+
+
+
+
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250402" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
+		<PackageReference Include="WinUIEx" Version="2.3.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Analyzer\Analyzer.csproj" />
+		<ProjectReference Include="..\UserInterface.Core\UserInterface.Core.csproj" />
+	</ItemGroup>
+	
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+	<ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+		<ProjectCapability Include="Msix" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+		<HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <IsPublishable>False</IsPublishable>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <IsPublishable>False</IsPublishable>
+	</PropertyGroup>
+</Project>

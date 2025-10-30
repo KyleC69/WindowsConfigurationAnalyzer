@@ -1,4 +1,4 @@
-namespace WindowsConfigurationAnalyzer.Models;
+namespace KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
 
 public sealed record AnalyzerResult(
  string ComputerName,

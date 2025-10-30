@@ -1,0 +1,29 @@
+﻿using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
+
+public sealed partial class DriversDetailControl : UserControl
+{
+    public SampleOrder? ListDetailsMenuItem
+    {
+        get => GetValue(ListDetailsMenuItemProperty) as SampleOrder;
+        set => SetValue(ListDetailsMenuItemProperty, value);
+    }
+
+    public static readonly DependencyProperty ListDetailsMenuItemProperty = DependencyProperty.Register("ListDetailsMenuItem", typeof(SampleOrder), typeof(DriversDetailControl), new PropertyMetadata(null, OnListDetailsMenuItemPropertyChanged));
+
+    public DriversDetailControl()
+    {
+        InitializeComponent();
+    }
+
+    private static void OnListDetailsMenuItemPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DriversDetailControl control)
+        {
+            control.ForegroundElement.ChangeView(0, 0, 1);
+        }
+    }
+}

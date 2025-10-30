@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<instrumentationManifest xmlns="http://schemas.microsoft.com/win/2004/08/events" xmlns:win="http://manifests.microsoft.com/win/2004/08/windows/events" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+ <instrumentation>
+ <events>
+ <provider name="WCA.Diagnostics.Provider" guid="{b8a6b9d0-0f21-4a3e-a5f6-6d9e7c5e7f34}" symbol="WCA_Diagnostics_Provider" resourceFileName="WCA.Diagnostics.Provider" messageFileName="WCA.Diagnostics.Provider">
+ <channels>
+ <channel name="WCA/Operational" chid="Operational" type="Operational" />
+ <channel name="WCA/Analytic" chid="Analytic" type="Analytic" />
+ <channel name="WCA/Debug" chid="Debug" type="Debug" />
+ </channels>
+ <keywords>
+ <keyword name="Engine" mask="0x0000000000000001" />
+ <keyword name="Security" mask="0x0000000000000002" />
+ <keyword name="Performance" mask="0x0000000000000004" />
+ <keyword name="Export" mask="0x0000000000000008" />
+ <keyword name="Integration" mask="0x0000000000000010" />
+ <keyword name="Readers" mask="0x0000000000000020" />
+ <keyword name="Diagnostics" mask="0x0000000000000040" />
+ </keywords>
+ <tasks>
+ <task name="Control" value="1" />
+ <task name="Discovery" value="2" />
+ <task name="Analysis" value="3" />
+ <task name="Warning" value="4" />
+ <task name="Error" value="5" />
+ <task name="Export" value="6" />
+ <task name="Integration" value="7" />
+ </tasks>
+ <templates>
+ <template tid="SessionStartT">
+ <data name="SessionId" inType="win:UnicodeString" />
+ <data name="Computer" inType="win:UnicodeString" />
+ <data name="Version" inType="win:UnicodeString" />
+ </template>
+ <template tid="SessionStopT">
+ <data name="SessionId" inType="win:UnicodeString" />
+ <data name="Areas" inType="win:Int32" />
+ <data name="Warnings" inType="win:Int32" />
+ <data name="Errors" inType="win:Int32" />
+ <data name="ElapsedSeconds" inType="win:Double" />
+ </template>
+ <template tid="ExportCompletedT">
+ <data name="SessionId" inType="win:UnicodeString" />
+ <data name="Format" inType="win:UnicodeString" />
+ <data name="Path" inType="win:UnicodeString" />
+ </template>
+ <template tid="WarningT">
+ <data name="Area" inType="win:UnicodeString" />
+ <data name="Action" inType="win:UnicodeString" />
+ <data name="Message" inType="win:UnicodeString" />
+ </template>
+ <template tid="ErrorT">
+ <data name="Area" inType="win:UnicodeString" />
+ <data name="Action" inType="win:UnicodeString" />
+ <data name="Message" inType="win:UnicodeString" />
+ <data name="Exception" inType="win:UnicodeString" />
+ </template>
+ </templates>
+ <events>
+ <!-- Core/Engine session lifecycle:1001/1002 -->
+ <event symbol="SessionStart" value="1001" version="0" level="win:Informational" task="Control" opcode="win:Start" keywords="Engine" channel="Operational" template="SessionStartT" />
+ <event symbol="SessionStop" value="1002" version="0" level="win:Informational" task="Control" opcode="win:Stop" keywords="Engine" channel="Operational" template="SessionStopT" />
+
+ <!-- Export completed (Exporters area11, Task Export=5)11501 -->
+ <event symbol="ExportCompleted" value="11501" version="0" level="win:Informational" task="Export" opcode="win:Info" keywords="Engine Export" channel="Operational" template="ExportCompletedT" />
+
+ <!-- Diagnostics helpers (Warnings/Errors) in Diagnostics area13xx -->
+ <event symbol="Warning" value="13301" version="0" level="win:Warning" task="Warning" opcode="win:Info" keywords="Diagnostics" channel="Operational" template="WarningT" />
+ <event symbol="Error" value="13401" version="0" level="win:Error" task="Error" opcode="win:Info" keywords="Diagnostics" channel="Operational" template="ErrorT" />
+ </events>
+ </provider>
+ </events>
+ </instrumentation>
+ <localization>
+ <resources culture="en-US">
+ <stringTable>
+ <string id="SessionStart" value="WCA analysis session started" />
+ <string id="SessionStop" value="WCA analysis session completed" />
+ <string id="ExportCompleted" value="Export completed" />
+ <string id="Warning" value="Warning" />
+ <string id="Error" value="Error" />
+ </stringTable>
+ </resources>
+ </localization>
+</instrumentationManifest>

@@ -1,4 +1,3 @@
-Version:1.0StartHTML:00000097EndHTML:00043899StartFragment:00000153EndFragment:00043866
 Windows Configuration Analyzer: A Comprehensive C# Library for Windows Configuration Analysis
 =============================================================================================
 
@@ -186,15 +185,147 @@ Data Export Strategy and JSON Schema
 
 * * *
 
+Here’s a draft section for an **Architecture Blueprint Document** focused on creating a **manifest-based ETW (Event Tracing for Windows) provider**. It’s structured for audit-grade clarity, reproducibility, and operational discipline—aligned with your forensic standards.
+
+---
+
+## 📘 Section: Manifest-Based ETW Provider Architecture
+
+### 1. Purpose
+
+This section defines the architecture, schema, and operational lifecycle of a manifest-based ETW provider used for structured event emission, traceability, and audit logging across system components.
+
+---
+
+### 2. Provider Overview
+
+| Attribute | Description |
+|----------|-------------|
+| **Provider Name** | `WCA.Diagnostics.Provider` |
+| **Provider GUID** | `Generate and ensure conformity throughout` |
+| **Manifest Type** | XML-based Instrumentation Manifest |
+| **Event Delivery Mechanism** | ETW (Event Tracing for Windows) |
+| **Consumer Targets** | Event Viewer, log parsers, telemetry pipelines, forensic audit routines |
+
+---
+
+### 3. Manifest Schema Definition
+
+The provider manifest must conform to the `EventManifest` schema and include the following elements:
+
+- `<provider>`: Declares the symbolic name and GUID.
+- `<events>`: Defines individual event types with unique IDs.
+- `<tasks>`: Logical grouping of events (e.g., `FileAccess`, `PolicyChange`).
+- `<opcodes>`: Operation codes (e.g., `Start`, `Stop`, `Info`).
+- `<keywords>`: Bitmask flags for filtering (e.g., `Security`, `Performance`).
+- `<channels>`: Output destinations (e.g., `Admin`, `Operational`, `Debug`).
+- `<templates>`: Payload structure for each event.
+
+Each event must include:
+```xml
+<event value="1001" version="0" level="win:Informational" task="FileAccess" opcode="win:Start" template="FileAccessTemplate" />
+```
+
+---
+
+### 4. Event Taxonomy
+
+
+Event ID schema and conventions ensure logical separation by area of operation and leave ample room for growth within each area.
+
+Event ID layout (decimal)
+- Reserve contiguous1,000‑ID blocks per area.
+- Formula: `EventID = (AreaCode ×1000) + (TaskCode ×100) + Sequence`
+ - Constraints per area: `0 ≤ TaskCode ≤9`, `0 ≤ Sequence ≤99`
+ - Capacity per area: up to10 tasks (0–9) with100 events each (00–99)
+ - Fits within ETW16‑bit ID limits while remaining human‑parsable.
+
+Area codes and reserved ranges
+-1 Core/Engine:1000–1999
+-2 OS:2000–2999
+-3 Hardware:3000–3999
+-4 Network:4000–4999
+-5 Security:5000–5999
+-6 Software:6000–6999
+-7 Performance:7000–7999
+-8 Policy/GPO:8000–8999
+-9 Startup/Autoruns:9000–9999
+-10 EventLog/Audit:10000–10999
+-11 Exporters:11000–11999
+-12 Readers/IO:12000–12999
+-13 Diagnostics/Rules/ETW:13000–13999
+-64000–65535: Provider/manifest lifecycle and emergency/reserved use
+
+
+Standard TaskCode meanings (apply consistently across areas)
+-0 Control/Session: start, stop, configuration, lifecycle
+-1 Discovery/Enumeration: raw collection (e.g., WMI/CIM queries, registry probes)
+-2 Evaluation/Analysis: rules, scoring, correlation
+-3 Warning/Degradation: partial results, retries, timeouts
+-4 Error/Failure: hard failures and exceptions
+-5 Export/Serialization: artifacts creation (JSON/HTML/etc.)
+-6 Integration: external tools (WPR, netstat, wevtutil), interop boundaries
+-7–9 Reserved per area for custom task families
+
+Examples
+- Engine session start (Core/Engine): Area=1, Task=0, Seq=1 ⇒ EventID=1001
+- Hardware disk enumeration complete: Area=3, Task=1, Seq=10 ⇒ EventID=3110
+- Network firewall rules query failure: Area=4, Task=4, Seq=2 ⇒ EventID=4402
+- Security AV product detected: Area=5, Task=1, Seq=21 ⇒ EventID=5121
+- Export JSON finished: Area=11, Task=5, Seq=1 ⇒ EventID=11501
+
+Extensibility and governance
+- Allocate new events by incrementing `Sequence`; if payload changes incompatibly, bump the event `version` and retain the original ID.
+- Maintain a source‑controlled registry mapping `EventID → {Area, Task, Name, Template, FirstVersion}`.
+- Never reuse IDs; deprecate by documentation while leaving the ID reserved.
+- Assign area‑specific meanings to TaskCodes7–9 as needed (document in the manifest and this blueprint).
+
+Keywords, channels, and severity
+- Use `keywords` to tag cross‑cutting facets (Security, Performance, Export, Integration) orthogonally to IDs.
+- Map severity via `level` (Verbose/Informational/Warning/Error/Critical), not via the numeric EventID.
+- Route operational events to `Operational`; developer diagnostics to `Analytic/Debug` as appropriate.
+
+---
+
+
+### 5. Build & Registration Workflow
+
+1. **Manifest Authoring**: Write XML manifest using `ECManGen` schema.
+2. **Compile Manifest**: Use `mc.exe` (Message Compiler) to generate `.h`, `.rc`, and `.bin` files.
+3. **Provider Registration**:
+   - Compile `.rc` into a resource DLL.
+   - Register provider using `wevtutil.exe im <manifest>.man`.
+4. **Event Emission**:
+   - Emit events via `EventWrite` API or wrapper libraries.
+   - Ensure payload matches declared template.
+
+---
+
+### 6. Audit & Provenance Controls
+
+- **Manifest Hashing**: SHA-256 hash of manifest stored in audit chain.
+- **Versioning**: Use semantic versioning in manifest metadata.
+- **Tamper Detection**: Log manifest registration and event emission timestamps.
+- **Schema Lockdown**: Validate manifest against schema before deployment.
+
+---
+
+
+
+* * *
+
 Logging Mechanism and Action Tracking
 -------------------------------------
 
 ### Logging Requirements
 
-* **Structured, Action-by-Action Logging:** Log every analytical action with timestamp, area/module.
+* **Structured, Action-by-Action Logging:** Log every extraction and analytical action with timestamp, area/module to file.
 * **Level of Detail:** Support logging levels—information, warning, error/failure—for clarity.
 * **Correlation:** Link findings/warnings/errors directly to actions and data points in JSON and HTML reports.
-* **Persistence and Resilience:** Logs must be written to both in-memory structures (for JSON inclusion) and output log files. In the event of partial analysis or failure, logs should remain retrievable.
+* **Persistence and Resilience:** Logs must be written to both in-memory structures (for JSON inclusion) and output log files. Each action should append a start and completion entry to log file and in-memory log.
+* Log file should be properly flushed and closed on every append to avoid data loss on crashes. File log will serve as an audit trail and debugging aid.
+* Ensure thread safety for concurrent module execution.
+* Ensure logs are all correlated with timestamps in UTC ISO 8601 format and include area/module context and to the ETW provider module.
 
 ### Implementation with .NET Logging APIs
 
@@ -288,6 +419,7 @@ Approaches for Safely Accessing Configuration Data
 * **Mocking:** Use System.IO.Abstractions, in-memory registry and mock WMI providers for thorough testing without relying on live system data.
 * **Unit & Integration:** Implement area-specific test suites to validate correctness, error handling, and cross-area correlation logic.
 * **Permission Scenarios:** Ensure tests include both restricted/standard-user and elevated/admin execution paths, asserting correct error or log output.
+* **Testing Library** Use MSTest for unit testing.
 
 * * *
 
