@@ -40,7 +40,7 @@ public class AppNotificationActivationHandler : ActivationHandler<LaunchActivate
 
         App.MainWindow.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
         {
-            App.MainWindow.ShowMessageDialogAsync("TODO: Handle notification activations.", "Notification Activation");
+            App.MainWindow.ShowMessageDialogAsync("Windows Configuration Analyzer has started.", "Configuration Analyzer Activated");
         });
 
         await Task.CompletedTask;

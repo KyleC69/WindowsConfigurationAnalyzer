@@ -11,25 +11,56 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 public partial class SettingsViewModel : ObservableRecipient
 {
+    // Plan:
+    // - Replace [ObservableProperty] fields with explicit backing fields and public properties.
+    // - Use SetProperty in setters to satisfy MVVMTK0045.
+    // - Persist ExportPathTemplate and LogPathTemplate on change (moved logic from partial methods into setters).
+    // - Keep remaining logic and patterns intact.
+
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly ILocalSettingsService _localSettings;
 
-    [ObservableProperty]
     private ElementTheme _elementTheme;
-
-    [ObservableProperty]
-    private string _versionDescription;
-
-    [ObservableProperty]
-    private string? _exportPathTemplate;
-
-    [ObservableProperty]
-    private string? _logPathTemplate;
-
-    public ICommand SwitchThemeCommand
+    public ElementTheme ElementTheme
     {
-        get;
+        get => _elementTheme;
+        set => SetProperty(ref _elementTheme, value);
     }
+
+    private string _versionDescription = string.Empty;
+    public string VersionDescription
+    {
+        get => _versionDescription;
+        set => SetProperty(ref _versionDescription, value);
+    }
+
+    private string? _exportPathTemplate;
+    public string? ExportPathTemplate
+    {
+        get => _exportPathTemplate;
+        set
+        {
+            if (SetProperty(ref _exportPathTemplate, value))
+            {
+                _ = _localSettings.SaveSettingAsync("ExportPathTemplate", value ?? string.Empty);
+            }
+        }
+    }
+
+    private string? _logPathTemplate;
+    public string? LogPathTemplate
+    {
+        get => _logPathTemplate;
+        set
+        {
+            if (SetProperty(ref _logPathTemplate, value))
+            {
+                _ = _localSettings.SaveSettingAsync("LogPathTemplate", value ?? string.Empty);
+            }
+        }
+    }
+
+    public ICommand SwitchThemeCommand { get; }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettings)
     {
@@ -41,9 +72,9 @@ public partial class SettingsViewModel : ObservableRecipient
         SwitchThemeCommand = new RelayCommand<ElementTheme>(
             async (param) =>
             {
-                if (ElementTheme != param)
+                if (_elementTheme != param)
                 {
-                    ElementTheme = param;
+                    _elementTheme = param;
                     await _themeSelectorService.SetThemeAsync(param);
                 }
             });
@@ -53,20 +84,10 @@ public partial class SettingsViewModel : ObservableRecipient
 
     private async Task LoadAsync()
     {
-        ExportPathTemplate = await _localSettings.ReadSettingAsync<string>("ExportPathTemplate")
+        _exportPathTemplate = await _localSettings.ReadSettingAsync<string>("ExportPathTemplate")
             ?? ("exports/" + Environment.MachineName + "/{yyyy-MM-dd}/{HHmm}.json");
-        LogPathTemplate = await _localSettings.ReadSettingAsync<string>("LogPathTemplate")
+        _logPathTemplate = await _localSettings.ReadSettingAsync<string>("LogPathTemplate")
             ?? "logs/{yyyyMMdd-HHmm}.txt";
-    }
-
-    partial void OnExportPathTemplateChanged(string? value)
-    {
-        _ = _localSettings.SaveSettingAsync("ExportPathTemplate", value ?? string.Empty);
-    }
-
-    partial void OnLogPathTemplateChanged(string? value)
-    {
-        _ = _localSettings.SaveSettingAsync("LogPathTemplate", value ?? string.Empty);
     }
 
     private static string GetVersionDescription()

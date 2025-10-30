@@ -19,11 +19,20 @@ public partial class AnalyzerViewModel : ObservableRecipient
     private readonly IServiceProvider _services;
     private readonly ILocalSettingsService _localSettings;
 
-    [ObservableProperty]
-    private bool isRunning;
+    // AOT/WinRT-safe properties using explicit backing fields
+    private bool _isRunning;
+    public bool IsRunning
+    {
+        get => _isRunning;
+        set => SetProperty(ref _isRunning, value);
+    }
 
-    [ObservableProperty]
-    private string statusMessage = "Idle";
+    private string _statusMessage = "Idle";
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        set => SetProperty(ref _statusMessage, value);
+    }
 
     public ObservableCollection<string> StatusMessages { get; } = new();
 

@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models"
-    xmlns:views="using:Interface.Views"
+    xmlns:views="using:KC.WindowsConfigurationAnalyzer.UserInterface.Views"
     xmlns:behaviors="using:KC.WindowsConfigurationAnalyzer.UserInterface.Behaviors"
     behaviors:NavigationViewHeaderBehavior.HeaderMode="Never"
     mc:Ignorable="d">

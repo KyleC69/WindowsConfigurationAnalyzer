@@ -11,8 +11,12 @@ public partial class ApplicationsViewModel : ObservableRecipient, INavigationAwa
 {
     private readonly ISampleDataService _sampleDataService;
 
-    [ObservableProperty]
-    private SampleOrder? selected;
+    private SampleOrder? _selected;
+    public SampleOrder? Selected
+    {
+        get => _selected;
+        set => SetProperty(ref _selected, value);
+    }
 
     public ObservableCollection<SampleOrder> SampleItems { get; private set; } = new ObservableCollection<SampleOrder>();
 

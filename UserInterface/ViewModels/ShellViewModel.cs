@@ -7,11 +7,19 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 public partial class ShellViewModel : ObservableRecipient
 {
-    [ObservableProperty]
     private bool isBackEnabled;
+    public bool IsBackEnabled
+    {
+        get => isBackEnabled;
+        set => SetProperty(ref isBackEnabled, value);
+    }
 
-    [ObservableProperty]
     private object? selected;
+    public object? Selected
+    {
+        get => selected;
+        set => SetProperty(ref selected, value);
+    }
 
     public INavigationService NavigationService
     {
@@ -32,18 +40,18 @@ public partial class ShellViewModel : ObservableRecipient
 
     private void OnNavigated(object sender, NavigationEventArgs e)
     {
-        IsBackEnabled = NavigationService.CanGoBack;
+        isBackEnabled = NavigationService.CanGoBack;
 
         if (e.SourcePageType == typeof(SettingsPage))
         {
-            Selected = NavigationViewService.SettingsItem;
+            selected = NavigationViewService.SettingsItem;
             return;
         }
 
         var selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
         if (selectedItem != null)
         {
-            Selected = selectedItem;
+            selected = selectedItem;
         }
     }
 }
