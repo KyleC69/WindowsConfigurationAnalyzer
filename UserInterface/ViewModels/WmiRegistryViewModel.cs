@@ -1,30 +1,65 @@
-﻿using System.Collections.ObjectModel;
+﻿// Created:  2025/10/29
+// Solution:
+// Project:
+// File:
+// 
+// All Rights Reserved 2025
+// Kyle L Crowder
+
+
+
+using System.Collections.ObjectModel;
+
 using CommunityToolkit.Mvvm.ComponentModel;
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.ViewModels;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
+using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Services;
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
-public partial class Wmi_RegistryViewModel : ObservableRecipient, INavigationAware
+
+
+public partial class WmiRegistryViewModel : ObservableRecipient, INavigationAware
 {
     private readonly ISampleDataService _sampleDataService;
 
     private SampleOrder? _selected;
+
+
+
+
+
+
+
+
+
+
+    public WmiRegistryViewModel()
+    {
+        _sampleDataService = new SampleDataService();
+    }
+
+
+
+
+
     public SampleOrder? Selected
     {
         get => _selected;
         set => SetProperty(ref _selected, value);
     }
 
-    public ObservableCollection<SampleOrder> SampleItems { get; private set; } = new ObservableCollection<SampleOrder>();
 
-    public Wmi_RegistryViewModel(ISampleDataService sampleDataService)
-    {
-        _sampleDataService = sampleDataService;
-    }
+
+    public ObservableCollection<SampleOrder> SampleItems { get; } = [];
+
+
+
+
 
     public async void OnNavigatedTo(object parameter)
     {
@@ -33,15 +68,20 @@ public partial class Wmi_RegistryViewModel : ObservableRecipient, INavigationAwa
         // TODO: Replace with real data.
         var data = await _sampleDataService.GetListDetailsDataAsync();
 
-        foreach (var item in data)
-        {
-            SampleItems.Add(item);
-        }
+        foreach (var item in data) SampleItems.Add(item);
     }
+
+
+
+
 
     public void OnNavigatedFrom()
     {
     }
+
+
+
+
 
     public void EnsureItemSelected()
     {

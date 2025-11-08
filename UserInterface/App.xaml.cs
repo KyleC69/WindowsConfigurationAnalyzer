@@ -1,10 +1,15 @@
-﻿
-using KC.WindowsConfigurationAnalyzer.Analyzer.Areas.Hardware;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Areas.Network;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Areas.OS;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Areas.Security;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Areas.Software;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
+﻿// Created:  2025/10/29
+// Solution:
+// Project:
+// File:
+// 
+// All Rights Reserved 2025
+// Kyle L Crowder
+
+
+
+using KC.WindowsConfigurationAnalyzer.Analyzer.Core.DependencyInjection;
+using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Infrastructure;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
@@ -17,117 +22,139 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
+
+
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface;
 
-// To learn more about WinUI 3, see https://docs.microsoft.com/windows/apps/winui/winui3/.
+
+
+// To learn more about WinUI3, see https://docs.microsoft.com/windows/apps/winui/winui3/.
 public partial class App : Application
 {
-    // The .NET Generic Host provides dependency injection, configuration, logging, and other services.
-    // https://docs.microsoft.com/dotnet/core/extensions/generic-host
-    // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
-    // https://docs.microsoft.com/dotnet/core/extensions/configuration
-    // https://docs.microsoft.com/dotnet/core/extensions/logging
-    public IHost Host
-    {
-        get;
-    }
+	public App()
+	{
+		InitializeComponent();
 
-    public static T GetService<T>()
-        where T : class
-    {
-        if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
-        {
-            throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
-        }
+		Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory)
+			.ConfigureServices((context, services) =>
+			{
+				// Default Activation Handler
+				services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
 
-        return service;
-    }
+				// Other Activation Handlers
+				services.AddTransient<IActivationHandler, AppNotificationActivationHandler>();
 
-    public static WindowEx MainWindow { get; } = new MainWindow();
+				// Services
+				services.AddSingleton<IAppNotificationService, AppNotificationService>();
+				services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
+				services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
+				services.AddTransient<INavigationViewService, NavigationViewService>();
 
-    public static UIElement? AppTitlebar
-    {
-        get; set;
-    }
+				services.AddSingleton<IActivationService, ActivationService>();
+				services.AddSingleton<IPageService, PageService>();
+				services.AddSingleton<INavigationService, NavigationService>();
 
-    public App()
-    {
-        InitializeComponent();
+				// Core Services
+				services.AddSingleton<ISampleDataService, SampleDataService>();
+				services.AddSingleton<IFileService, FileService>();
 
-        Host = Microsoft.Extensions.Hosting.Host.
-        CreateDefaultBuilder().
-        UseContentRoot(AppContext.BaseDirectory).
-        ConfigureServices((context, services) =>
-        {
-            // Default Activation Handler
-            services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
+				// Analyzer integration (core + modules)
+				services.AddWcaCore();
 
-            // Other Activation Handlers
-            services.AddTransient<IActivationHandler, AppNotificationActivationHandler>();
+				// Views and ViewModels
+				services.AddTransient<EventingViewModel>();
+				services.AddTransient<EventingPage>();
+				services.AddTransient<AnalyzerViewModel>();
+				services.AddTransient<AnalyzerPage>();
+				services.AddTransient<SettingsViewModel>();
+				services.AddTransient<SettingsPage>();
+				services.AddTransient<ApplicationsViewModel>();
+				services.AddTransient<ApplicationsPage>();
+				services.AddTransient<WmiRegistryViewModel>();
+				services.AddTransient<WmiRegistryPage>();
+				services.AddTransient<DriversViewModel>();
+				services.AddTransient<DriversPage>();
+				services.AddTransient<ServicesViewModel>();
+				services.AddTransient<ServicesPage>();
+				services.AddTransient<ReportViewModel>();
+				services.AddTransient<ReportPage>();
+				services.AddTransient<ShellPage>();
+				services.AddTransient<ShellViewModel>();
 
-            // Services
-            services.AddSingleton<IAppNotificationService, AppNotificationService>();
-            services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
-            services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
-            services.AddTransient<INavigationViewService, NavigationViewService>();
+				// Configuration
+				services.Configure<LocalSettingsOptions>(
+					context.Configuration.GetSection(nameof(LocalSettingsOptions)));
+			}).Build();
 
-            services.AddSingleton<IActivationService, ActivationService>();
-            services.AddSingleton<IPageService, PageService>();
-            services.AddSingleton<INavigationService, NavigationService>();
+		GetService<IAppNotificationService>().Initialize();
 
-            // Core Services
-            services.AddSingleton<ISampleDataService, SampleDataService>();
-            services.AddSingleton<IFileService, FileService>();
+		UnhandledException += App_UnhandledException;
+	}
 
-            // Analyzer integration (core + modules)
-        //    services.AddWcaCore();
-            services.AddSingleton<IAnalyzerModule, OSAnalyzer>();
-            services.AddSingleton<IAnalyzerModule, HardwareAnalyzer>();
-            services.AddSingleton<IAnalyzerModule, NetworkAnalyzer>();
-            services.AddSingleton<IAnalyzerModule, SecurityAnalyzer>();
-            services.AddSingleton<IAnalyzerModule, SoftwareAnalyzer>();
 
-            // Views and ViewModels
-            services.AddTransient<AnalyzerViewModel>();
-            services.AddTransient<AnalyzerPage>();
-            services.AddTransient<SettingsViewModel>();
-            services.AddTransient<SettingsPage>();
-            services.AddTransient<ApplicationsViewModel>();
-            services.AddTransient<ApplicationsPage>();
-            services.AddTransient<Wmi_RegistryViewModel>();
-            services.AddTransient<Wmi_RegistryPage>();
-            services.AddTransient<DriversViewModel>();
-            services.AddTransient<DriversPage>();
-            services.AddTransient<ServicesViewModel>();
-            services.AddTransient<ServicesPage>();
-            services.AddTransient<ReportViewModel>();
-            services.AddTransient<ReportPage>();
-            services.AddTransient<ShellPage>();
-            services.AddTransient<ShellViewModel>();
 
-            // Configuration
-            services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
-        }).
-        Build();
 
-        App.GetService<IAppNotificationService>().Initialize();
 
-        UnhandledException += App_UnhandledException;
-    }
+	// The .NET Generic Host provides dependency injection, configuration, logging, and other services.
+	// https://docs.microsoft.com/dotnet/core/extensions/generic-host
+	// https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
+	// https://docs.microsoft.com/dotnet/core/extensions/configuration
+	// https://docs.microsoft.com/dotnet/core/extensions/logging
+	public IHost Host { get; }
 
-    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
-    {
-        // TODO:AI - Replace with Event Logging and reporting.
-        // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
-    }
+	public static WindowEx MainWindow { get; } = new MainWindow();
 
-    protected async override void OnLaunched(LaunchActivatedEventArgs args)
-    {
-        base.OnLaunched(args);
+	public static UIElement? AppTitlebar { get; set; }
 
-        App.GetService<IAppNotificationService>().Show(string.Format("AppNotificationSamplePayload".GetLocalized(), AppContext.BaseDirectory));
 
-        await App.GetService<IActivationService>().ActivateAsync(args);
-    }
+
+
+
+	public static T GetService<T>()
+		where T : class
+	{
+		return (Current as App)!.Host.Services.GetService(typeof(T)) is not T service
+			? throw new ArgumentException(
+				$"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.")
+			: service;
+	}
+
+
+
+
+
+	private void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+	{
+		try
+		{
+			// Append to a resilient file log
+			var logDir = Path.Combine(AppContext.BaseDirectory, "logs");
+			Directory.CreateDirectory(logDir);
+			var path = Path.Combine(logDir, DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmm") + "-app.txt");
+			var file = new FileActionLogSink(path);
+			file.Append($"{DateTimeOffset.UtcNow:O}\tApp\tUnhandledException\tError\t{e.Message}\t{e.Exception}");
+		}
+		catch
+		{
+		}
+
+		// TODO:AI - Replace with Event Logging and reporting.
+		// https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
+	}
+
+
+
+
+
+	protected override void OnLaunched(LaunchActivatedEventArgs args)
+	{
+		base.OnLaunched(args);
+
+		GetService<IAppNotificationService>()
+			.Show(string.Format("AppNotificationSamplePayload".GetLocalized(), AppContext.BaseDirectory));
+
+		 GetService<IActivationService>().ActivateAsync(args);
+	}
 }

@@ -1,25 +1,55 @@
-﻿using System.Runtime.InteropServices;
+﻿// Created:  2025/10/29
+// Solution:
+// Project:
+// File:
+// 
+// All Rights Reserved 2025
+// Kyle L Crowder
+
+
+
+using System.Runtime.InteropServices;
+
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
+
 using Windows.UI;
 using Windows.UI.ViewManagement;
 
+using WinRT.Interop;
+
+
+
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
+
+
 
 // Helper class to workaround custom title bar bugs.
 // DISCLAIMER: The resource key names and color values used below are subject to change. Do not depend on them.
 // https://github.com/microsoft/TemplateStudio/issues/4516
 internal class TitleBarHelper
 {
-    private const int WAINACTIVE = 0x00;
-    private const int WAACTIVE = 0x01;
-    private const int WMACTIVATE = 0x0006;
+    private const int Wainactive = 0x00;
+    private const int Waactive = 0x01;
+    private const int Wmactivate = 0x0006;
+
+
+
+
 
     [DllImport("user32.dll")]
     private static extern IntPtr GetActiveWindow();
 
+
+
+
+
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
     private static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, IntPtr lParam);
+
+
+
+
 
     public static void UpdateTitleBar(ElementTheme theme)
     {
@@ -35,7 +65,9 @@ internal class TitleBarHelper
 
             if (theme == ElementTheme.Default)
             {
-                theme = Application.Current.RequestedTheme == ApplicationTheme.Light ? ElementTheme.Light : ElementTheme.Dark;
+                theme = Application.Current.RequestedTheme == ApplicationTheme.Light
+                    ? ElementTheme.Light
+                    : ElementTheme.Dark;
             }
 
             App.MainWindow.AppWindow.TitleBar.ButtonForegroundColor = theme switch
@@ -68,19 +100,23 @@ internal class TitleBarHelper
 
             App.MainWindow.AppWindow.TitleBar.BackgroundColor = Colors.Transparent;
 
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+            var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
             if (hwnd == GetActiveWindow())
             {
-                SendMessage(hwnd, WMACTIVATE, WAINACTIVE, IntPtr.Zero);
-                SendMessage(hwnd, WMACTIVATE, WAACTIVE, IntPtr.Zero);
+                SendMessage(hwnd, Wmactivate, Wainactive, IntPtr.Zero);
+                SendMessage(hwnd, Wmactivate, Waactive, IntPtr.Zero);
             }
             else
             {
-                SendMessage(hwnd, WMACTIVATE, WAACTIVE, IntPtr.Zero);
-                SendMessage(hwnd, WMACTIVATE, WAINACTIVE, IntPtr.Zero);
+                SendMessage(hwnd, Wmactivate, Waactive, IntPtr.Zero);
+                SendMessage(hwnd, Wmactivate, Wainactive, IntPtr.Zero);
             }
         }
     }
+
+
+
+
 
     public static void ApplySystemThemeToCaptionButtons()
     {

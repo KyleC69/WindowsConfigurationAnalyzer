@@ -1,4 +1,16 @@
-﻿namespace KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
+﻿// Created:  2025/10/29
+// Solution:
+// Project:
+// File:
+// 
+// All Rights Reserved 2025
+// Kyle L Crowder
+
+
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
+
+
 
 // Model for the SampleDataService. Replace with your own model.
 public class SampleOrder
@@ -77,5 +89,12 @@ public class SampleOrder
 
     public string ShortDescription => $"Order ID: {OrderID}";
 
-    public override string ToString() => $"{Company} {Status}";
+
+
+
+
+    public override string ToString()
+    {
+        return $"{Company} {Status}";
+    }
 }

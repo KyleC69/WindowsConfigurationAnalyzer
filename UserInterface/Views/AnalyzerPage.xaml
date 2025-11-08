@@ -1,34 +1,39 @@
 ﻿<Page
-    x:Class="KC.WindowsConfigurationAnalyzer.UserInterface.Views.AnalyzerPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+	x:Class="KC.WindowsConfigurationAnalyzer.UserInterface.Views.AnalyzerPage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels"
+	mc:Ignorable="d">
+	<Page.DataContext>
+		<vm:AnalyzerViewModel />
+	</Page.DataContext>
 
-    <Grid x:Name="ContentArea">
-        <StackPanel Spacing="12" Padding="16">
-            <TextBlock Text="Analyzer (Development)" FontSize="20" FontWeight="SemiBold" />
 
-            <Button Content="Run Analyzer"
-                    Command="{x:Bind ViewModel.RunAnalyzerCommand, Mode=OneWay}" />
+	<Grid x:Name="ContentArea">
+		<StackPanel Spacing="12" Padding="16">
+			<TextBlock Text="Analyzer (Development)" FontSize="20" FontWeight="SemiBold" />
 
-            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <ProgressRing IsActive="{x:Bind ViewModel.IsRunning, Mode=OneWay}" Width="24" Height="24"/>
-                <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" TextTrimming="CharacterEllipsis"/>
-            </StackPanel>
+			<Button Content="Run Analyzer"
+			        Command="{x:Bind ViewModel.RunAnalyzerCommand, Mode=OneWay}" />
 
-            <Button Content="Open Exports Folder"
-                    Command="{x:Bind ViewModel.OpenExportsFolderCommand, Mode=OneWay}" />
+			<StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+				<ProgressRing IsActive="{x:Bind ViewModel.IsRunning, Mode=OneWay}" Width="24" Height="24" />
+				<TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
+			</StackPanel>
 
-            <TextBlock Text="Status Log" FontWeight="SemiBold" Margin="0,12,0,0"/>
-            <ListView ItemsSource="{x:Bind ViewModel.StatusMessages, Mode=OneWay}" Height="200">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-                        <TextBlock Text="{x:Bind}" TextWrapping="WrapWholeWords"/>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </StackPanel>
-    </Grid>
+			<Button Content="Open Exports Folder"
+			        Command="{x:Bind ViewModel.OpenFolderCommand, Mode=OneWay}" />
+
+			<TextBlock Text="Status Log" FontWeight="SemiBold" Margin="0,12,0,0" />
+			<ListView ItemsSource="{x:Bind ViewModel.StatusMessages, Mode=OneWay}" Height="200">
+				<ListView.ItemTemplate>
+					<DataTemplate x:DataType="x:String">
+						<TextBlock Text="{x:Bind}" TextWrapping="WrapWholeWords" />
+					</DataTemplate>
+				</ListView.ItemTemplate>
+			</ListView>
+		</StackPanel>
+	</Grid>
 </Page>

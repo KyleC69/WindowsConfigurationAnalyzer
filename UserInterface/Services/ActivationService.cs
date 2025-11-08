@@ -1,24 +1,48 @@
-﻿using KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
+﻿// Created:  2025/10/29
+// Solution:
+// Project:
+// File:
+// 
+// All Rights Reserved 2025
+// Kyle L Crowder
+
+
+
+using KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
+
+
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
+
+
 
 public class ActivationService : IActivationService
 {
-    private readonly ActivationHandler<LaunchActivatedEventArgs> _defaultHandler;
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
+    private readonly ActivationHandler<LaunchActivatedEventArgs> _defaultHandler;
     private readonly IThemeSelectorService _themeSelectorService;
-    private UIElement? _shell = null;
+    private UIElement? _shell;
 
-    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler, IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService)
+
+
+
+
+    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler,
+        IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
     }
+
+
+
+
 
     public async Task ActivateAsync(object activationArgs)
     {
@@ -42,6 +66,10 @@ public class ActivationService : IActivationService
         await StartupAsync();
     }
 
+
+
+
+
     private async Task HandleActivationAsync(object activationArgs)
     {
         var activationHandler = _activationHandlers.FirstOrDefault(h => h.CanHandle(activationArgs));
@@ -57,11 +85,19 @@ public class ActivationService : IActivationService
         }
     }
 
+
+
+
+
     private async Task InitializeAsync()
     {
         await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
         await Task.CompletedTask;
     }
+
+
+
+
 
     private async Task StartupAsync()
     {

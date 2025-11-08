@@ -1,25 +1,62 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿// Created:  2025/10/29
+// Solution:
+// Project:
+// File:
+// 
+// All Rights Reserved 2025
+// Kyle L Crowder
+
+
+
+using CommunityToolkit.Mvvm.ComponentModel;
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
+
 using Microsoft.UI.Xaml.Navigation;
+
+
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
+
+
 public partial class ShellViewModel : ObservableRecipient
 {
-    private bool isBackEnabled;
-    public bool IsBackEnabled
+    private bool _isBackEnabled;
+
+    private object? _selected;
+
+
+
+
+
+    public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService)
     {
-        get => isBackEnabled;
-        set => SetProperty(ref isBackEnabled, value);
+        NavigationService = navigationService;
+        NavigationService.Navigated += OnNavigated;
+        NavigationViewService = navigationViewService;
     }
 
-    private object? selected;
+
+
+
+
+    public bool IsBackEnabled
+    {
+        get => _isBackEnabled;
+        set => SetProperty(ref _isBackEnabled, value);
+    }
+
+
+
     public object? Selected
     {
-        get => selected;
-        set => SetProperty(ref selected, value);
+        get => _selected;
+        set => SetProperty(ref _selected, value);
     }
+
+
 
     public INavigationService NavigationService
     {
@@ -31,27 +68,25 @@ public partial class ShellViewModel : ObservableRecipient
         get;
     }
 
-    public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService)
-    {
-        NavigationService = navigationService;
-        NavigationService.Navigated += OnNavigated;
-        NavigationViewService = navigationViewService;
-    }
+
+
+
 
     private void OnNavigated(object sender, NavigationEventArgs e)
     {
-        isBackEnabled = NavigationService.CanGoBack;
+        _isBackEnabled = NavigationService.CanGoBack;
 
         if (e.SourcePageType == typeof(SettingsPage))
         {
-            selected = NavigationViewService.SettingsItem;
+            _selected = NavigationViewService.SettingsItem;
+
             return;
         }
 
         var selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
         if (selectedItem != null)
         {
-            selected = selectedItem;
+            _selected = selectedItem;
         }
     }
 }

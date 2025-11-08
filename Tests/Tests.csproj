@@ -4,19 +4,22 @@
 	 <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	 <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
 	 <TargetPlatformVersion>10.0.19041</TargetPlatformVersion>
- <IsPackable>false</IsPackable>
- <Nullable>enable</Nullable>
- <ImplicitUsings>enable</ImplicitUsings>
+	 <IsPackable>false</IsPackable>
+	 <Nullable>enable</Nullable>
+	 <ImplicitUsings>enable</ImplicitUsings>
 	 <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	 <Platforms>x64</Platforms>
+	 <ApplicationManifest>app.manifest</ApplicationManifest>
  </PropertyGroup>
  <ItemGroup>
- <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.10" />
- <PackageReference Include="xunit" Version="2.9.0" />
- <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
- <PackageReference Include="FluentAssertions" Version="6.12.0" />
+   <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+   <PackageReference Include="MSTest.TestAdapter" Version="3.4.3" />
+   <PackageReference Include="MSTest.TestFramework" Version="3.4.3" />
+   <PackageReference Include="FluentAssertions" Version="6.12.0" />
+   <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
  </ItemGroup>
  <ItemGroup>
    <ProjectReference Include="..\Analyzer\Analyzer.csproj" />
+   <ProjectReference Include="..\UserInterface\UserInterface.csproj" />
  </ItemGroup>
 </Project>
