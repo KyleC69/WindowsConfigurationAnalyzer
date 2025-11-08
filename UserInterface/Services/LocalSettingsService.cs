@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  LocalSettingsService.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -13,7 +13,6 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Helpers;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Models;
-
 using Microsoft.Extensions.Options;
 using Microsoft.Windows.Storage;
 
@@ -80,7 +79,7 @@ public class LocalSettingsService : ILocalSettingsService
             }
         }
 
-        return default;
+        return default(T?);
     }
 
 

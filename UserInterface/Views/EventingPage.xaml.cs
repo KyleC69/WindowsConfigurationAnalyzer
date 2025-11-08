@@ -1,7 +1,7 @@
 ﻿// Created:  2025/11/04
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  EventingPage.xaml.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -9,7 +9,6 @@
 
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -51,6 +50,4 @@ public sealed partial class EventingPage : Page
             ViewModel.OnNavigatedTo(null!);
         }
     }
-
-
 }

@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  RuntimeHelper.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -19,20 +19,20 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 public class RuntimeHelper
 {
-	public static bool IsMsix
-	{
-		get
-		{
-			var length = 0;
+    public static bool IsMsix
+    {
+        get
+        {
+            var length = 0;
 
-			return GetCurrentPackageFullName(ref length, null) != 15700L;
-		}
-	}
-
-
+            return GetCurrentPackageFullName(ref length, null) != 15700L;
+        }
+    }
 
 
 
-	[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-	private static extern int GetCurrentPackageFullName(ref int packageFullNameLength, StringBuilder? packageFullName);
+
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern int GetCurrentPackageFullName(ref int packageFullNameLength, StringBuilder? packageFullName);
 }

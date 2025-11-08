@@ -1,7 +1,7 @@
 ﻿// Created:  2025/11/04
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  EventingViewModel.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -14,12 +14,9 @@ using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Reflection;
 using System.Security.Principal;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.ViewModels;
-
 using Microsoft.UI.Xaml.Controls;
 
 
@@ -60,7 +57,10 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
 
 
-    public ObservableCollection<string> LogNames { get; } = [];
+    public ObservableCollection<string> LogNames
+    {
+        get;
+    } = [];
 
 
 
@@ -78,7 +78,10 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
 
 
-    public ObservableCollection<EventLogRecordClone> LogEvents { get; } = [];
+    public ObservableCollection<EventLogRecordClone> LogEvents
+    {
+        get;
+    } = [];
 
 
 
@@ -97,7 +100,10 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
 
 
-    public ObservableCollection<PropertyItem> SelectedLogEventProperties { get; } = [];
+    public ObservableCollection<PropertyItem> SelectedLogEventProperties
+    {
+        get;
+    } = [];
 
 
 
@@ -149,13 +155,16 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
     {
         get;
     }
+
     public IAsyncRelayCommand SearchCommand
     {
         get;
     }
+
     public ObservableCollection<EventLogRecord>? CorrelatedLogEvents
     {
-        get; set;
+        get;
+        set;
     }
 
 
@@ -226,9 +235,9 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
     /// </exception>
     public Task LoadEnabledLogNamesAsync()
     {
-        var names = new List<string>();
-        var session = new EventLogSession();
-        var activeLogs = new List<string>();
+        List<string> names = new();
+        EventLogSession session = new();
+        List<string> activeLogs = new();
         var timeWindowMs = TimeSpan.FromHours(HoursBack).TotalMilliseconds;
 
         try
@@ -237,7 +246,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
             {
                 try
                 {
-                    var config = new EventLogConfiguration(logName);
+                    EventLogConfiguration config = new(logName);
 
                     // Skip disabled logs and Analytical logs
                     if (!config.IsEnabled)
@@ -255,9 +264,9 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                     if (OverrideLimit)
                     {
                         //Ensures that the log has at least one event
-                        var q = new EventLogQuery(logName, PathType.LogName);
+                        EventLogQuery q = new(logName, PathType.LogName);
 
-                        using var reader2 = new EventLogReader(q);
+                        using EventLogReader reader2 = new(q);
                         if (reader2.ReadEvent() != null)
                         {
                             activeLogs.Add(logName);
@@ -267,9 +276,9 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                     {
                         // Check if the log has at least one event in the time window
                         var query = "*[System[TimeCreated[timediff(@SystemTime) <= " + timeWindowMs + "]]]";
-                        var logQuery = new EventLogQuery(logName, PathType.LogName, query);
+                        EventLogQuery logQuery = new(logName, PathType.LogName, query);
 
-                        using var reader = new EventLogReader(logQuery);
+                        using EventLogReader reader = new(logQuery);
                         if (reader.ReadEvent() != null)
                         {
                             activeLogs.Add(logName);
@@ -319,13 +328,13 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
             {
                 //EventLogRecord data;
                 // Check if the log has at least one event by attempting to read one in reverse (newest first)
-                var query = new EventLogQuery(logName, PathType.LogName)
+                EventLogQuery query = new(logName, PathType.LogName)
                 {
                     ReverseDirection = true
                 };
-                var eventProperties = new Dictionary<string, string>();
+                Dictionary<string, string> eventProperties = new();
 
-                using var logReader = new EventLogReader(query);
+                using EventLogReader logReader = new(query);
                 //while ((data = (EventLogRecord)logReader.ReadEvent()) != null) LogEvents.Add(data);
 
             }
@@ -345,11 +354,13 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
 
 
+
     private static string BuildTimediffQueryMilliseconds(long milliseconds)
     {
         // XPath for time window: timediff(@SystemTime) returns ms since event time
         return $"*[System[TimeCreated[timediff(@SystemTime) <= {milliseconds}]]";
     }
+
 
 
 
@@ -374,6 +385,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
         return new EventLogQuery(logName, PathType.LogName, xPath);
     }
+
 
 
 
@@ -412,15 +424,15 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                 var timeWindowMs = (long)TimeSpan.FromHours(HoursBack).TotalMilliseconds;
                 //var query = BuildEventLogQuery(logName!, overrideAll);
                 var query = "*[System[TimeCreated[timediff(@SystemTime) <= " + timeWindowMs + "]]]";
-                var queryObj = new EventLogQuery(logName!, PathType.LogName, query);
+                EventLogQuery queryObj = new(logName!, PathType.LogName, query);
                 queryObj.ReverseDirection = true; // newest first
 
-                using var logReader = new EventLogReader(queryObj);
+                using EventLogReader logReader = new(queryObj);
 
                 while ((data = (EventLogRecord)logReader.ReadEvent()) != null)
                 {
 
-                    var item = new EventLogRecordClone();
+                    EventLogRecordClone item = new();
                     string? levelDisplay = null;
                     try
                     {
@@ -447,6 +459,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
 
 
+
     public async Task OnEventListView_SelectionChanged(object sender, SelectionChangedEventArgs args)
     {
 
@@ -468,14 +481,17 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                 var query = BuildEventLogQuery(SelectedLogName, OverrideLimit);
                 query.ReverseDirection = true; // newest first
 
-				using var logReader = new EventLogReader(query);
+                using EventLogReader logReader = new(query);
+
                 EventLogRecord data;
 
                 while ((data = (EventLogRecord)logReader.ReadEvent()) != null)
+                {
                     if (data.Id == selectedItem.EventId && data.TimeCreated == selectedItem.TimeCreated)
                     {
                         return data;
                     }
+                }
 
                 return null;
             });
@@ -502,6 +518,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
 
 
+
     private Task LoadCorrelatedEventsAsync()
     {
 
@@ -513,7 +530,10 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                 var related = EventLogSearcher.FindEventsWithGuid(parentEvent?.RelatedActivityId, LogNames);
                 if (related.Count > 0)
                 {
-                    foreach (var r in related) { CorrelatedLogEvents?.Add(r); }
+                    foreach (var r in related)
+                    {
+                        CorrelatedLogEvents?.Add(r);
+                    }
                 }
             }
 
@@ -523,7 +543,10 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                 var activities = EventLogSearcher.FindEventsWithGuid(parentEvent?.ActivityId, LogNames);
                 if (activities.Count > 0)
                 {
-                    foreach (var a in activities) { CorrelatedLogEvents?.Add(a); }
+                    foreach (var a in activities)
+                    {
+                        CorrelatedLogEvents?.Add(a);
+                    }
                 }
             }
         }
@@ -533,8 +556,10 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
             //public to eventlog
             //Add activity logging
         }
+
         return Task.CompletedTask;
     }
+
 
 
 
@@ -588,6 +613,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
 
 
+
     /// <summary>
     ///     Searches through event logs for entries matching the specified search term.
     /// </summary>
@@ -609,19 +635,20 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
         // Clear current results
         LogEvents.Clear();
 
-        var logsToSearch = LogNames.ToList();
+        List<string> logsToSearch = LogNames.ToList();
 
         await Task.Run(() =>
         {
             foreach (var log in logsToSearch)
+            {
                 try
                 {
-                    var q = new EventLogQuery(log, PathType.LogName)
+                    EventLogQuery q = new(log, PathType.LogName)
                     {
                         ReverseDirection = true
                     };
 
-                    using var reader = new EventLogReader(q);
+                    using EventLogReader reader = new(q);
                     while (true)
                     {
                         using var record = reader.ReadEvent();
@@ -719,8 +746,10 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                 {
                     // ignore bad/inaccessible logs
                 }
+            }
         });
     }
+
 
 
 
@@ -731,7 +760,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
         {
 
             // Find all events in all logs that contain the target guid in the class properties or the EventProperties object.
-            var matchingEvents = new ConcurrentBag<EventLogRecord>();
+            ConcurrentBag<EventLogRecord> matchingEvents = new();
 
             // If the target GUID is null or empty, we cannot search for it.
             if (!targetGuid.HasValue || targetGuid == Guid.Empty)
@@ -762,13 +791,13 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                 {
                     try
                     {
-                        var query = new EventLogQuery(logName, PathType.LogName, xPath)
+                        EventLogQuery query = new(logName, PathType.LogName, xPath)
                         {
                             ReverseDirection = true,
                             TolerateQueryErrors = true
                         };
 
-                        using var reader = new EventLogReader(query);
+                        using EventLogReader reader = new(query);
                         EventRecord? eventRecord;
                         while ((eventRecord = reader.ReadEvent()) != null)
                         {
@@ -789,6 +818,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                 .OrderByDescending(e => e.TimeCreated)
                 .ToList();
         }
+
 
 
 
@@ -838,6 +868,7 @@ public class EventLogRecordClone
 
 
 
+
     // Clone constructor
     public EventLogRecordClone(EventLogRecord record)
     {
@@ -869,8 +900,24 @@ public class EventLogRecordClone
         Version = record.Version;
         Qualifiers = record.Qualifiers;
         Keywords = record.Keywords;
-        try { KeywordsDisplayNames = record.KeywordsDisplayNames ?? Array.Empty<string>(); } catch { KeywordsDisplayNames = Array.Empty<string>(); }
-        try { MatchedQueryIds = record.MatchedQueryIds ?? Array.Empty<int>(); } catch { MatchedQueryIds = Array.Empty<int>(); }
+        try
+        {
+            KeywordsDisplayNames = record.KeywordsDisplayNames ?? Array.Empty<string>();
+        }
+        catch
+        {
+            KeywordsDisplayNames = Array.Empty<string>();
+        }
+
+        try
+        {
+            MatchedQueryIds = record.MatchedQueryIds ?? Array.Empty<int>();
+        }
+        catch
+        {
+            MatchedQueryIds = Array.Empty<int>();
+        }
+
         Bookmark = record.Bookmark;
         ContainerLog = record.ContainerLog ?? string.Empty;
         ProviderId = record.ProviderId;
@@ -882,9 +929,11 @@ public class EventLogRecordClone
 
 
 
+
     public byte? Level
     {
-        get; set;
+        get;
+        set;
     }
 
 
@@ -892,79 +941,167 @@ public class EventLogRecordClone
 
     public int Id
     {
-        get; set;
-    }
-    public string ProviderName { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
-    public DateTime? TimeCreated
-    {
-        get; set;
-    }
-    public IList<EventProperty> Properties { get; set; } = new List<EventProperty>();
-    public Guid? ActivityId
-    {
-        get; set;
-    }
-    public Guid? RelatedActivityId
-    {
-        get; set;
-    }
-    public string LogName { get; set; } = string.Empty;
-    public string MachineName { get; set; } = string.Empty;
-    public string OpcodeDisplayName { get; set; } = string.Empty;
-    public string TaskDisplayName { get; set; } = string.Empty;
-    public string LevelDisplayName { get; set; } = string.Empty;
-    public int? ProcessId
-    {
-        get; set;
-    }
-    public int? ThreadId
-    {
-        get; set;
+        get;
+        set;
     }
 
-    public string UserId { get; set; } = string.Empty;
+    public string ProviderName
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    public string Message
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    public DateTime? TimeCreated
+    {
+        get;
+        set;
+    }
+
+    public IList<EventProperty> Properties
+    {
+        get;
+        set;
+    } = new List<EventProperty>();
+
+    public Guid? ActivityId
+    {
+        get;
+        set;
+    }
+
+    public Guid? RelatedActivityId
+    {
+        get;
+        set;
+    }
+
+    public string LogName
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    public string MachineName
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    public string OpcodeDisplayName
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    public string TaskDisplayName
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    public string LevelDisplayName
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    public int? ProcessId
+    {
+        get;
+        set;
+    }
+
+    public int? ThreadId
+    {
+        get;
+        set;
+    }
+
+    public string UserId
+    {
+        get;
+        set;
+    } = string.Empty;
 
     // Added to mirror EventLogRecord
     public long? RecordId
     {
-        get; set;
+        get;
+        set;
     }
+
     public byte? Version
     {
-        get; set;
+        get;
+        set;
     }
+
     public int? Qualifiers
     {
-        get; set;
+        get;
+        set;
     }
+
     public long? Keywords
     {
-        get; set;
+        get;
+        set;
     }
-    public IEnumerable<string> KeywordsDisplayNames { get; set; } = Array.Empty<string>();
-    public IEnumerable<int> MatchedQueryIds { get; set; } = Array.Empty<int>();
+
+    public IEnumerable<string> KeywordsDisplayNames
+    {
+        get;
+        set;
+    } = Array.Empty<string>();
+
+    public IEnumerable<int> MatchedQueryIds
+    {
+        get;
+        set;
+    } = Array.Empty<int>();
+
     public EventBookmark? Bookmark
     {
-        get; set;
+        get;
+        set;
     }
-    public string ContainerLog { get; set; } = string.Empty;
+
+    public string ContainerLog
+    {
+        get;
+        set;
+    } = string.Empty;
+
     public Guid? ProviderId
     {
-        get; set;
+        get;
+        set;
     }
+
     public int? Opcode
     {
-        get; set;
+        get;
+        set;
     }
+
     public int? Task
     {
-        get; set;
+        get;
+        set;
     }
+
     public SecurityIdentifier? UserIdSid
     {
-        get; set;
+        get;
+        set;
     }
+
 
 
 
@@ -981,41 +1118,54 @@ public class EventLogRecordClone
 
 public class ListViewRecord
 {
-    public ListViewRecord()
-    {
-    }
     public long? RecordId
     {
-        get; set;
+        get;
+        set;
     }
+
     public int EventId
     {
-        get; set;
+        get;
+        set;
     }
+
     public DateTime? TimeCreated
     {
-        get; set;
+        get;
+        set;
     }
+
     public string? SourceDisplayName
     {
-        get; set;
+        get;
+        set;
     }
+
     public byte? Level
     {
-        get; set;
+        get;
+        set;
     }
 
     public string? LevelDisplayName
     {
-        get; set;
+        get;
+        set;
     }
 
     // Description retained intentionally for potential future use, not shown in UI
     public string? Description
     {
-        get; set;
+        get;
+        set;
     }
-    public IList<EventProperty> Properties { get; set; } = new List<EventProperty>();
+
+    public IList<EventProperty> Properties
+    {
+        get;
+        set;
+    } = new List<EventProperty>();
 }
 
 
@@ -1023,7 +1173,21 @@ public class ListViewRecord
 
 public class PropertyItem
 {
-    public string Name { get; set; } = string.Empty;
-    public string Value { get; set; } = string.Empty;
-    public string PropType { get; set; } = string.Empty;
+    public string Name
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    public string Value
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    public string PropType
+    {
+        get;
+        set;
+    } = string.Empty;
 }

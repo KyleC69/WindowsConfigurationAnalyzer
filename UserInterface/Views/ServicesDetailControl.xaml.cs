@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  ServicesDetailControl.xaml.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -9,7 +9,6 @@
 
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 

@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  WmiRegistryViewModel.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -9,9 +9,7 @@
 
 
 using System.Collections.ObjectModel;
-
 using CommunityToolkit.Mvvm.ComponentModel;
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.ViewModels;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
@@ -25,23 +23,11 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 public partial class WmiRegistryViewModel : ObservableRecipient, INavigationAware
 {
-    private readonly ISampleDataService _sampleDataService;
+    private readonly ISampleDataService _sampleDataService = new SampleDataService();
 
     private SampleOrder? _selected;
 
 
-
-
-
-
-
-
-
-
-    public WmiRegistryViewModel()
-    {
-        _sampleDataService = new SampleDataService();
-    }
 
 
 
@@ -55,7 +41,10 @@ public partial class WmiRegistryViewModel : ObservableRecipient, INavigationAwar
 
 
 
-    public ObservableCollection<SampleOrder> SampleItems { get; } = [];
+    public ObservableCollection<SampleOrder> SampleItems
+    {
+        get;
+    } = [];
 
 
 
@@ -68,7 +57,11 @@ public partial class WmiRegistryViewModel : ObservableRecipient, INavigationAwar
         // TODO: Replace with real data.
         var data = await _sampleDataService.GetListDetailsDataAsync();
 
-        foreach (var item in data) SampleItems.Add(item);
+        foreach (var item in data)
+        {
+            SampleItems.Add(item);
+        }
+
     }
 
 

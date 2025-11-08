@@ -1,7 +1,7 @@
 // Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  Analyzer
+// File:  Contracts.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -20,11 +20,17 @@ namespace KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 
 public interface IAnalyzerModule
 {
-	string Name { get; }
+    string Name
+    {
+        get;
+    }
 
-	string Area { get; }
+    string Area
+    {
+        get;
+    }
 
-	Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken);
+    Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken);
 }
 
 
@@ -32,21 +38,45 @@ public interface IAnalyzerModule
 
 public interface IAnalyzerContext
 {
-	ILogger Logger { get; }
+    ILogger Logger
+    {
+        get;
+    }
 
-	ITimeProvider Time { get; }
+    ITimeProvider Time
+    {
+        get;
+    }
 
-	ActionLogger ActionLogger { get; }
+    ActionLogger ActionLogger
+    {
+        get;
+    }
 
-	IRegistryReader Registry { get; }
+    IRegistryReader Registry
+    {
+        get;
+    }
 
-	ICimReader Cim { get; }
+    ICimReader Cim
+    {
+        get;
+    }
 
-	IEventLogReader EventLog { get; }
+    IEventLogReader EventLog
+    {
+        get;
+    }
 
-	IFirewallReader Firewall { get; }
+    IFirewallReader Firewall
+    {
+        get;
+    }
 
-	IEnvReader Environment { get; }
+    IEnvReader Environment
+    {
+        get;
+    }
 }
 
 
@@ -54,7 +84,7 @@ public interface IAnalyzerContext
 
 public interface IExporter
 {
-	Task ExportAsync(AnalyzerResult result, string targetPath, CancellationToken cancellationToken);
+    Task ExportAsync(AnalyzerResult result, string targetPath, CancellationToken cancellationToken);
 }
 
 
@@ -62,7 +92,7 @@ public interface IExporter
 
 public interface IAnomalyDetector
 {
-	IReadOnlyList<Finding> Detect(AnalyzerResult result);
+    IReadOnlyList<Finding> Detect(AnalyzerResult result);
 }
 
 
@@ -70,11 +100,17 @@ public interface IAnomalyDetector
 
 public interface IRule
 {
-	string Id { get; }
+    string Id
+    {
+        get;
+    }
 
-	string Area { get; }
+    string Area
+    {
+        get;
+    }
 
-	Finding? Evaluate(AnalyzerResult result);
+    Finding? Evaluate(AnalyzerResult result);
 }
 
 
@@ -83,9 +119,9 @@ public interface IRule
 // Reader contracts
 public interface IRegistryReader
 {
-	object? GetValue(string hiveAndPath, string name);
-	IEnumerable<string> EnumerateSubKeys(string hiveAndPath);
-	IEnumerable<string> EnumerateValueNames(string hiveAndPath);
+    object? GetValue(string hiveAndPath, string name);
+    IEnumerable<string> EnumerateSubKeys(string hiveAndPath);
+    IEnumerable<string> EnumerateValueNames(string hiveAndPath);
 }
 
 
@@ -93,7 +129,7 @@ public interface IRegistryReader
 
 public interface ICimReader
 {
-	IEnumerable<IDictionary<string, object?>> Query(string wql, string? scope = null);
+    IEnumerable<IDictionary<string, object?>> Query(string wql, string? scope = null);
 }
 
 
@@ -106,7 +142,7 @@ public sealed record EventLogSummary(string LogName, int EntryCount, DateTimeOff
 
 public interface IEventLogReader
 {
-	EventLogSummary? GetSummary(string logName);
+    EventLogSummary? GetSummary(string logName);
 }
 
 
@@ -114,8 +150,8 @@ public interface IEventLogReader
 
 public interface IFirewallReader
 {
-	IEnumerable<string> GetProfiles();
-	IEnumerable<object> GetRules();
+    IEnumerable<string> GetProfiles();
+    IEnumerable<object> GetRules();
 }
 
 
@@ -123,17 +159,32 @@ public interface IFirewallReader
 
 public interface IEnvReader
 {
-	string MachineName { get; }
+    string MachineName
+    {
+        get;
+    }
 
-	string OSVersionString { get; }
+    string OSVersionString
+    {
+        get;
+    }
 
-	bool Is64BitOS { get; }
+    bool Is64BitOS
+    {
+        get;
+    }
 
-	string UserName { get; }
+    string UserName
+    {
+        get;
+    }
 
-	string UserDomainName { get; }
+    string UserDomainName
+    {
+        get;
+    }
 
-	IReadOnlyDictionary<string, string?> GetEnvironmentVariables();
+    IReadOnlyDictionary<string, string?> GetEnvironmentVariables();
 }
 
 
@@ -142,21 +193,21 @@ public interface IEnvReader
 // Manifest-based ETW Provider Abstraction (stubs to be implemented by runtime)
 public interface IEventProvider
 {
-	// Emits a general action event mapped by taxonomy. Sequence helps keep IDs within area blocks.
-	void EmitAction(string area, string action, string level, string message, string? exception, int sequence);
+    // Emits a general action event mapped by taxonomy. Sequence helps keep IDs within area blocks.
+    void EmitAction(string area, string action, string level, string message, string? exception, int sequence);
 
 
 
 
 
-	// Session lifecycle helpers (map to1001/1002 per manifest)
-	void EmitSessionStart(string sessionId, string computer, string version);
-	void EmitSessionStop(string sessionId, int areas, int warnings, int errors, double elapsedSeconds);
+    // Session lifecycle helpers (map to1001/1002 per manifest)
+    void EmitSessionStart(string sessionId, string computer, string version);
+    void EmitSessionStop(string sessionId, int areas, int warnings, int errors, double elapsedSeconds);
 
 
 
 
 
-	// Export completed helper (maps to11501)
-	void EmitExportCompleted(string sessionId, string format, string path);
+    // Export completed helper (maps to11501)
+    void EmitExportCompleted(string sessionId, string format, string path);
 }

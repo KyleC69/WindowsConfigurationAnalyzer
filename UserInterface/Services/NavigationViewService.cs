@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  NavigationViewService.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -9,11 +9,9 @@
 
 
 using System.Diagnostics.CodeAnalysis;
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
-
 using Microsoft.UI.Xaml.Controls;
 
 
@@ -22,23 +20,11 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
 
 
-public class NavigationViewService : INavigationViewService
+public class NavigationViewService(INavigationService navigationService, IPageService pageService)
+    : INavigationViewService
 {
-    private readonly INavigationService _navigationService;
-
-    private readonly IPageService _pageService;
 
     private NavigationView? _navigationView;
-
-
-
-
-
-    public NavigationViewService(INavigationService navigationService, IPageService pageService)
-    {
-        _navigationService = navigationService;
-        _pageService = pageService;
-    }
 
 
 
@@ -91,7 +77,7 @@ public class NavigationViewService : INavigationViewService
 
     private void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
     {
-        _navigationService.GoBack();
+        navigationService.GoBack();
     }
 
 
@@ -102,15 +88,15 @@ public class NavigationViewService : INavigationViewService
     {
         if (args.IsSettingsInvoked)
         {
-            _navigationService.NavigateTo(typeof(SettingsViewModel).FullName!);
+            navigationService.NavigateTo(typeof(SettingsViewModel).FullName!);
         }
         else
         {
-            var selectedItem = args.InvokedItemContainer as NavigationViewItem;
+            NavigationViewItem? selectedItem = args.InvokedItemContainer as NavigationViewItem;
 
             if (selectedItem?.GetValue(NavigationHelper.NavigateToProperty) is string pageKey)
             {
-                _navigationService.NavigateTo(pageKey);
+                navigationService.NavigateTo(pageKey);
             }
         }
     }
@@ -145,8 +131,7 @@ public class NavigationViewService : INavigationViewService
 
     private bool IsMenuItemForPageType(NavigationViewItem menuItem, Type sourcePageType)
     {
-        return menuItem.GetValue(NavigationHelper.NavigateToProperty) is string pageKey
-            ? _pageService.GetPageType(pageKey) == sourcePageType
-            : false;
+        return menuItem.GetValue(NavigationHelper.NavigateToProperty) is string pageKey &&
+               pageService.GetPageType(pageKey) == sourcePageType;
     }
 }

@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  INavigationViewService.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -18,13 +18,19 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 
 public interface INavigationViewService
 {
-	IList<object>? MenuItems { get; }
+    IList<object>? MenuItems
+    {
+        get;
+    }
 
-	object? SettingsItem { get; }
+    object? SettingsItem
+    {
+        get;
+    }
 
-	void Initialize(NavigationView navigationView);
+    void Initialize(NavigationView navigationView);
 
-	void UnregisterEvents();
+    void UnregisterEvents();
 
-	NavigationViewItem? GetSelectedItem(Type pageType);
+    NavigationViewItem? GetSelectedItem(Type pageType);
 }

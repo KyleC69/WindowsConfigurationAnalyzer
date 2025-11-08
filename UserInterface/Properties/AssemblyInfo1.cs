@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  AssemblyInfo1.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -17,11 +17,11 @@ using System.Runtime.Versioning;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Windows.Configuration.Analyzer")]
+[assembly: AssemblyTitle("WindowsConfigurationAnalyzer")]
 [assembly: AssemblyDescription("A deep forensic tool for examination of Windows configuration")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Kyle L Crowder")]
-[assembly: AssemblyProduct("UserInterface.Properties")]
+[assembly: AssemblyProduct("WindowsConfigurationAnalyzer")]
 [assembly: AssemblyCopyright("Copyright ©  2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -43,5 +43,5 @@ using System.Runtime.Versioning;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.2.0")]
+[assembly: AssemblyFileVersion("1.0.2.0")]

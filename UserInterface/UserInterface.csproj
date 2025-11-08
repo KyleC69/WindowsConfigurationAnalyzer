@@ -1,75 +1,69 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<UseWinUI>true</UseWinUI>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<EnableMsixTooling>false</EnableMsixTooling>
-		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
-		<!-- Disable WindowsAppSDK self-contained mode to avoid mt.exe manifest merge during build -->
-		<WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
-		<TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
-		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-		<ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
-		<RootNamespace>KC.WindowsConfigurationAnalyzer.$(MSBuildProjectName)</RootNamespace>
-		<WindowsPackageType>None</WindowsPackageType>
-		<Authors>Kyle Crowder</Authors>
-		<!-- Do not invoke MSIX packaging / PRI generation during normal build -->
-		<GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
-		<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
-		<Description>A Windows Forecsic Configuration Analyzer</Description>
-		<Copyright>2025</Copyright>
-	</PropertyGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <UseWinUI>true</UseWinUI>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <EnableMsixTooling>false</EnableMsixTooling>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <!-- Disable WindowsAppSDK self-contained mode to avoid mt.exe manifest merge during build -->
+        <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+        <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
+        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+        <ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
+        <RootNamespace>KC.WindowsConfigurationAnalyzer.$(MSBuildProjectName)</RootNamespace>
+        <WindowsPackageType>None</WindowsPackageType>
+        <Authors>Kyle Crowder</Authors>
+        <!-- Do not invoke MSIX packaging / PRI generation during normal build -->
+        <GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
+        <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+        <Description>A Windows Forecsic Configuration Analyzer</Description>
+        <Copyright>2025</Copyright>
+    </PropertyGroup>
 
 
-	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250402" />
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
-		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
-		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
-		<PackageReference Include="WinUIEx" Version="2.3.2" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250402" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+        <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
+        <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
+        <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
+        <PackageReference Include="WinUIEx" Version="2.3.2" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Analyzer\Analyzer.csproj" />
-		<ProjectReference Include="..\UserInterface.Core\UserInterface.Core.csproj" />
-	</ItemGroup>
-	
+    <ItemGroup>
+        <ProjectReference Include="..\Analyzer\Analyzer.csproj" />
+        <ProjectReference Include="..\UserInterface.Core\UserInterface.Core.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-	
-	
-	<ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-		<ProjectCapability Include="Msix" />
-	</ItemGroup>
 
-	<PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-		<HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
-	</PropertyGroup>
+    <ItemGroup>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <IsPublishable>True</IsPublishable>
-	  <WarningLevel>8</WarningLevel>
-	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <IsPublishable>True</IsPublishable>
-	  <WarningLevel>8</WarningLevel>
-	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-	</PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <IsPublishable>True</IsPublishable>
+        <WarningLevel>8</WarningLevel>
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    </PropertyGroup>
 
-	<ItemGroup>
-	  <Compile Remove="F:\NuGetPackages\microsoft.windowsappsdk.foundation\1.8.250906002\buildTransitive\..\include\MddBootstrapAutoInitializer.cs" />
-	</ItemGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <IsPublishable>True</IsPublishable>
+        <WarningLevel>8</WarningLevel>
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    </PropertyGroup>
 
-	<ItemGroup>
-	  <Compile Remove="F:\NuGetPackages\microsoft.windowsappsdk.foundation\1.8.250906002\buildTransitive\..\include\MddBootstrapAutoInitializer.cs" />
-	</ItemGroup>
+    <ItemGroup>
+        <Compile
+            Remove="F:\NuGetPackages\microsoft.windowsappsdk.foundation\1.8.250906002\buildTransitive\..\include\MddBootstrapAutoInitializer.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile
+            Remove="F:\NuGetPackages\microsoft.windowsappsdk.foundation\1.8.250906002\buildTransitive\..\include\MddBootstrapAutoInitializer.cs" />
+    </ItemGroup>
 </Project>

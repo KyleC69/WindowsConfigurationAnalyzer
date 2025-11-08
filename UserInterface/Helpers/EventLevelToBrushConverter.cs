@@ -1,7 +1,7 @@
 // Created:  2025/11/04
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  EventLevelToBrushConverter.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -56,14 +56,14 @@ public sealed class EventLevelToBrushConverter : IValueConverter
         }
 
         return level switch
-        {
-            1 => new SolidColorBrush(Colors.DarkRed), // Critical
-            2 => new SolidColorBrush(Colors.Red), // Error
-            3 => new SolidColorBrush(Colors.Orange), // Warning
-            4 => new SolidColorBrush(Colors.CornflowerBlue), // Information
-            5 => new SolidColorBrush(Colors.Gray), // Verbose
-            _ => new SolidColorBrush(Colors.Gray)
-        };
+               {
+                   1 => new SolidColorBrush(Colors.DarkRed), // Critical
+                   2 => new SolidColorBrush(Colors.Red), // Error
+                   3 => new SolidColorBrush(Colors.Orange), // Warning
+                   4 => new SolidColorBrush(Colors.CornflowerBlue), // Information
+                   5 => new SolidColorBrush(Colors.Gray), // Verbose
+                   _ => new SolidColorBrush(Colors.Gray)
+               };
     }
 
 

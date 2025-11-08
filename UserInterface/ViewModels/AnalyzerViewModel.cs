@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  AnalyzerViewModel.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -10,10 +10,8 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Context;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Diagnostics;
@@ -22,7 +20,6 @@ using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Export;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Infrastructure;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -42,15 +39,6 @@ public partial class AnalyzerViewModel : ObservableRecipient
 
     private string _statusMessage = "Idle";
 
-    public IAsyncRelayCommand RunAnalyzerCommand
-    {
-        get;
-    }
-    public IRelayCommand OpenFolderCommand
-    {
-        get;
-    }
-
 
 
 
@@ -61,12 +49,30 @@ public partial class AnalyzerViewModel : ObservableRecipient
 
     }
 
+
+
+
+
     public AnalyzerViewModel(IServiceProvider services)
     {
         _services = services;
         _localSettings = App.GetService<ILocalSettingsService>();
         RunAnalyzerCommand = new AsyncRelayCommand(RunAnalyzerAsync);
         OpenFolderCommand = new RelayCommand(OpenExportsFolder);
+    }
+
+
+
+
+
+    public IAsyncRelayCommand RunAnalyzerCommand
+    {
+        get;
+    }
+
+    public IRelayCommand OpenFolderCommand
+    {
+        get;
     }
 
 
@@ -89,7 +95,10 @@ public partial class AnalyzerViewModel : ObservableRecipient
 
 
 
-    public ObservableCollection<string> StatusMessages { get; } = [];
+    public ObservableCollection<string> StatusMessages
+    {
+        get;
+    } = [];
 
 
 
@@ -137,8 +146,12 @@ public partial class AnalyzerViewModel : ObservableRecipient
             var sp = scope.ServiceProvider;
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
             var eventProvider = sp.GetService<IEventProvider>();
-            var engine = new AnalyzerEngine(loggerFactory.CreateLogger("WCA.UI.Run"), eventProvider: eventProvider);
-            foreach (var m in sp.GetServices<IAnalyzerModule>()) engine.AddModule(m);
+            AnalyzerEngine engine = new(loggerFactory.CreateLogger("WCA.UI.Run"), eventProvider: eventProvider);
+            foreach (var m in sp.GetServices<IAnalyzerModule>())
+            {
+                engine.AddModule(m);
+            }
+
             var ctx = sp.GetRequiredService<IAnalyzerContext>();
 
             // Ensure activity log file per run
@@ -151,10 +164,10 @@ public partial class AnalyzerViewModel : ObservableRecipient
                 Directory.CreateDirectory(logDir);
             }
 
-            var fileSink = new FileActionLogSink(logPath);
+            FileActionLogSink fileSink = new(logPath);
             var appLogger = loggerFactory.CreateLogger("WCA.ActionLogger");
-            var actionLogger = new ActionLogger(appLogger, fileSink, eventProvider);
-            var contextWithFile = new AnalyzerContext(
+            ActionLogger actionLogger = new(appLogger, fileSink, eventProvider);
+            AnalyzerContext contextWithFile = new(
                 sp.GetRequiredService<ILoggerFactory>().CreateLogger("WCA"),
                 sp.GetRequiredService<ITimeProvider>(),
                 actionLogger,
@@ -170,7 +183,7 @@ public partial class AnalyzerViewModel : ObservableRecipient
             var result = await engine.RunAllAsync(contextWithFile);
 
             // Evaluate comprehensive rules
-            var rules = new IRule[]
+            IRule[] rules = new IRule[]
             {
                 new AvMissingRule(),
                 new DuplicateDnsRule(),
@@ -180,7 +193,7 @@ public partial class AnalyzerViewModel : ObservableRecipient
                 new SuspiciousAutorunsRule(),
                 new RdpExposedRule()
             };
-            var ruleEngine = new RuleEngine(rules);
+            RuleEngine ruleEngine = new(rules);
             var extraFindings = ruleEngine.Evaluate(result);
             var merged = result with { GlobalFindings = result.GlobalFindings.Concat(extraFindings).ToList() };
 

@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  DriversPage.xaml.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -9,9 +9,7 @@
 
 
 using CommunityToolkit.WinUI.UI.Controls;
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
-
 using Microsoft.UI.Xaml.Controls;
 
 

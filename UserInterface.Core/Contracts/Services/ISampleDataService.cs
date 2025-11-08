@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface.Core
+// File:  ISampleDataService.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -19,5 +19,5 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
 // Remove this class once your pages/features are using your data.
 public interface ISampleDataService
 {
-	Task<IEnumerable<SampleOrder>> GetListDetailsDataAsync();
+    Task<IEnumerable<SampleOrder>> GetListDetailsDataAsync();
 }

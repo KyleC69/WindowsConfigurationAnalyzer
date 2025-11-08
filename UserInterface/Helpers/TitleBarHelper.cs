@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  TitleBarHelper.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -9,13 +9,10 @@
 
 
 using System.Runtime.InteropServices;
-
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
-
 using Windows.UI;
 using Windows.UI.ViewManagement;
-
 using WinRT.Interop;
 
 
@@ -57,8 +54,8 @@ internal class TitleBarHelper
         {
             if (theme == ElementTheme.Default)
             {
-                var uiSettings = new UISettings();
-                var background = uiSettings.GetColorValue(UIColorType.Background);
+                UISettings uiSettings = new();
+                Color background = uiSettings.GetColorValue(UIColorType.Background);
 
                 theme = background == Colors.White ? ElementTheme.Light : ElementTheme.Dark;
             }
@@ -86,15 +83,19 @@ internal class TitleBarHelper
 
             App.MainWindow.AppWindow.TitleBar.ButtonHoverBackgroundColor = theme switch
             {
-                ElementTheme.Dark => Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF),
-                ElementTheme.Light => Color.FromArgb(0x33, 0x00, 0x00, 0x00),
+                ElementTheme.Dark => Color.FromArgb(0x33,
+                    0xFF, 0xFF, 0xFF),
+                ElementTheme.Light => Color.FromArgb(
+                    0x33, 0x00, 0x00, 0x00),
                 _ => Colors.Transparent
             };
 
             App.MainWindow.AppWindow.TitleBar.ButtonPressedBackgroundColor = theme switch
             {
-                ElementTheme.Dark => Color.FromArgb(0x66, 0xFF, 0xFF, 0xFF),
-                ElementTheme.Light => Color.FromArgb(0x66, 0x00, 0x00, 0x00),
+                ElementTheme.Dark => Color.FromArgb(
+                    0x66, 0xFF, 0xFF, 0xFF),
+                ElementTheme.Light => Color.FromArgb(
+                    0x66, 0x00, 0x00, 0x00),
                 _ => Colors.Transparent
             };
 
@@ -120,7 +121,7 @@ internal class TitleBarHelper
 
     public static void ApplySystemThemeToCaptionButtons()
     {
-        var frame = App.AppTitlebar as FrameworkElement;
+        FrameworkElement? frame = App.AppTitlebar as FrameworkElement;
         if (frame != null)
         {
             UpdateTitleBar(frame.ActualTheme);

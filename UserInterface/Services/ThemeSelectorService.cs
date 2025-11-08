@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  ThemeSelectorService.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -18,82 +18,75 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
 
 
-public class ThemeSelectorService : IThemeSelectorService
+public class ThemeSelectorService(ILocalSettingsService localSettingsService) : IThemeSelectorService
 {
-	private const string SettingsKey = "AppBackgroundRequestedTheme";
-
-	private readonly ILocalSettingsService _localSettingsService;
+    private const string SettingsKey = "AppBackgroundRequestedTheme";
 
 
 
 
 
-	public ThemeSelectorService(ILocalSettingsService localSettingsService)
-	{
-		_localSettingsService = localSettingsService;
-	}
+    public ElementTheme Theme
+    {
+        get;
+        set;
+    } = ElementTheme.Default;
 
 
 
 
 
-	public ElementTheme Theme { get; set; } = ElementTheme.Default;
+    public async Task InitializeAsync()
+    {
+        Theme = await LoadThemeFromSettingsAsync();
+        await Task.CompletedTask;
+    }
 
 
 
 
 
-	public async Task InitializeAsync()
-	{
-		Theme = await LoadThemeFromSettingsAsync();
-		await Task.CompletedTask;
-	}
+    public async Task SetThemeAsync(ElementTheme theme)
+    {
+        Theme = theme;
+
+        await SetRequestedThemeAsync();
+        await SaveThemeInSettingsAsync(Theme);
+    }
 
 
 
 
 
-	public async Task SetThemeAsync(ElementTheme theme)
-	{
-		Theme = theme;
+    public async Task SetRequestedThemeAsync()
+    {
+        if (App.MainWindow.Content is FrameworkElement rootElement)
+        {
+            rootElement.RequestedTheme = Theme;
 
-		await SetRequestedThemeAsync();
-		await SaveThemeInSettingsAsync(Theme);
-	}
+            TitleBarHelper.UpdateTitleBar(Theme);
+        }
 
-
-
-
-
-	public async Task SetRequestedThemeAsync()
-	{
-		if (App.MainWindow.Content is FrameworkElement rootElement)
-		{
-			rootElement.RequestedTheme = Theme;
-
-			TitleBarHelper.UpdateTitleBar(Theme);
-		}
-
-		await Task.CompletedTask;
-	}
+        await Task.CompletedTask;
+    }
 
 
 
 
 
-	private async Task<ElementTheme> LoadThemeFromSettingsAsync()
-	{
-		var themeName = await _localSettingsService.ReadSettingAsync<string>(SettingsKey);
+    private async Task<ElementTheme> LoadThemeFromSettingsAsync()
+    {
+        var themeName = await localSettingsService.ReadSettingAsync<string>(SettingsKey);
 
-		return Enum.TryParse(themeName, out ElementTheme cacheTheme) ? cacheTheme : ElementTheme.Default;
-	}
-
-
+        return Enum.TryParse(themeName, out ElementTheme cacheTheme) ? cacheTheme : ElementTheme.Default;
+    }
 
 
 
-	private async Task SaveThemeInSettingsAsync(ElementTheme theme)
-	{
-		await _localSettingsService.SaveSettingAsync(SettingsKey, theme.ToString());
-	}
+
+
+    private async Task SaveThemeInSettingsAsync(ElementTheme theme)
+    {
+        await localSettingsService.SaveSettingAsync(SettingsKey, theme.ToString());
+    }
 }

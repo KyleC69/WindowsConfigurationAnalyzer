@@ -3,6 +3,13 @@
   <Folder Name="/.github/">
     <File Path=".github/Copilot-Instructions.md" />
  </Folder>
+  <Folder Name="/root/">
+    <File Path=".editorconfig" />
+    <File Path="CodeMap1.dgml" />
+    <File Path="Directory.Build.props" />
+    <File Path="settings.VisualStudio.json" />
+    <File Path="WindowsConfigurationAnalyzer.sln.DotSettings.user" />
+  </Folder>
   <Project Path="Analyzer/Analyzer.csproj" />
   <Project Path="UserInterface.Core/UserInterface.Core.csproj" />
   <Project Path="UserInterface/UserInterface.csproj" />

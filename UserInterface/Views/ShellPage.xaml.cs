@@ -1,22 +1,20 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  ShellPage.xaml.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
 
 
 
+using Windows.System;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-
-using Windows.System;
 
 
 
@@ -79,7 +77,7 @@ public sealed partial class ShellPage : Page
 
 
     private void NavigationViewControl_DisplayModeChanged(NavigationView sender,
-        NavigationViewDisplayModeChangedEventArgs args)
+                                                          NavigationViewDisplayModeChangedEventArgs args)
     {
         AppTitleBar.Margin = new Thickness
         {
@@ -96,7 +94,7 @@ public sealed partial class ShellPage : Page
 
     private static KeyboardAccelerator BuildKeyboardAccelerator(VirtualKey key, VirtualKeyModifiers? modifiers = null)
     {
-        var keyboardAccelerator = new KeyboardAccelerator { Key = key };
+        KeyboardAccelerator keyboardAccelerator = new() { Key = key };
 
         if (modifiers.HasValue)
         {
@@ -113,9 +111,9 @@ public sealed partial class ShellPage : Page
 
 
     private static void OnKeyboardAcceleratorInvoked(KeyboardAccelerator sender,
-        KeyboardAcceleratorInvokedEventArgs args)
+                                                     KeyboardAcceleratorInvokedEventArgs args)
     {
-        var navigationService = App.GetService<INavigationService>();
+        INavigationService navigationService = App.GetService<INavigationService>();
 
         var result = navigationService.GoBack();
 

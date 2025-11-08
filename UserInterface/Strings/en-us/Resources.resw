@@ -197,4 +197,7 @@
   <data name="Shell_Eventing.Content" xml:space="preserve">
     <value>Eventing</value>
   </data>
+  <data name="SettingsStorageExtensions_SaveFileAsync_File_name_is_null_or_empty__Specify_a_valid_file_name" xml:space="preserve">
+	  <value>File name is null or empty. Specify a valid file name</value>
+  </data>
 </root>

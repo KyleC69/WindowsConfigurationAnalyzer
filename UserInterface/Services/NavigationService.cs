@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  NavigationService.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -9,11 +9,9 @@
 
 
 using System.Diagnostics.CodeAnalysis;
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.ViewModels;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
-
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -25,20 +23,10 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
 // For more information on navigation between pages see
 // https://github.com/microsoft/TemplateStudio/blob/main/docs/WinUI/navigation.md
-public class NavigationService : INavigationService
+public class NavigationService(IPageService pageService) : INavigationService
 {
-    private readonly IPageService _pageService;
     private Frame? _frame;
     private object? _lastParameterUsed;
-
-
-
-
-
-    public NavigationService(IPageService pageService)
-    {
-        _pageService = pageService;
-    }
 
 
 
@@ -101,7 +89,7 @@ public class NavigationService : INavigationService
 
     public bool NavigateTo(string pageKey, object? parameter = null, bool clearNavigation = false)
     {
-        var pageType = _pageService.GetPageType(pageKey);
+        var pageType = pageService.GetPageType(pageKey);
 
         if (_frame != null && (_frame.Content?.GetType() != pageType ||
                                (parameter != null && !parameter.Equals(_lastParameterUsed))))

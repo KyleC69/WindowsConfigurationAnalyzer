@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  ServicesViewModel.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -20,63 +20,60 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 
 
-public partial class ServicesViewModel : ObservableRecipient, INavigationAware
+public partial class ServicesViewModel(ISampleDataService sampleDataService) : ObservableRecipient, INavigationAware
 {
-	private readonly ISampleDataService _sampleDataService;
 
-	private SampleOrder? _selected;
-
-
-
-
-
-	public ServicesViewModel(ISampleDataService sampleDataService)
-	{
-		_sampleDataService = sampleDataService;
-	}
+    private SampleOrder? _selected;
 
 
 
 
 
-	public SampleOrder? Selected
-	{
-		get => _selected;
-		set => SetProperty(ref _selected, value);
-	}
+    public SampleOrder? Selected
+    {
+        get => _selected;
+        set => SetProperty(ref _selected, value);
+    }
 
 
 
-	public ObservableCollection<SampleOrder> SampleItems { get; } = [];
-
-
-
-
-
-	public async void OnNavigatedTo(object parameter)
-	{
-		SampleItems.Clear();
-
-		// TODO: Replace with real data.
-		var data = await _sampleDataService.GetListDetailsDataAsync();
-
-		foreach (var item in data) SampleItems.Add(item);
-	}
+    public ObservableCollection<SampleOrder> SampleItems
+    {
+        get;
+    } = [];
 
 
 
 
 
-	public void OnNavigatedFrom()
-	{
-	}
+    public async void OnNavigatedTo(object parameter)
+    {
+        SampleItems.Clear();
+
+        // TODO: Replace with real data.
+        var data = await sampleDataService.GetListDetailsDataAsync();
+
+        foreach (var item in data)
+        {
+            SampleItems.Add(item);
+        }
+
+    }
 
 
 
 
 
-	public void EnsureItemSelected()
-	{
-		Selected ??= SampleItems.First();
-	}
+    public void OnNavigatedFrom()
+    {
+    }
+
+
+
+
+
+    public void EnsureItemSelected()
+    {
+        Selected ??= SampleItems.First();
+    }
 }

@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  ResourceExtensions.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -18,14 +18,14 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 public static class ResourceExtensions
 {
-	private static readonly ResourceLoader ResourceLoader = new();
+    private static readonly ResourceLoader ResourceLoader = new();
 
 
 
 
 
-	public static string GetLocalized(this string resourceKey)
-	{
-		return ResourceLoader.GetString(resourceKey);
-	}
+    public static string GetLocalized(this string resourceKey)
+    {
+        return ResourceLoader.GetString(resourceKey);
+    }
 }

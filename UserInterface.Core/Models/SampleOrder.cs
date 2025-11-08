@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface.Core
+// File:  SampleOrder.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -17,74 +17,88 @@ public class SampleOrder
 {
     public long OrderID
     {
-        get; set;
+        get;
+        set;
     }
 
     public DateTime OrderDate
     {
-        get; set;
+        get;
+        set;
     }
 
     public DateTime RequiredDate
     {
-        get; set;
+        get;
+        set;
     }
 
     public DateTime ShippedDate
     {
-        get; set;
+        get;
+        set;
     }
 
     public string? ShipperName
     {
-        get; set;
+        get;
+        set;
     }
 
     public string? ShipperPhone
     {
-        get; set;
+        get;
+        set;
     }
 
     public double Freight
     {
-        get; set;
+        get;
+        set;
     }
 
     public string? Company
     {
-        get; set;
+        get;
+        set;
     }
 
     public string? ShipTo
     {
-        get; set;
+        get;
+        set;
     }
 
     public double OrderTotal
     {
-        get; set;
+        get;
+        set;
     }
 
     public string? Status
     {
-        get; set;
+        get;
+        set;
     }
 
     public int SymbolCode
     {
-        get; set;
+        get;
+        set;
     }
 
     public string? SymbolName
     {
-        get; set;
+        get;
+        set;
     }
 
     public char Symbol => (char)SymbolCode;
 
     public ICollection<SampleOrderDetail>? Details
     {
-        get; set;
+        get;
+        set;
     }
 
     public string ShortDescription => $"Order ID: {OrderID}";

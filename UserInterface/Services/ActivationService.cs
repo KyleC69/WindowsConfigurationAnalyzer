@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  ActivationService.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -11,7 +11,6 @@
 using KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -21,24 +20,13 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
 
 
-public class ActivationService : IActivationService
+public class ActivationService(
+    ActivationHandler<LaunchActivatedEventArgs> defaultHandler,
+    IEnumerable<IActivationHandler> activationHandlers,
+    IThemeSelectorService themeSelectorService)
+    : IActivationService
 {
-    private readonly IEnumerable<IActivationHandler> _activationHandlers;
-    private readonly ActivationHandler<LaunchActivatedEventArgs> _defaultHandler;
-    private readonly IThemeSelectorService _themeSelectorService;
     private UIElement? _shell;
-
-
-
-
-
-    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler,
-        IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService)
-    {
-        _defaultHandler = defaultHandler;
-        _activationHandlers = activationHandlers;
-        _themeSelectorService = themeSelectorService;
-    }
 
 
 
@@ -72,16 +60,16 @@ public class ActivationService : IActivationService
 
     private async Task HandleActivationAsync(object activationArgs)
     {
-        var activationHandler = _activationHandlers.FirstOrDefault(h => h.CanHandle(activationArgs));
+        IActivationHandler? activationHandler = activationHandlers.FirstOrDefault(h => h.CanHandle(activationArgs));
 
         if (activationHandler != null)
         {
             await activationHandler.HandleAsync(activationArgs);
         }
 
-        if (_defaultHandler.CanHandle(activationArgs))
+        if (defaultHandler.CanHandle(activationArgs))
         {
-            await _defaultHandler.HandleAsync(activationArgs);
+            await defaultHandler.HandleAsync(activationArgs);
         }
     }
 
@@ -91,7 +79,7 @@ public class ActivationService : IActivationService
 
     private async Task InitializeAsync()
     {
-        await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
+        await themeSelectorService.InitializeAsync().ConfigureAwait(false);
         await Task.CompletedTask;
     }
 
@@ -101,7 +89,7 @@ public class ActivationService : IActivationService
 
     private async Task StartupAsync()
     {
-        await _themeSelectorService.SetRequestedThemeAsync();
+        await themeSelectorService.SetRequestedThemeAsync();
         await Task.CompletedTask;
     }
 }

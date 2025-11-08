@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  SettingsPage.xaml.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -20,15 +20,18 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 // TODO: Set the URL for your privacy policy by updating SettingsPage_PrivacyTermsLink.NavigateUri in Resources.resw.
 public sealed partial class SettingsPage : Page
 {
-	public SettingsPage()
-	{
-		ViewModel = App.GetService<SettingsViewModel>();
-		InitializeComponent();
-	}
+    public SettingsPage()
+    {
+        ViewModel = App.GetService<SettingsViewModel>();
+        InitializeComponent();
+    }
 
 
 
 
 
-	public SettingsViewModel ViewModel { get; }
+    public SettingsViewModel ViewModel
+    {
+        get;
+    }
 }

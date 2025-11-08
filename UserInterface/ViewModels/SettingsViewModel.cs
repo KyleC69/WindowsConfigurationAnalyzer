@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  SettingsViewModel.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -10,15 +10,11 @@
 
 using System.Reflection;
 using System.Windows.Input;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
-
 using Microsoft.UI.Xaml;
-
 using Windows.ApplicationModel;
 
 
@@ -57,13 +53,14 @@ public partial class SettingsViewModel : ObservableRecipient
         _elementTheme = _themeSelectorService.Theme;
         _versionDescription = GetVersionDescription();
 
-        SwitchThemeCommand = new RelayCommand<ElementTheme>(async param =>
+        SwitchThemeCommand = new RelayCommand<ElementTheme>(async void (param) =>
         {
             if (_elementTheme != param)
             {
                 _elementTheme = param;
                 await _themeSelectorService.SetThemeAsync(param);
             }
+
         });
 
         _ = LoadAsync();

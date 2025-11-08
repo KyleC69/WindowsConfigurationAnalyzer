@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface.Core
+// File:  Json.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -18,17 +18,17 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Core.Helpers;
 
 public static class Json
 {
-	public static async Task<T?> ToObjectAsync<T>(string value)
-	{
-		return await Task.Run<T>(() => { return JsonConvert.DeserializeObject<T>(value); });
-	}
+    public static async Task<T?> ToObjectAsync<T>(string value)
+    {
+        return await Task.Run<T>(() => JsonConvert.DeserializeObject<T>(value) ?? throw new InvalidOperationException());
+    }
 
 
 
 
 
-	public static async Task<string> StringifyAsync(object value)
-	{
-		return await Task.Run<string>(() => { return JsonConvert.SerializeObject(value); });
-	}
+    public static async Task<string> StringifyAsync(object value)
+    {
+        return await Task.Run<string>(() => JsonConvert.SerializeObject(value));
+    }
 }

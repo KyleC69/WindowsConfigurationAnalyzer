@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  ShellViewModel.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -9,10 +9,8 @@
 
 
 using CommunityToolkit.Mvvm.ComponentModel;
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
-
 using Microsoft.UI.Xaml.Navigation;
 
 

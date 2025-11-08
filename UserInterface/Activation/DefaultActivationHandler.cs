@@ -1,7 +1,7 @@
 ﻿// Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  DefaultActivationHandler.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -19,27 +19,27 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 
 
 public class DefaultActivationHandler(INavigationService navigationService)
-	: ActivationHandler<LaunchActivatedEventArgs>
+    : ActivationHandler<LaunchActivatedEventArgs>
 {
 
 
 
 
 
-	protected override bool CanHandleInternal(LaunchActivatedEventArgs args)
-	{
-		// None of the ActivationHandlers has handled the activation.
-		return navigationService.Frame?.Content == null;
-	}
+    protected override bool CanHandleInternal(LaunchActivatedEventArgs args)
+    {
+        // None of the ActivationHandlers has handled the activation.
+        return navigationService.Frame?.Content == null;
+    }
 
 
 
 
 
-	protected override  Task HandleInternalAsync(LaunchActivatedEventArgs args)
-	{
-		navigationService.NavigateTo(typeof(ReportViewModel).FullName!, args.Arguments);
+    protected override Task HandleInternalAsync(LaunchActivatedEventArgs args)
+    {
+        navigationService.NavigateTo(typeof(ReportViewModel).FullName!, args.Arguments);
 
-		return Task.CompletedTask;
-	}
+        return Task.CompletedTask;
+    }
 }

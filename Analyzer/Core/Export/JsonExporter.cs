@@ -1,7 +1,7 @@
 // Created:  2025/10/29
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  Analyzer
+// File:  JsonExporter.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
@@ -21,31 +21,37 @@ namespace KC.WindowsConfigurationAnalyzer.Analyzer.Core.Export;
 
 public sealed class JsonExporter : IExporter
 {
-	private static readonly JsonSerializerOptions Options = new()
-	{
-		WriteIndented = true,
-		DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-	};
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 
 
 
 
 
-	public async Task ExportAsync(AnalyzerResult result, string targetPath, CancellationToken cancellationToken)
-	{
-		var dir = Path.GetDirectoryName(targetPath);
-		if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+    public async Task ExportAsync(AnalyzerResult result, string targetPath, CancellationToken cancellationToken)
+    {
+        var dir = Path.GetDirectoryName(targetPath);
+        if (!string.IsNullOrEmpty(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
 
-		var tmp = targetPath + ".tmp";
-		await using (var fs = File.Create(tmp))
-		{
-			await JsonSerializer.SerializeAsync(fs, result, Options, cancellationToken);
-			await fs.FlushAsync(cancellationToken);
-		}
+        var tmp = targetPath + ".tmp";
+        await using (var fs = File.Create(tmp))
+        {
+            await JsonSerializer.SerializeAsync(fs, result, Options, cancellationToken);
+            await fs.FlushAsync(cancellationToken);
+        }
 
-		// Atomic move
-		if (File.Exists(targetPath)) File.Delete(targetPath);
+        // Atomic move
+        if (File.Exists(targetPath))
+        {
+            File.Delete(targetPath);
+        }
 
-		File.Move(tmp, targetPath);
-	}
+        File.Move(tmp, targetPath);
+    }
 }
