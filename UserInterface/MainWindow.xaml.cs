@@ -8,9 +8,13 @@
 
 
 
-using Windows.UI.ViewManagement;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
+
 using Microsoft.UI.Dispatching;
+
+using Windows.UI.ViewManagement;
+
+using WinUIEx;
 
 
 

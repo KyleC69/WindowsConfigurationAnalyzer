@@ -19,9 +19,13 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Models;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+
+using WinUIEx;
+
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 
 
