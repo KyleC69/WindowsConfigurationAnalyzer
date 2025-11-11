@@ -29,7 +29,7 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
 
     public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        var area = Area;
+        string area = Area;
         context.ActionLogger.Info(area, "Start", "Collecting hardware inventory via CIM");
         List<string> warnings = new();
         List<string> errors = new();
@@ -81,7 +81,7 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
             foreach (var mo in context.Cim.Query(
                          "SELECT TotalPhysicalMemory FROM Win32_ComputerSystem"))
             {
-                var bytes = mo.GetOrDefault("TotalPhysicalMemory");
+                object? bytes = mo.GetOrDefault("TotalPhysicalMemory");
                 if (bytes is ulong ul)
                 {
                     totalMemGb = Math.Round(ul / 1024d / 1024d / 1024d, 2);
@@ -121,8 +121,8 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
             foreach (var mo in context.Cim.Query(
                          "SELECT Index, Model, Size, MediaType, SerialNumber, InterfaceType FROM Win32_DiskDrive"))
             {
-                var s = mo.GetOrDefault("Size");
-                var sizeGb = s is ulong sz ? Math.Round(sz / 1024d / 1024d / 1024d, 2) : 0d;
+                object? s = mo.GetOrDefault("Size");
+                double sizeGb = s is ulong sz ? Math.Round(sz / 1024d / 1024d / 1024d, 2) : 0d;
                 disks.Add(new
                 {
                     Index = Convert.ToInt32(mo.GetOrDefault("Index") ?? 0),
@@ -235,7 +235,7 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
         }
 
         // TPM (best-effort)
-        var tpmPresent = false;
+        bool tpmPresent = false;
         try
         {
             context.ActionLogger.Info(area, "TPM", "Start");
@@ -327,7 +327,7 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
                 ? Math.Round(ul / 1024d / 1024d / 1024d, 2)
                 : v is long l
                     ? Math.Round(l / 1024d / 1024d / 1024d, 2)
-                    : v is string s && ulong.TryParse(s, out var p)
+                    : v is string s && ulong.TryParse(s, out ulong p)
                         ? Math.Round(p / 1024d / 1024d / 1024d, 2)
                         : 0d;
         }

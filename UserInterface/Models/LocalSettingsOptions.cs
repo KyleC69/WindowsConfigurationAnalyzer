@@ -1,4 +1,4 @@
-﻿// Created:  2025/10/29
+// Created:  2025/10/29
 // Solution: WindowsConfigurationAnalyzer
 // Project:  UserInterface
 // File:  LocalSettingsOptions.cs

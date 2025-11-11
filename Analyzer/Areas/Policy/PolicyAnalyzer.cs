@@ -9,6 +9,7 @@
 
 
 using System.Xml;
+
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Utilities;
@@ -30,7 +31,7 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
 
     public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        var area = Area;
+        string area = Area;
         context.ActionLogger.Info(area, "Start", "Collecting policy and GPO data");
         List<string> warnings = new();
         List<string> errors = new();
@@ -48,9 +49,9 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "Tree", "Start");
-            foreach (var root in new[] { "HKLM", "HKCU" })
+            foreach (string root in new[] { "HKLM", "HKCU" })
             {
-                var basePath = $"{root}\\SOFTWARE\\Policies";
+                string basePath = $"{root}\\SOFTWARE\\Policies";
                 EnumeratePolicyTree(context, basePath, policies, 12);
             }
 
@@ -104,7 +105,7 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "Defender", "Start");
-            foreach (var path in new[]
+            foreach (string path in new[]
                      {
                          "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
                          "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection",
@@ -128,7 +129,7 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "Firewall", "Start");
-            foreach (var path in new[]
+            foreach (string path in new[]
                      {
                          "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\DomainProfile",
                          "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\PrivateProfile",
@@ -255,9 +256,9 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "RegistryPol", "Start");
-            var sys = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            var machinePol = Path.Combine(sys, "System32", "GroupPolicy", "Machine", "Registry.pol");
-            var userPol = Path.Combine(sys, "System32", "GroupPolicy", "User", "Registry.pol");
+            string sys = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            string machinePol = Path.Combine(sys, "System32", "GroupPolicy", "Machine", "Registry.pol");
+            string userPol = Path.Combine(sys, "System32", "GroupPolicy", "User", "Registry.pol");
             foreach (var pol in new[]
                          { (Scope: "Machine", Path: machinePol), (Scope: "User", Path: userPol) })
             {
@@ -293,13 +294,13 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "ADMX", "Start");
-            var policyDefFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+            string policyDefFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),
                 "PolicyDefinitions");
-            var locale = "en-US"; // default; future: read system UI language
+            string locale = "en-US"; // default; future: read system UI language
             if (Directory.Exists(policyDefFolder))
             {
                 // Validate ADMXs
-                foreach (var admx in Directory.EnumerateFiles(policyDefFolder, "*.admx",
+                foreach (string admx in Directory.EnumerateFiles(policyDefFolder, "*.admx",
                              SearchOption.TopDirectoryOnly))
                 {
                     try
@@ -319,17 +320,17 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
                     StringComparer.OrdinalIgnoreCase);
                 foreach (var kvp in policies)
                 {
-                    var split = kvp.Key.Split(':');
+                    string[] split = kvp.Key.Split(':');
 
                     if (split.Length != 2)
                     {
                         continue;
                     }
 
-                    var hivePlusKey = split[0];
-                    var valName = split[1];
-                    var norm = NormalizeKey(hivePlusKey) + ":" + valName;
-                    var known = definedSet.Contains(norm);
+                    string hivePlusKey = split[0];
+                    string valName = split[1];
+                    string norm = NormalizeKey(hivePlusKey) + ":" + valName;
+                    bool known = definedSet.Contains(norm);
                     if (!known)
                     {
                         compliance.Add(new { Key = hivePlusKey, ValueName = valName, State = "UnknownInADMX" });
@@ -386,11 +387,11 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
     private static void ReadPolicy(IAnalyzerContext context, IDictionary<string, object?> bag, string baseKey,
                                    IEnumerable<string> names)
     {
-        foreach (var name in names)
+        foreach (string name in names)
         {
             try
             {
-                var v = context.Registry.GetValue(baseKey, name);
+                object? v = context.Registry.GetValue(baseKey, name);
                 bag[$"{baseKey}:{name}"] = v;
             }
             catch
@@ -414,7 +415,7 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
 
         try
         {
-            foreach (var name in context.Registry.EnumerateValueNames(baseKey))
+            foreach (string name in context.Registry.EnumerateValueNames(baseKey))
             {
                 try
                 {
@@ -425,7 +426,7 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
                 }
             }
 
-            foreach (var sub in context.Registry.EnumerateSubKeys(baseKey))
+            foreach (string sub in context.Registry.EnumerateSubKeys(baseKey))
             {
                 EnumeratePolicyTree(context, $"{baseKey}\\{sub}", bag, maxDepth, depth + 1);
             }
@@ -442,7 +443,7 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
     private static IEnumerable<(string key, string valueName)> BuildAdmxRegistryMap(string policyDefFolder)
     {
         List<(string key, string valueName)> list = new();
-        foreach (var admx in Directory.EnumerateFiles(policyDefFolder, "*.admx", SearchOption.TopDirectoryOnly))
+        foreach (string admx in Directory.EnumerateFiles(policyDefFolder, "*.admx", SearchOption.TopDirectoryOnly))
         {
             try
             {
@@ -452,8 +453,8 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
                 {
                     if (xr.NodeType == XmlNodeType.Element)
                     {
-                        var key = xr.GetAttribute("key");
-                        var valName = xr.GetAttribute("valueName") ?? xr.GetAttribute("name");
+                        string? key = xr.GetAttribute("key");
+                        string? valName = xr.GetAttribute("valueName") ?? xr.GetAttribute("name");
                         if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(valName))
                         {
                             list.Add((key!, valName!));

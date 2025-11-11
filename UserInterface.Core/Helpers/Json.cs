@@ -9,6 +9,8 @@
 
 
 using Newtonsoft.Json;
+using System;
+using System.Globalization;
 
 
 
@@ -20,7 +22,50 @@ public static class Json
 {
     public static async Task<T?> ToObjectAsync<T>(string value)
     {
-        return await Task.Run<T>(() => JsonConvert.DeserializeObject<T>(value) ?? throw new InvalidOperationException());
+        if (value is null)
+        {
+            return default;
+        }
+
+        // Fast-path for string targets: value is already the desired result
+        if (typeof(T) == typeof(string))
+        {
+            return (T)(object)value;
+        }
+
+        var trimmed = value.Trim();
+
+        // If target is an enum, try parsing directly from the token (common case like "Dark")
+        if (typeof(T).IsEnum)
+        {
+            if (Enum.TryParse(typeof(T), trimmed, ignoreCase: true, out var enumVal))
+            {
+                return (T)enumVal;
+            }
+        }
+
+        // Detect whether the input already looks like JSON. If not, quote it so Json.NET can parse it as a string.
+        bool looksLikeJson = trimmed.StartsWith("{") || trimmed.StartsWith("[") || trimmed.StartsWith("\"")
+                             || string.Equals(trimmed, "true", StringComparison.OrdinalIgnoreCase)
+                             || string.Equals(trimmed, "false", StringComparison.OrdinalIgnoreCase)
+                             || string.Equals(trimmed, "null", StringComparison.OrdinalIgnoreCase)
+                             || double.TryParse(trimmed, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
+
+        var jsonInput = value;
+        if (!looksLikeJson)
+        {
+            jsonInput = '"' + trimmed.Replace("\"", "\\\"") + '"';
+        }
+
+        try
+        {
+            // Keep asynchronous signature; offload deserialization to thread pool for heavier types
+            return await Task.Run(() => JsonConvert.DeserializeObject<T>(jsonInput));
+        }
+        catch (JsonReaderException ex)
+        {
+            throw new InvalidOperationException($"Failed to deserialize value as {typeof(T).Name}: {value}", ex);
+        }
     }
 
 

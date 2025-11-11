@@ -10,6 +10,7 @@
 
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
+
 using Microsoft.Extensions.Logging;
 
 
@@ -171,7 +172,7 @@ public sealed class ActionLogger
         // Manifest-based ETW via abstraction; map to taxonomy by level
         try
         {
-            var seq = NextSeq(area);
+            int seq = NextSeq(area);
             _eventProvider?.EmitAction(area, action, level, message, exception, seq);
         }
         catch
@@ -188,7 +189,7 @@ public sealed class ActionLogger
     {
         lock (_gate)
         {
-            if (!_areaSeq.TryGetValue(area, out var v))
+            if (!_areaSeq.TryGetValue(area, out int v))
             {
                 v = -1;
             }

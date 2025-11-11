@@ -9,6 +9,7 @@
 
 
 using System.Diagnostics;
+
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Utilities;
@@ -30,7 +31,7 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
 
     public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        var area = Area;
+        string area = Area;
         context.ActionLogger.Info(area, "Start", "Collecting software inventory");
         List<string> warnings = new();
         List<string> errors = new();
@@ -40,7 +41,7 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "Installed", "Start");
-            foreach (var relPath in new[]
+            foreach (string relPath in new[]
                      {
                          "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
                          "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
@@ -66,7 +67,7 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
             context.ActionLogger.Info(area, "Processes", "Start");
             foreach (var p in Process.GetProcesses())
             {
-                var name = string.Empty;
+                string name = string.Empty;
                 string? path = null;
                 try
                 {
@@ -178,13 +179,13 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "ProvisionedAppx", "Start");
-            var root = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Appx\\AppxAllUserStore\\Applications";
-            foreach (var app in context.Registry.EnumerateSubKeys(root))
+            string root = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Appx\\AppxAllUserStore\\Applications";
+            foreach (string app in context.Registry.EnumerateSubKeys(root))
             {
-                var baseKey = $"{root}\\{app}";
-                var fullName = context.Registry.GetValue(baseKey, "PackageFullName")?.ToString();
-                var moniker = context.Registry.GetValue(baseKey, "PackageMoniker")?.ToString();
-                var idName = context.Registry.GetValue(baseKey, "PackageIdName")?.ToString();
+                string baseKey = $"{root}\\{app}";
+                string? fullName = context.Registry.GetValue(baseKey, "PackageFullName")?.ToString();
+                string? moniker = context.Registry.GetValue(baseKey, "PackageMoniker")?.ToString();
+                string? idName = context.Registry.GetValue(baseKey, "PackageIdName")?.ToString();
                 provisionedAppx.Add(new
                 {
                     Key = app,
@@ -208,7 +209,7 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "ProvisioningPkgs", "Start");
-            foreach (var dir in new[]
+            foreach (string dir in new[]
                      {
                          Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Recovery",
                              "Customizations"),
@@ -218,7 +219,7 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
             {
                 if (Directory.Exists(dir))
                 {
-                    foreach (var ppkg in Directory.EnumerateFiles(dir, "*.ppkg", SearchOption.AllDirectories))
+                    foreach (string ppkg in Directory.EnumerateFiles(dir, "*.ppkg", SearchOption.AllDirectories))
                     {
                         FileInfo fi = new(ppkg);
                         provisioningPkgs.Add(new { Path = ppkg, Size = fi.Length, LastWriteUtc = fi.LastWriteTimeUtc });
@@ -265,19 +266,19 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
 
     private static void ReadUninstallKey(IAnalyzerContext context, List<object> target, string hiveAndPath)
     {
-        foreach (var sub in context.Registry.EnumerateSubKeys(hiveAndPath))
+        foreach (string sub in context.Registry.EnumerateSubKeys(hiveAndPath))
         {
-            var basePath = $"{hiveAndPath}\\{sub}";
-            var name = context.Registry.GetValue(basePath, "DisplayName")?.ToString();
+            string basePath = $"{hiveAndPath}\\{sub}";
+            string? name = context.Registry.GetValue(basePath, "DisplayName")?.ToString();
 
             if (string.IsNullOrWhiteSpace(name))
             {
                 continue; // skip non-display entries
             }
 
-            var ver = context.Registry.GetValue(basePath, "DisplayVersion")?.ToString();
-            var pub = context.Registry.GetValue(basePath, "Publisher")?.ToString();
-            var installDate = context.Registry.GetValue(basePath, "InstallDate")?.ToString();
+            string? ver = context.Registry.GetValue(basePath, "DisplayVersion")?.ToString();
+            string? pub = context.Registry.GetValue(basePath, "Publisher")?.ToString();
+            string? installDate = context.Registry.GetValue(basePath, "InstallDate")?.ToString();
             target.Add(new { Name = name, Version = ver, Publisher = pub, InstallDate = installDate, Key = basePath });
         }
     }

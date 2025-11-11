@@ -6,7 +6,7 @@
     Version 2.0
     
     The primary goals of this format is to allow a simple XML format 
-    that is mostly human-readable. The generation and parsing of the 
+    that is mostly human readable. The generation and parsing of the 
     various data types are done through the TypeConverter classes 
     associated with the data types.
     
@@ -181,7 +181,7 @@
     <value>&lt;toast launch="action=ToastClick"&gt;
   &lt;visual&gt;
     &lt;binding template="ToastGeneric"&gt;
-      &lt;text&gt;Windows Configuration Analyzer Started.&lt;/text&gt;
+      &lt;text&gt;App Notification&lt;/text&gt;
       &lt;text&gt;&lt;/text&gt;
       &lt;image placement="appLogoOverride" hint-crop="circle" src="{0}Assets/WindowIcon.ico"/&gt;
     &lt;/binding&gt;
@@ -198,6 +198,9 @@
     <value>Eventing</value>
   </data>
   <data name="SettingsStorageExtensions_SaveFileAsync_File_name_is_null_or_empty__Specify_a_valid_file_name" xml:space="preserve">
-	  <value>File name is null or empty. Specify a valid file name</value>
+    <value>File name is null or empty. Specify a valid file name</value>
+  </data>
+  <data name="LocalSettingsService_ReadBinaryFileAsync_Binary_file_not_found_or_could_not_be_read_" xml:space="preserve">
+    <value>Binary file not found or could not be read.</value>
   </data>
 </root>

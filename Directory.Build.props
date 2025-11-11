@@ -2,7 +2,7 @@
     <PropertyGroup Label="TFMInfo">
 
         <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
-        <TargetPlatformMinVersion>10.0.22621.0</TargetPlatformMinVersion>
+        <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
         <WinUISDKReferences>false</WinUISDKReferences>
         <UseRidGraph>false</UseRidGraph>

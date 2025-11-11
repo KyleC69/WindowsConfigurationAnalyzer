@@ -9,9 +9,11 @@
 
 
 using System.Reflection;
+
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Infrastructure;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
+
 using Microsoft.Extensions.Logging;
 
 
@@ -61,8 +63,8 @@ public sealed class AnalyzerEngine
         List<Finding> globalFindings = new();
 
         // Emit ETW session start per taxonomy1001
-        var sessionId = Guid.NewGuid().ToString("N");
-        var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
+        string sessionId = Guid.NewGuid().ToString("N");
+        string version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
         try
         {
             _eventProvider?.EmitSessionStart(sessionId, Environment.MachineName, version);
@@ -104,10 +106,10 @@ public sealed class AnalyzerEngine
         }
 
         // Emit ETW session stop per taxonomy1002
-        var areasCount = areaResults.Count;
-        var warnings = areaResults.Sum(r => r.Warnings.Count);
-        var errors = areaResults.Sum(r => r.Errors.Count);
-        var elapsed = 0d; // caller can compute externally if needed; placeholder
+        int areasCount = areaResults.Count;
+        int warnings = areaResults.Sum(r => r.Warnings.Count);
+        int errors = areaResults.Sum(r => r.Errors.Count);
+        double elapsed = 0d; // caller can compute externally if needed; placeholder
         try
         {
             _eventProvider?.EmitSessionStop(sessionId, areasCount, warnings, errors, elapsed);
@@ -116,7 +118,7 @@ public sealed class AnalyzerEngine
         {
         }
 
-        var computer = Environment.MachineName;
+        string computer = Environment.MachineName;
 
         return new AnalyzerResult(
             computer,

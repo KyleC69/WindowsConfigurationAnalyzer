@@ -29,7 +29,7 @@ public sealed class NetworkAnalyzer : IAnalyzerModule
 
     public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        var area = Area;
+        string area = Area;
         context.ActionLogger.Info(area, "Start", "Collecting network configuration");
         List<string> warnings = new();
         List<string> errors = new();
@@ -42,11 +42,11 @@ public sealed class NetworkAnalyzer : IAnalyzerModule
             foreach (var n in context.Cim.Query(
                          "SELECT Index, Description, SettingID, MACAddress, IPEnabled, DHCPEnabled, IPAddress, IPSubnet, DefaultIPGateway, DNSServerSearchOrder, DNSDomainSuffixSearchOrder, DHCPServer, FullDNSRegistrationEnabled, WINSPrimaryServer, WINSSecondaryServer, TcpipNetbiosOptions FROM Win32_NetworkAdapterConfiguration"))
             {
-                var ips = n.GetAs<string[]>("IPAddress") ?? Array.Empty<string>();
-                var subnets = n.GetAs<string[]>("IPSubnet") ?? Array.Empty<string>();
-                var gws = n.GetAs<string[]>("DefaultIPGateway") ?? Array.Empty<string>();
-                var dns = n.GetAs<string[]>("DNSServerSearchOrder") ?? Array.Empty<string>();
-                var dnsSuf = n.GetAs<string[]>("DNSDomainSuffixSearchOrder") ?? Array.Empty<string>();
+                string[] ips = n.GetAs<string[]>("IPAddress") ?? Array.Empty<string>();
+                string[] subnets = n.GetAs<string[]>("IPSubnet") ?? Array.Empty<string>();
+                string[] gws = n.GetAs<string[]>("DefaultIPGateway") ?? Array.Empty<string>();
+                string[] dns = n.GetAs<string[]>("DNSServerSearchOrder") ?? Array.Empty<string>();
+                string[] dnsSuf = n.GetAs<string[]>("DNSDomainSuffixSearchOrder") ?? Array.Empty<string>();
                 adapters.Add(new
                 {
                     Index = n.GetOrDefault("Index"),
@@ -201,7 +201,7 @@ public sealed class NetworkAnalyzer : IAnalyzerModule
                          "SELECT InterfaceAlias, InterfaceIndex, AddressFamily, ServerAddresses FROM MSFT_DNSClientServerAddress",
                          "\\\\.\\root\\StandardCimv2"))
             {
-                var sv = d.GetAs<string[]>("ServerAddresses") ?? Array.Empty<string>();
+                string[] sv = d.GetAs<string[]>("ServerAddresses") ?? Array.Empty<string>();
                 dnsServerAddrs.Add(new
                 {
                     InterfaceAlias = d.GetOrDefault("InterfaceAlias"),
@@ -245,8 +245,8 @@ public sealed class NetworkAnalyzer : IAnalyzerModule
         }
 
         // Firewall via reader (existing integration)
-        var firewallProfiles = Array.Empty<string>();
-        var firewallRules = Array.Empty<object>();
+        string[] firewallProfiles = Array.Empty<string>();
+        object[] firewallRules = Array.Empty<object>();
         try
         {
             context.ActionLogger.Info(area, "Firewall", "Start");
@@ -267,12 +267,12 @@ public sealed class NetworkAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "TLS", "Start");
-            var protoRoot = "HKLM\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\SCHANNEL\\Protocols";
-            foreach (var proto in context.Registry.EnumerateSubKeys(protoRoot))
+            string protoRoot = "HKLM\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\SCHANNEL\\Protocols";
+            foreach (string proto in context.Registry.EnumerateSubKeys(protoRoot))
             {
-                foreach (var role in new[] { "Server", "Client" })
+                foreach (string role in new[] { "Server", "Client" })
                 {
-                    var k = $"{protoRoot}\\{proto}\\{role}";
+                    string k = $"{protoRoot}\\{proto}\\{role}";
                     int? enabled = null, disabledByDefault = null;
                     try
                     {
@@ -314,8 +314,8 @@ public sealed class NetworkAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "TcpParams", "Start");
-            var baseKey = "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters";
-            foreach (var name in new[]
+            string baseKey = "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters";
+            foreach (string name in new[]
                      {
                          "TcpTimedWaitDelay", "MaxUserPort", "TcpNumConnections", "EnablePMTUDiscovery",
                          "EnablePMTUBHDetect", "DeadGWDetectDefault", "DisableTaskOffload"
@@ -344,14 +344,14 @@ public sealed class NetworkAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "Wifi", "Start");
-            var ifRoot = "HKLM\\SOFTWARE\\Microsoft\\Wlansvc\\Profiles\\Interfaces";
-            foreach (var iface in context.Registry.EnumerateSubKeys(ifRoot))
+            string ifRoot = "HKLM\\SOFTWARE\\Microsoft\\Wlansvc\\Profiles\\Interfaces";
+            foreach (string iface in context.Registry.EnumerateSubKeys(ifRoot))
             {
-                var ifaceKey = $"{ifRoot}\\{iface}";
-                foreach (var prof in context.Registry.EnumerateSubKeys(ifaceKey))
+                string ifaceKey = $"{ifRoot}\\{iface}";
+                foreach (string prof in context.Registry.EnumerateSubKeys(ifaceKey))
                 {
-                    var key = $"{ifaceKey}\\{prof}";
-                    var name = context.Registry.GetValue(key, "Name")?.ToString();
+                    string key = $"{ifaceKey}\\{prof}";
+                    string? name = context.Registry.GetValue(key, "Name")?.ToString();
                     wifiProfiles.Add(new { Interface = iface, Profile = prof, Name = name });
                 }
             }
@@ -370,8 +370,8 @@ public sealed class NetworkAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "Hosts", "Start");
-            var win = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            var hosts = Path.Combine(win, "System32", "drivers", "etc", "hosts");
+            string win = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            string hosts = Path.Combine(win, "System32", "drivers", "etc", "hosts");
             if (File.Exists(hosts))
             {
                 FileInfo fi = new(hosts);
@@ -390,10 +390,10 @@ public sealed class NetworkAnalyzer : IAnalyzerModule
         }
 
         // Summaries
-        var activeProfiles = firewallProfiles;
-        var ipv4Count = ipAddrs.Count(a => (a as dynamic).AddressFamily?.ToString() == "2");
-        var ipv6Count = ipAddrs.Count(a => (a as dynamic).AddressFamily?.ToString() == "23");
-        var defaultRoutes = routes.Count(r => (r as dynamic).DestinationPrefix?.ToString() is "0.0.0.0/0" or "::/0");
+        string[] activeProfiles = firewallProfiles;
+        int ipv4Count = ipAddrs.Count(a => (a as dynamic).AddressFamily?.ToString() == "2");
+        int ipv6Count = ipAddrs.Count(a => (a as dynamic).AddressFamily?.ToString() == "23");
+        int defaultRoutes = routes.Count(r => (r as dynamic).DestinationPrefix?.ToString() is "0.0.0.0/0" or "::/0");
         var summary = new
         {
             Adapters = adapters.Count,

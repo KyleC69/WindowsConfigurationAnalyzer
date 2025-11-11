@@ -47,6 +47,10 @@
                             <xaml:ElementTheme>Default</xaml:ElementTheme>
                         </RadioButton.CommandParameter>
                     </RadioButton>
+                    <CheckBox
+                        x:Uid="Settings_IsActivityLoggingEnabled"
+                        IsChecked="{x:Bind ViewModel.IsActivityLoggingEnabled, Mode=TwoWay}"
+                        Margin="{StaticResource XSmallTopMargin}" Content="Use Activity Logging" />
                 </StackPanel>
             </StackPanel>
 

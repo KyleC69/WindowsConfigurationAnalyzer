@@ -1,4 +1,8 @@
 <Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
 
   <Folder Name="/.github/">
     <File Path=".github/Copilot-Instructions.md" />
@@ -10,9 +14,20 @@
     <File Path="settings.VisualStudio.json" />
     <File Path="WindowsConfigurationAnalyzer.sln.DotSettings.user" />
   </Folder>
-  <Project Path="Analyzer/Analyzer.csproj" />
-  <Project Path="UserInterface.Core/UserInterface.Core.csproj" />
-  <Project Path="UserInterface/UserInterface.csproj" />
+  <Project Path="Analyzer/Analyzer.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="Tests/Tests.csproj">
+    <Platform Project="x64" />
+    <Build Project="false" />
+  </Project>
+  <Project Path="UserInterface.Core/UserInterface.Core.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="UserInterface/UserInterface.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+    <Deploy />
+  </Project>
 
 
 </Solution>

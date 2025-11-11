@@ -9,6 +9,7 @@
 
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -49,5 +50,12 @@ public sealed partial class EventingPage : Page
         {
             ViewModel.OnNavigatedTo(null!);
         }
+        LogSelectorComboBox.SelectedIndex = 0;
     }
+
+
+
+
+
+
 }

@@ -89,6 +89,7 @@ public class NavigationService(IPageService pageService) : INavigationService
 
     public bool NavigateTo(string pageKey, object? parameter = null, bool clearNavigation = false)
     {
+        ActivityLogger.Log("INF", $"Navigating to {pageKey} with parameter {parameter}",$"{pageKey}");
         var pageType = pageService.GetPageType(pageKey);
 
         if (_frame != null && (_frame.Content?.GetType() != pageType ||

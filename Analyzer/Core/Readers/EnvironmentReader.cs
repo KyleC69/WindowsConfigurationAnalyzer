@@ -9,6 +9,7 @@
 
 
 using System.Collections;
+
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 
 
@@ -34,8 +35,8 @@ public sealed class EnvironmentReader : IEnvReader
         Dictionary<string, string?> dict = new();
         foreach (DictionaryEntry kvp in Environment.GetEnvironmentVariables())
         {
-            var key = kvp.Key?.ToString() ?? string.Empty;
-            var val = kvp.Value?.ToString();
+            string key = kvp.Key?.ToString() ?? string.Empty;
+            string? val = kvp.Value?.ToString();
             if (!dict.ContainsKey(key))
             {
                 dict[key] = val;

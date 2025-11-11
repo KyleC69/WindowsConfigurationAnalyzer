@@ -9,6 +9,7 @@
 
 
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
+
 using Microsoft.Win32;
 
 
@@ -54,16 +55,16 @@ public sealed class RegistryReader : IRegistryReader
 
     private static RegistryKey? OpenSubKey(string hiveAndPath)
     {
-        var (hive, path) = SplitHive(hiveAndPath);
+        (string? hive, string? path) = SplitHive(hiveAndPath);
         var baseKey = hive switch
-                      {
-                          "HKLM" or "HKEY_LOCAL_MACHINE" => Registry.LocalMachine,
-                          "HKCU" or "HKEY_CURRENT_USER" => Registry.CurrentUser,
-                          "HKCR" or "HKEY_CLASSES_ROOT" => Registry.ClassesRoot,
-                          "HKU" or "HKEY_USERS" => Registry.Users,
-                          "HKCC" or "HKEY_CURRENT_CONFIG" => Registry.CurrentConfig,
-                          _ => null
-                      };
+        {
+            "HKLM" or "HKEY_LOCAL_MACHINE" => Registry.LocalMachine,
+            "HKCU" or "HKEY_CURRENT_USER" => Registry.CurrentUser,
+            "HKCR" or "HKEY_CLASSES_ROOT" => Registry.ClassesRoot,
+            "HKU" or "HKEY_USERS" => Registry.Users,
+            "HKCC" or "HKEY_CURRENT_CONFIG" => Registry.CurrentConfig,
+            _ => null
+        };
 
         return baseKey?.OpenSubKey(path, false);
     }
@@ -74,7 +75,7 @@ public sealed class RegistryReader : IRegistryReader
 
     private static (string hive, string path) SplitHive(string hiveAndPath)
     {
-        var idx = hiveAndPath.IndexOf('\\');
+        int idx = hiveAndPath.IndexOf('\\');
 
         if (idx < 0)
         {

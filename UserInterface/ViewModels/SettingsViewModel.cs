@@ -10,11 +10,15 @@
 
 using System.Reflection;
 using System.Windows.Input;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
+
 using Microsoft.UI.Xaml;
+
 using Windows.ApplicationModel;
 
 
@@ -41,10 +45,7 @@ public partial class SettingsViewModel : ObservableRecipient
     private string? _logPathTemplate;
 
     private string _versionDescription = string.Empty;
-
-
-
-
+    private bool _isActivityLogEnabled;
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettings)
     {
@@ -66,25 +67,17 @@ public partial class SettingsViewModel : ObservableRecipient
         _ = LoadAsync();
     }
 
-
-
-
-
     public ElementTheme ElementTheme
     {
         get => _elementTheme;
         set => SetProperty(ref _elementTheme, value);
     }
 
-
-
     public string VersionDescription
     {
         get => _versionDescription;
         set => SetProperty(ref _versionDescription, value);
     }
-
-
 
     public string? ExportPathTemplate
     {
@@ -93,12 +86,10 @@ public partial class SettingsViewModel : ObservableRecipient
         {
             if (SetProperty(ref _exportPathTemplate, value))
             {
-                _ = _localSettings.SaveSettingAsync("ExportPathTemplate", value ?? string.Empty);
+                _ = _localSettings.SaveApplicationSettingAsync("ExportPathTemplate", value ?? string.Empty);
             }
         }
     }
-
-
 
     public string? LogPathTemplate
     {
@@ -107,12 +98,10 @@ public partial class SettingsViewModel : ObservableRecipient
         {
             if (SetProperty(ref _logPathTemplate, value))
             {
-                _ = _localSettings.SaveSettingAsync("LogPathTemplate", value ?? string.Empty);
+                _ = _localSettings.SaveApplicationSettingAsync("LogPathTemplate", value ?? string.Empty);
             }
         }
     }
-
-
 
     public ICommand SwitchThemeCommand
     {
@@ -122,18 +111,46 @@ public partial class SettingsViewModel : ObservableRecipient
 
 
 
+    /// <summary>
+    /// Gets or sets a value indicating whether activity logging is enabled in the application.
+    /// </summary>
+    /// <remarks>
+    /// When enabled, activity logging captures and stores application events for diagnostic or auditing purposes.
+    /// Changes to this property are persisted using the local settings service.
+    /// </remarks>
+    public bool IsActivityLoggingEnabled
+    {
+        get => _isActivityLogEnabled;
+        set
+        {
+            if (SetProperty(ref _isActivityLogEnabled, value))
+            {
+                // Persist as JSON-friendly lowercase boolean literal to align with deserialization logic
+                _ = _localSettings.SaveApplicationSettingAsync("IsActivityLoggingEnabled", value ? "true" : "false");
+            }
+        }
+    }
 
     private async Task LoadAsync()
     {
-        _exportPathTemplate = await _localSettings.ReadSettingAsync<string>("ExportPathTemplate")
+        _exportPathTemplate = await _localSettings.ReadApplicationSettingAsync<string>("ExportPathTemplate")
                               ?? "exports/" + Environment.MachineName + "/{yyyy-MM-dd}/{HHmm}.json";
-        _logPathTemplate = await _localSettings.ReadSettingAsync<string>("LogPathTemplate")
+        _logPathTemplate = await _localSettings.ReadApplicationSettingAsync<string>("LogPathTemplate")
                            ?? "logs/{yyyyMMdd-HHmm}.txt";
+
+        // Load Activity Logging setting (default to false if missing)
+        var raw = await _localSettings.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled");
+        bool parsed = false;
+        if (!string.IsNullOrWhiteSpace(raw))
+        {
+            // Accept JSON booleans (true/false) or string representations
+            if (raw.Equals("true", StringComparison.OrdinalIgnoreCase)) parsed = true;
+            else if (raw.Equals("false", StringComparison.OrdinalIgnoreCase)) parsed = false;
+            else _ = bool.TryParse(raw, out parsed);
+        }
+        _isActivityLogEnabled = parsed;
+        OnPropertyChanged(nameof(IsActivityLoggingEnabled));
     }
-
-
-
-
 
     private static string GetVersionDescription()
     {

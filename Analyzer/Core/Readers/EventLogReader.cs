@@ -9,6 +9,7 @@
 
 
 using System.Diagnostics;
+
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 
 
@@ -30,7 +31,7 @@ public sealed class EventLogReader : IEventLogReader
                 return new EventLogSummary(logName, 0, null);
             }
 
-            var lastIndex = ev.Entries.Count - 1;
+            int lastIndex = ev.Entries.Count - 1;
             var last = ev.Entries[lastIndex];
             var lastUtc = DateTime.SpecifyKind(last.TimeGenerated, DateTimeKind.Local).ToUniversalTime();
 

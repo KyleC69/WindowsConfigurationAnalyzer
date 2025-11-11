@@ -16,7 +16,7 @@ public static class DictionaryExtensions
 {
     public static object? GetOrDefault(this IDictionary<string, object?> dict, string key)
     {
-        return dict.TryGetValue(key, out var v) ? v : null;
+        return dict.TryGetValue(key, out object? v) ? v : null;
     }
 
 
@@ -25,6 +25,6 @@ public static class DictionaryExtensions
 
     public static T? GetAs<T>(this IDictionary<string, object?> dict, string key)
     {
-        return dict.TryGetValue(key, out var v) && v is T t ? t : default(T?);
+        return dict.TryGetValue(key, out object? v) && v is T t ? t : default(T?);
     }
 }

@@ -29,7 +29,7 @@ public sealed class StartupAnalyzer : IAnalyzerModule
 
     public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        var area = Area;
+        string area = Area;
         context.ActionLogger.Info(area, "Start", "Collecting startup and persistence entries");
         List<string> warnings = new();
         List<string> errors = new();
@@ -57,9 +57,9 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "RunKeys", "Start");
-            foreach (var root in new[] { "HKLM", "HKCU" })
+            foreach (string root in new[] { "HKLM", "HKCU" })
             {
-                foreach (var sub in new[]
+                foreach (string sub in new[]
                          {
                              "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
                              "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
@@ -70,10 +70,10 @@ public sealed class StartupAnalyzer : IAnalyzerModule
                              "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\RunOnce"
                          })
                 {
-                    var basePath = $"{root}\\{sub}";
-                    foreach (var name in context.Registry.EnumerateValueNames(basePath))
+                    string basePath = $"{root}\\{sub}";
+                    foreach (string name in context.Registry.EnumerateValueNames(basePath))
                     {
-                        var val = context.Registry.GetValue(basePath, name)?.ToString();
+                        string? val = context.Registry.GetValue(basePath, name)?.ToString();
                         runEntries.Add(new { HivePath = basePath, Name = name, Command = val });
                     }
                 }
@@ -92,19 +92,19 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "StartupApproved", "Start");
-            foreach (var root in new[] { "HKLM", "HKCU" })
+            foreach (string root in new[] { "HKLM", "HKCU" })
             {
-                foreach (var sub in new[]
+                foreach (string sub in new[]
                          {
                              "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run",
                              "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run32",
                              "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder"
                          })
                 {
-                    var basePath = $"{root}\\{sub}";
-                    foreach (var name in context.Registry.EnumerateValueNames(basePath))
+                    string basePath = $"{root}\\{sub}";
+                    foreach (string name in context.Registry.EnumerateValueNames(basePath))
                     {
-                        var v = context.Registry.GetValue(basePath, name);
+                        object? v = context.Registry.GetValue(basePath, name);
                         approvedEntries.Add(new
                         {
                             HivePath = basePath,
@@ -128,12 +128,12 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "PolicyRun", "Start");
-            foreach (var root in new[] { "HKLM", "HKCU" })
+            foreach (string root in new[] { "HKLM", "HKCU" })
             {
-                var basePath = $"{root}\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run";
-                foreach (var name in context.Registry.EnumerateValueNames(basePath))
+                string basePath = $"{root}\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run";
+                foreach (string name in context.Registry.EnumerateValueNames(basePath))
                 {
-                    var val = context.Registry.GetValue(basePath, name)?.ToString();
+                    string? val = context.Registry.GetValue(basePath, name)?.ToString();
                     policyRun.Add(new { HivePath = basePath, Name = name, Command = val });
                 }
             }
@@ -154,10 +154,10 @@ public sealed class StartupAnalyzer : IAnalyzerModule
             foreach (var sp in new[]
                          { Environment.SpecialFolder.Startup, Environment.SpecialFolder.CommonStartup })
             {
-                var path = Environment.GetFolderPath(sp);
+                string path = Environment.GetFolderPath(sp);
                 if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
                 {
-                    foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly))
+                    foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly))
                     {
                         startupFolderEntries.Add(new { Folder = path, File = Path.GetFileName(file) });
                     }
@@ -177,13 +177,13 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "ScheduledTasks", "Start");
-            var tasksRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32",
+            string tasksRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32",
                 "Tasks");
             if (Directory.Exists(tasksRoot))
             {
-                foreach (var file in Directory.EnumerateFiles(tasksRoot, "*", SearchOption.AllDirectories))
+                foreach (string file in Directory.EnumerateFiles(tasksRoot, "*", SearchOption.AllDirectories))
                 {
-                    var rel = file.Substring(tasksRoot.Length).TrimStart(Path.DirectorySeparatorChar);
+                    string rel = file.Substring(tasksRoot.Length).TrimStart(Path.DirectorySeparatorChar);
                     FileInfo info = new(file);
                     scheduledTasks.Add(new { Task = rel, Size = info.Length, LastWriteUtc = info.LastWriteTimeUtc });
                 }
@@ -202,18 +202,18 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "Services", "Start");
-            var servicesKey = "HKLM\\SYSTEM\\CurrentControlSet\\Services";
-            foreach (var svc in context.Registry.EnumerateSubKeys(servicesKey))
+            string servicesKey = "HKLM\\SYSTEM\\CurrentControlSet\\Services";
+            foreach (string svc in context.Registry.EnumerateSubKeys(servicesKey))
             {
-                var basePath = $"{servicesKey}\\{svc}";
-                var start = context.Registry.GetValue(basePath, "Start");
+                string basePath = $"{servicesKey}\\{svc}";
+                object? start = context.Registry.GetValue(basePath, "Start");
                 if (start is int i && i == 2)
                 {
-                    var image = context.Registry.GetValue(basePath, "ImagePath")?.ToString();
-                    var delayed = context.Registry.GetValue(basePath, "DelayedAutoStart");
-                    var objName = context.Registry.GetValue(basePath, "ObjectName")?.ToString();
-                    var desc = context.Registry.GetValue(basePath, "Description")?.ToString();
-                    var svcDll = context.Registry.GetValue(basePath + "\\Parameters", "ServiceDll")?.ToString();
+                    string? image = context.Registry.GetValue(basePath, "ImagePath")?.ToString();
+                    object? delayed = context.Registry.GetValue(basePath, "DelayedAutoStart");
+                    string? objName = context.Registry.GetValue(basePath, "ObjectName")?.ToString();
+                    string? desc = context.Registry.GetValue(basePath, "Description")?.ToString();
+                    string? svcDll = context.Registry.GetValue(basePath + "\\Parameters", "ServiceDll")?.ToString();
                     servicesAutoStart.Add(new
                     {
                         Name = svc,
@@ -240,17 +240,17 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "Winlogon", "Start");
-            var key = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon";
-            foreach (var name in new[] { "Shell", "Userinit" })
+            string key = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon";
+            foreach (string name in new[] { "Shell", "Userinit" })
             {
-                var v = context.Registry.GetValue(key, name)?.ToString();
+                string? v = context.Registry.GetValue(key, name)?.ToString();
                 if (v is not null)
                 {
                     winlogon[name] = v;
                 }
             }
 
-            foreach (var sub in context.Registry.EnumerateSubKeys($"{key}\\Notify"))
+            foreach (string sub in context.Registry.EnumerateSubKeys($"{key}\\Notify"))
             {
                 winlogon[$"Notify:{sub}"] = context.Registry.GetValue($"{key}\\Notify\\{sub}", "DLLName")?.ToString();
             }
@@ -268,10 +268,10 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "AppInit", "Start");
-            var key = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Windows";
-            foreach (var name in new[] { "AppInit_DLLs", "LoadAppInit_DLLs" })
+            string key = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Windows";
+            foreach (string name in new[] { "AppInit_DLLs", "LoadAppInit_DLLs" })
             {
-                var v = context.Registry.GetValue(key, name);
+                object? v = context.Registry.GetValue(key, name);
                 if (v is not null)
                 {
                     appInitDlls[name] = v;
@@ -291,14 +291,14 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "BHO", "Start");
-            foreach (var path in new[]
+            foreach (string path in new[]
                      {
                          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects",
                          "HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects",
                          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects"
                      })
             {
-                foreach (var clsid in context.Registry.EnumerateSubKeys(path))
+                foreach (string clsid in context.Registry.EnumerateSubKeys(path))
                 {
                     string? dll = null;
                     try
@@ -326,15 +326,15 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "ShellExecuteHooks", "Start");
-            foreach (var path in new[]
+            foreach (string path in new[]
                      {
                          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellExecuteHooks",
                          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellExecuteHooks"
                      })
             {
-                foreach (var name in context.Registry.EnumerateValueNames(path))
+                foreach (string name in context.Registry.EnumerateValueNames(path))
                 {
-                    var v = context.Registry.GetValue(path, name)?.ToString();
+                    string? v = context.Registry.GetValue(path, name)?.ToString();
                     shellExecuteHooks.Add(new { Path = path, Name = name, Value = v });
                 }
             }
@@ -352,15 +352,15 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "ShellServiceObjectDelayLoad", "Start");
-            foreach (var path in new[]
+            foreach (string path in new[]
                      {
                          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ShellServiceObjectDelayLoad",
                          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ShellServiceObjectDelayLoad"
                      })
             {
-                foreach (var name in context.Registry.EnumerateValueNames(path))
+                foreach (string name in context.Registry.EnumerateValueNames(path))
                 {
-                    var v = context.Registry.GetValue(path, name)?.ToString();
+                    string? v = context.Registry.GetValue(path, name)?.ToString();
                     shellServiceObjects.Add(new { Path = path, Name = name, Value = v });
                 }
             }
@@ -380,15 +380,15 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "ShellExtensionsApproved", "Start");
-            foreach (var path in new[]
+            foreach (string path in new[]
                      {
                          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
                          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved"
                      })
             {
-                foreach (var name in context.Registry.EnumerateValueNames(path))
+                foreach (string name in context.Registry.EnumerateValueNames(path))
                 {
-                    var v = context.Registry.GetValue(path, name)?.ToString();
+                    string? v = context.Registry.GetValue(path, name)?.ToString();
                     shellExtensionsApproved.Add(new { Path = path, Name = name, Value = v });
                 }
             }
@@ -408,17 +408,17 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "LSA", "Start");
-            var path = "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa";
-            foreach (var name in new[] { "Authentication Packages", "Notification Packages" })
+            string path = "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa";
+            foreach (string name in new[] { "Authentication Packages", "Notification Packages" })
             {
-                var v = context.Registry.GetValue(path, name);
+                object? v = context.Registry.GetValue(path, name);
                 if (v is string s)
                 {
                     lsaPackages.Add(new { Name = name, Value = s });
                 }
                 else if (v is string[] arr)
                 {
-                    foreach (var item in arr)
+                    foreach (string item in arr)
                     {
                         lsaPackages.Add(new { Name = name, Value = item });
                     }
@@ -438,13 +438,13 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "IFEO", "Start");
-            var baseKey = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options";
-            foreach (var exe in context.Registry.EnumerateSubKeys(baseKey))
+            string baseKey = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options";
+            foreach (string exe in context.Registry.EnumerateSubKeys(baseKey))
             {
-                var key = $"{baseKey}\\{exe}";
-                var dbg = context.Registry.GetValue(key, "Debugger")?.ToString();
-                var gflag = context.Registry.GetValue(key, "GlobalFlag")?.ToString();
-                var useFilter = context.Registry.GetValue(key, "UseFilter")?.ToString();
+                string key = $"{baseKey}\\{exe}";
+                string? dbg = context.Registry.GetValue(key, "Debugger")?.ToString();
+                string? gflag = context.Registry.GetValue(key, "GlobalFlag")?.ToString();
+                string? useFilter = context.Registry.GetValue(key, "UseFilter")?.ToString();
                 if (!string.IsNullOrWhiteSpace(dbg))
                 {
                     ifeoDebuggers.Add(new { Executable = exe, Debugger = dbg });
@@ -474,17 +474,17 @@ public sealed class StartupAnalyzer : IAnalyzerModule
                          "SELECT Name, Query, EventNamespace FROM __EventFilter",
                          "\\\\.\\root\\subscription"))
             {
-                var name = f.GetOrDefault("Name")?.ToString();
-                var query = f.GetOrDefault("Query")?.ToString();
-                var evns = f.GetOrDefault("EventNamespace")?.ToString();
+                string? name = f.GetOrDefault("Name")?.ToString();
+                string? query = f.GetOrDefault("Query")?.ToString();
+                string? evns = f.GetOrDefault("EventNamespace")?.ToString();
                 wmiSubscriptions.Add(new { Type = "Filter", Name = name, Query = query, Namespace = evns });
             }
 
             foreach (var b in context.Cim.Query("SELECT * FROM __FilterToConsumerBinding",
                          "\\\\.\\root\\subscription"))
             {
-                var flt = b.GetOrDefault("Filter")?.ToString();
-                var cons = b.GetOrDefault("Consumer")?.ToString();
+                string? flt = b.GetOrDefault("Filter")?.ToString();
+                string? cons = b.GetOrDefault("Consumer")?.ToString();
                 wmiSubscriptions.Add(new { Type = "Binding", Filter = flt, Consumer = cons });
             }
 
@@ -562,15 +562,15 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "ActiveSetup", "Start");
-            foreach (var root in new[] { "HKLM", "HKCU" })
+            foreach (string root in new[] { "HKLM", "HKCU" })
             {
-                var baseKey = $"{root}\\SOFTWARE\\Microsoft\\Active Setup\\Installed Components";
-                foreach (var sub in context.Registry.EnumerateSubKeys(baseKey))
+                string baseKey = $"{root}\\SOFTWARE\\Microsoft\\Active Setup\\Installed Components";
+                foreach (string sub in context.Registry.EnumerateSubKeys(baseKey))
                 {
-                    var k = $"{baseKey}\\{sub}";
-                    var disp = context.Registry.GetValue(k, "DisplayName")?.ToString();
-                    var ver = context.Registry.GetValue(k, "Version")?.ToString();
-                    var stub = context.Registry.GetValue(k, "StubPath")?.ToString();
+                    string k = $"{baseKey}\\{sub}";
+                    string? disp = context.Registry.GetValue(k, "DisplayName")?.ToString();
+                    string? ver = context.Registry.GetValue(k, "Version")?.ToString();
+                    string? stub = context.Registry.GetValue(k, "StubPath")?.ToString();
                     activeSetup.Add(new { HivePath = k, DisplayName = disp, Version = ver, StubPath = stub });
                 }
             }

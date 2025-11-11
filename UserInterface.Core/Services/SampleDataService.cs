@@ -52,12 +52,7 @@ public class SampleDataService : ISampleDataService
 
         return companies.SelectMany(c =>
         {
-            if (c.Orders is not null)
-            {
-                return c.Orders;
-            }
-
-            return null!;
+            return c.Orders ?? null!;
         });
     }
 

@@ -29,7 +29,7 @@ public sealed class DriversAnalyzer : IAnalyzerModule
 
     public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        var area = Area;
+        string area = Area;
         context.ActionLogger.Info(area, "Start", "Collecting installed driver inventory");
         List<string> warnings = new();
         List<string> errors = new();
@@ -42,16 +42,16 @@ public sealed class DriversAnalyzer : IAnalyzerModule
             foreach (var d in context.Cim.Query(
                          "SELECT DeviceName, DriverVersion, DriverDate, Manufacturer, InfName, IsSigned, IsBootCritical, DriverProviderName, MatchingDeviceId, ClassName FROM Win32_PnPSignedDriver"))
             {
-                var name = d.GetOrDefault("DeviceName")?.ToString();
-                var ver = d.GetOrDefault("DriverVersion")?.ToString();
-                var date = d.GetOrDefault("DriverDate")?.ToString();
-                var mfg = d.GetOrDefault("Manufacturer")?.ToString();
-                var inf = d.GetOrDefault("InfName")?.ToString();
-                var signed = d.GetOrDefault("IsSigned");
-                var bootCrit = d.GetOrDefault("IsBootCritical");
-                var provider = d.GetOrDefault("DriverProviderName")?.ToString();
-                var className = d.GetOrDefault("ClassName")?.ToString();
-                var matchId = d.GetOrDefault("MatchingDeviceId")?.ToString();
+                string? name = d.GetOrDefault("DeviceName")?.ToString();
+                string? ver = d.GetOrDefault("DriverVersion")?.ToString();
+                string? date = d.GetOrDefault("DriverDate")?.ToString();
+                string? mfg = d.GetOrDefault("Manufacturer")?.ToString();
+                string? inf = d.GetOrDefault("InfName")?.ToString();
+                object? signed = d.GetOrDefault("IsSigned");
+                object? bootCrit = d.GetOrDefault("IsBootCritical");
+                string? provider = d.GetOrDefault("DriverProviderName")?.ToString();
+                string? className = d.GetOrDefault("ClassName")?.ToString();
+                string? matchId = d.GetOrDefault("MatchingDeviceId")?.ToString();
                 var entry = new
                 {
                     Name = name,

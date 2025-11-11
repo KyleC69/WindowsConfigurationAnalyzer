@@ -1,4 +1,4 @@
-﻿// Created:  2025/10/29
+// Created:  2025/10/29
 // Solution: WindowsConfigurationAnalyzer
 // Project:  UserInterface
 // File:  LocalSettingsService.cs
@@ -9,119 +9,112 @@
 
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
-using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
-using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Helpers;
-using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
-using KC.WindowsConfigurationAnalyzer.UserInterface.Models;
-using Microsoft.Extensions.Options;
-using Microsoft.Windows.Storage;
+
+using Microsoft.Win32;
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
-
-
 public class LocalSettingsService : ILocalSettingsService
 {
-    private const string DefaultApplicationDataFolder = "Interface/ApplicationData";
-    private const string DefaultLocalSettingsFile = "LocalSettings.json";
-    private readonly string _applicationDataFolder;
-
-    private readonly IFileService _fileService;
-
-    private readonly string _localApplicationData =
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-    private readonly string _localsettingsFile;
-    private readonly LocalSettingsOptions _options;
-
+    private readonly string _localFolderPath;
+    private const string RegistryCompany = "KC";
+    private const string RegistryProduct = "WindowsConfigurationAnalyzer";
     private bool _isInitialized;
 
-    private IDictionary<string, object> _settings;
-
-
-
-
-
-    public LocalSettingsService(IFileService fileService, IOptions<LocalSettingsOptions> options)
+    public LocalSettingsService()
     {
-        _fileService = fileService;
-        _options = options.Value;
-
-        _applicationDataFolder = Path.Combine(_localApplicationData,
-            _options.ApplicationDataFolder ?? DefaultApplicationDataFolder);
-        _localsettingsFile = _options.LocalSettingsFile ?? DefaultLocalSettingsFile;
-
-        _settings = new Dictionary<string, object>();
+        _localFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), RegistryCompany, RegistryProduct);
+        Directory.CreateDirectory(_localFolderPath);
     }
 
-
-
-
-
-    public async Task<T?> ReadSettingAsync<T>(string key)
+    public async Task SaveDataAsync<T>(string fileName, T data)
     {
-        if (RuntimeHelper.IsMsix)
-        {
-            if (ApplicationData.GetDefault().LocalSettings.Values.TryGetValue(key, out var obj))
-            {
-                return await Json.ToObjectAsync<T>((string)obj);
-            }
-        }
-        else
-        {
-            await InitializeAsync();
-
-            if (_settings != null && _settings.TryGetValue(key, out var obj))
-            {
-                return await Json.ToObjectAsync<T>((string)obj);
-            }
-        }
-
-        return default(T?);
+        if (data is null) throw new ArgumentNullException(nameof(data));
+        var fullPath = Path.Combine(_localFolderPath, fileName + ".json");
+        var json = await KC.WindowsConfigurationAnalyzer.UserInterface.Core.Helpers.Json.StringifyAsync(data);
+        await File.WriteAllTextAsync(fullPath, json);
     }
 
-
-
-
-
-    public async Task SaveSettingAsync<T>(string key, T value)
+    public async Task<T?> ReadDataAsync<T>(string filename)
     {
-        if (RuntimeHelper.IsMsix)
+        var fullPath = Path.Combine(_localFolderPath, filename + ".json");
+        if (!File.Exists(fullPath)) return default(T?);
+        var json = await File.ReadAllTextAsync(fullPath);
+        return await KC.WindowsConfigurationAnalyzer.UserInterface.Core.Helpers.Json.ToObjectAsync<T>(json);
+    }
+
+    public async Task SaveObjectAsync<T>(string key, T obj)
+    {
+        await SaveDataAsync(key, obj);
+    }
+
+    public Task SaveApplicationSettingAsync(string key, string value)
+    {
+        if (key is null) throw new ArgumentNullException(nameof(key));
+        if (value is null) throw new ArgumentNullException(nameof(value));
+        using var k = OpenRegistryKey(true);
+        k?.SetValue(key, value, RegistryValueKind.String);
+        return Task.CompletedTask;
+    }
+
+    public async Task<T?> ReadApplicationSettingAsync<T>(string key)
+    {
+        if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+        using var k = OpenRegistryKey(false);
+        var raw = k?.GetValue(key) as string;
+        if (string.IsNullOrEmpty(raw)) return default(T?);
+        try
         {
-            if (value is not null)
-            {
-                ApplicationData.GetDefault().LocalSettings.Values[key] = await Json.StringifyAsync(value);
-            }
+            return await KC.WindowsConfigurationAnalyzer.UserInterface.Core.Helpers.Json.ToObjectAsync<T>(raw);
         }
-        else
+        catch
         {
-            await InitializeAsync();
-
-            if (value is not null)
-            {
-                _settings[key] = await Json.StringifyAsync(value);
-            }
-
-            await Task.Run(() => _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings));
+            if (typeof(T) == typeof(string)) return (T?)(object?)raw;
+            return default(T?);
         }
     }
 
+    public async Task<StorageFile> SaveBinaryFileAsync(string fileName, byte[] data)
+    {
+        if (data is null) throw new ArgumentNullException(nameof(data));
+        if (string.IsNullOrWhiteSpace(fileName)) throw new ArgumentException("Invalid file name", nameof(fileName));
+        var fullPath = Path.Combine(_localFolderPath, fileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        await File.WriteAllBytesAsync(fullPath, data);
+        return new StorageFile(fullPath);
+    }
 
+    public async Task<byte[]?> ReadBinaryFileAsync(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName)) throw new ArgumentNullException(nameof(fileName));
+        var fullPath = Path.Combine(_localFolderPath, fileName);
+        if (!File.Exists(fullPath)) return null;
+        return await File.ReadAllBytesAsync(fullPath);
+    }
 
-
+    public async Task<byte[]?> ReadBytesFromFileAsync(StorageFile file)
+    {
+        if (file == null || string.IsNullOrEmpty(file.Path) || !File.Exists(file.Path)) return null;
+        return await File.ReadAllBytesAsync(file.Path);
+    }
 
     private async Task InitializeAsync()
     {
-        if (!_isInitialized)
-        {
-            _settings = await Task.Run(() =>
-                            _fileService.Read<IDictionary<string, object>>(_applicationDataFolder,
-                                _localsettingsFile)) ??
-                        new Dictionary<string, object>();
+        if (_isInitialized) return;
+        _isInitialized = true;
+        await Task.CompletedTask;
+    }
 
-            _isInitialized = true;
-        }
+    private async Task PersistModelAsync()
+    {
+        await Task.CompletedTask;
+    }
+
+    private RegistryKey? OpenRegistryKey(bool writable)
+    {
+        var subKey = $"Software\\{RegistryCompany}\\{RegistryProduct}";
+        return writable ? Registry.CurrentUser.CreateSubKey(subKey, true) : Registry.CurrentUser.OpenSubKey(subKey, false);
     }
 }

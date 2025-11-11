@@ -9,6 +9,7 @@
 
 
 using System.Diagnostics.Eventing.Reader;
+
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
 
@@ -29,19 +30,19 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
 
     public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        var area = Area;
+        string area = Area;
         context.ActionLogger.Info(area, "Start", "Collecting event log inventory and summaries");
         List<string> warnings = new();
         List<string> errors = new();
 
         List<object> logs = new();
-        var scanned = 0;
+        int scanned = 0;
         try
         {
             context.ActionLogger.Info(area, "EnumerateLogs", "Start");
             using EventLogSession session = new();
             IEnumerable<string>? names = session.GetLogNames();
-            foreach (var name in names)
+            foreach (string name in names)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Dictionary<string, object?> entry = new()
@@ -101,10 +102,10 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
                     EventLogQuery query = new(name, PathType.LogName) { ReverseDirection = true };
                     using EventLogReader reader = new(query);
                     List<Dictionary<string, object?>> recent = new();
-                    var maxToScan = 1000; // cap to limit cost
+                    int maxToScan = 1000; // cap to limit cost
                     int countCritical = 0, countError = 0, countWarning = 0, countInfo = 0;
                     DateTime? newest = null, oldest = null;
-                    for (var i = 0; i < maxToScan; i++)
+                    for (int i = 0; i < maxToScan; i++)
                     {
                         using var rec = reader.ReadEvent();
 
@@ -119,7 +120,7 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
                         }
 
                         oldest = rec.TimeCreated;
-                        var lvl = rec.Level; //1=Critical,2=Error,3=Warning,4=Info,5=Verbose
+                        byte? lvl = rec.Level; //1=Critical,2=Error,3=Warning,4=Info,5=Verbose
                         if (lvl == 1)
                         {
                             countCritical++;
@@ -188,7 +189,7 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
         }
 
         // Add quick spotlight for classic core logs in case they were missing
-        foreach (var core in new[] { "System", "Application", "Security" })
+        foreach (string core in new[] { "System", "Application", "Security" })
         {
             if (!logs.Any(l => string.Equals((l as Dictionary<string, object?>)?["LogName"]?.ToString(), core,
                     StringComparison.OrdinalIgnoreCase)))

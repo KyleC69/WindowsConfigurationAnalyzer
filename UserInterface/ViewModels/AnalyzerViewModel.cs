@@ -10,8 +10,10 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Context;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Diagnostics;
@@ -20,6 +22,7 @@ using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Export;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Infrastructure;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -155,7 +158,7 @@ public partial class AnalyzerViewModel : ObservableRecipient
             var ctx = sp.GetRequiredService<IAnalyzerContext>();
 
             // Ensure activity log file per run
-            var logTemplate = await _localSettings.ReadSettingAsync<string>("LogPathTemplate") ??
+            var logTemplate = await _localSettings.ReadApplicationSettingAsync<string>("LogPathTemplate") ??
                               "logs/{yyyyMMdd-HHmm}.txt";
             var logPath = ApplyTemplate(logTemplate);
             var logDir = Path.GetDirectoryName(logPath);
@@ -198,7 +201,7 @@ public partial class AnalyzerViewModel : ObservableRecipient
             var merged = result with { GlobalFindings = result.GlobalFindings.Concat(extraFindings).ToList() };
 
             // Export per area, per run using template
-            var exportTemplate = await _localSettings.ReadSettingAsync<string>("ExportPathTemplate")
+            var exportTemplate = await _localSettings.ReadApplicationSettingAsync<string>("ExportPathTemplate")
                                  ?? $"exports/{Environment.MachineName}/{{yyyy-MM-dd}}/{{HHmm}}.json";
             foreach (var area in merged.Areas)
             {

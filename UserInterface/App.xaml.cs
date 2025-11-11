@@ -6,8 +6,6 @@
 // All Rights Reserved 2025
 // Kyle L Crowder
 
-
-
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.DependencyInjection;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Infrastructure;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
@@ -16,6 +14,7 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Models;
+using KC.WindowsConfigurationAnalyzer.UserInterface.Notifications;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
@@ -23,12 +22,10 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
-
+using System.Diagnostics;
 using WinUIEx;
 
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
-
-
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface;
 
@@ -37,68 +34,151 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface;
 // To learn more about WinUI3, see https://docs.microsoft.com/windows/apps/winui/winui3/.
 public partial class App : Application
 {
+
+    public static PerformanceCounter LogCounter;
     public App()
     {
         InitializeComponent();
+        
+        // Initialize logging counters - Must be done before ActivityLogger.Initialize
+       // SetupCounters();
+        
+        ActivityLogger.Initialize(true);
 
         Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory)
             .ConfigureServices((context, services) =>
             {
                 // Default Activation Handler
+                ActivityLogger.Log("INF", "Loading Default Activation Handler","App.xaml.cs");
                 services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
+                ActivityLogger.Log("INF", "Default Activation Handler Loaded","App.xaml.cs");
 
                 // Other Activation Handlers
+                ActivityLogger.Log("INF", "Loading App Notification Activation Handler","App.xaml.cs");
                 services.AddTransient<IActivationHandler, AppNotificationActivationHandler>();
+                ActivityLogger.Log("INF", "App Notification Activation Handler Loaded","App.xaml.cs");
 
                 // Services
+                ActivityLogger.Log("INF", "Loading IAppNotificationService","App.xaml.cs");
                 services.AddSingleton<IAppNotificationService, AppNotificationService>();
-                services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
-                services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
-                services.AddTransient<INavigationViewService, NavigationViewService>();
+                ActivityLogger.Log("INF", "IAppNotificationService Loaded","App.xaml.cs");
 
+                ActivityLogger.Log("INF", "Loading ILocalSettingsService","App.xaml.cs");
+                services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
+                ActivityLogger.Log("INF", "ILocalSettingsService Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading IThemeSelectorService","App.xaml.cs");
+                services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
+                ActivityLogger.Log("INF", "IThemeSelectorService Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading INavigationViewService","App.xaml.cs");
+                services.AddTransient<INavigationViewService, NavigationViewService>();
+                ActivityLogger.Log("INF", "INavigationViewService Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading IActivationService","App.xaml.cs");
                 services.AddSingleton<IActivationService, ActivationService>();
+                ActivityLogger.Log("INF", "IActivationService Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading IPageService","App.xaml.cs");
                 services.AddSingleton<IPageService, PageService>();
+                ActivityLogger.Log("INF", "IPageService Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading INavigationService","App.xaml.cs");
                 services.AddSingleton<INavigationService, NavigationService>();
+                ActivityLogger.Log("INF", "INavigationService Loaded","App.xaml.cs");
 
                 // Core Services
+                ActivityLogger.Log("INF", "Loading ISampleDataService","App.xaml.cs");
                 services.AddSingleton<ISampleDataService, SampleDataService>();
+                ActivityLogger.Log("INF", "ISampleDataService Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading IFileService","App.xaml.cs");
                 services.AddSingleton<IFileService, FileService>();
+                ActivityLogger.Log("INF", "IFileService Loaded","App.xaml.cs");
 
                 // Analyzer integration (core + modules)
+                ActivityLogger.Log("INF", "Loading Analyzer Core Integration","App.xaml.cs");
                 services.AddWcaCore();
+                ActivityLogger.Log("INF", "Analyzer Core Integration Loaded","App.xaml.cs");
 
                 // Views and ViewModels
+                ActivityLogger.Log("INF", "Loading EventingViewModel","App.xaml.cs");
                 services.AddTransient<EventingViewModel>();
+                ActivityLogger.Log("INF", "EventingViewModel Loaded","App.xaml.cs");
+                ActivityLogger.Log("INF", "Loading EventingPage","App.xaml.cs");
                 services.AddTransient<EventingPage>();
+                ActivityLogger.Log("INF", "EventingPage Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading AnalyzerViewModel","App.xaml.cs");
                 services.AddTransient<AnalyzerViewModel>();
+                ActivityLogger.Log("INF", "AnalyzerViewModel Loaded","App.xaml.cs");
+                ActivityLogger.Log("INF", "Loading AnalyzerPage","App.xaml.cs");
                 services.AddTransient<AnalyzerPage>();
+                ActivityLogger.Log("INF", "AnalyzerPage Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading SettingsViewModel","App.xaml.cs");
                 services.AddTransient<SettingsViewModel>();
+                ActivityLogger.Log("INF", "SettingsViewModel Loaded","App.xaml.cs");
+                ActivityLogger.Log("INF", "Loading SettingsPage","App.xaml.cs");
                 services.AddTransient<SettingsPage>();
+                ActivityLogger.Log("INF", "SettingsPage Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading ApplicationsViewModel","App.xaml.cs");
                 services.AddTransient<ApplicationsViewModel>();
+                ActivityLogger.Log("INF", "ApplicationsViewModel Loaded","App.xaml.cs");
+                ActivityLogger.Log("INF", "Loading ApplicationsPage","App.xaml.cs");
                 services.AddTransient<ApplicationsPage>();
+                ActivityLogger.Log("INF", "ApplicationsPage Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading WmiRegistryViewModel","App.xaml.cs");
                 services.AddTransient<WmiRegistryViewModel>();
+                ActivityLogger.Log("INF", "WmiRegistryViewModel Loaded","App.xaml.cs");
+                ActivityLogger.Log("INF", "Loading WmiRegistryPage","App.xaml.cs");
                 services.AddTransient<WmiRegistryPage>();
+                ActivityLogger.Log("INF", "WmiRegistryPage Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading DriversViewModel","App.xaml.cs");
                 services.AddTransient<DriversViewModel>();
+                ActivityLogger.Log("INF", "DriversViewModel Loaded","App.xaml.cs");
+                ActivityLogger.Log("INF", "Loading DriversPage","App.xaml.cs");
                 services.AddTransient<DriversPage>();
+                ActivityLogger.Log("INF", "DriversPage Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading ServicesViewModel","App.xaml.cs");
                 services.AddTransient<ServicesViewModel>();
+                ActivityLogger.Log("INF", "ServicesViewModel Loaded","App.xaml.cs");
+                ActivityLogger.Log("INF", "Loading ServicesPage","App.xaml.cs");
                 services.AddTransient<ServicesPage>();
+                ActivityLogger.Log("INF", "ServicesPage Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading ReportViewModel","App.xaml.cs");
                 services.AddTransient<ReportViewModel>();
+                ActivityLogger.Log("INF", "ReportViewModel Loaded","App.xaml.cs");
+                ActivityLogger.Log("INF", "Loading ReportPage","App.xaml.cs");
                 services.AddTransient<ReportPage>();
+                ActivityLogger.Log("INF", "ReportPage Loaded","App.xaml.cs");
+
+                ActivityLogger.Log("INF", "Loading ShellPage","App.xaml.cs");
                 services.AddTransient<ShellPage>();
+                ActivityLogger.Log("INF", "ShellPage Loaded","App.xaml.cs");
+                ActivityLogger.Log("INF", "Loading ShellViewModel","App.xaml.cs");
                 services.AddTransient<ShellViewModel>();
+                ActivityLogger.Log("INF", "ShellViewModel Loaded","App.xaml.cs");
 
-                // Configuration
-                services.Configure<LocalSettingsOptions>(
-                    context.Configuration.GetSection(nameof(LocalSettingsOptions)));
+    
             }).Build();
+        ActivityLogger.Log("INF","Services built, exiting Application .ctor","App.xaml.cs");
 
-        GetService<IAppNotificationService>().Initialize();
-
-        UnhandledException += App_UnhandledException;
+        App.GetService<IAppNotificationService>().Initialize();
+        
+        App.Current.UnhandledException += App_UnhandledException;
     }
 
 
 
+
+
+   
 
 
     // The .NET Generic Host provides dependency injection, configuration, logging, and other services.
@@ -106,30 +186,28 @@ public partial class App : Application
     // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
     // https://docs.microsoft.com/dotnet/core/extensions/configuration
     // https://docs.microsoft.com/dotnet/core/extensions/logging
-    public IHost Host
-    {
-        get;
-    }
-
-    public static WindowEx MainWindow
-    {
-        get;
-    } = new MainWindow();
-
-    public static UIElement? AppTitlebar
+    public IHost? Host
     {
         get;
         set;
     }
 
+    public static WindowEx MainWindow { get; } = new MainWindow();
 
-
-
-
-    public static T GetService<T>()
-        where T : class
+    public static UIElement? AppTitlebar
     {
-        return (Current as App)!.Host.Services.GetService(typeof(T)) is not T service
+        get; set;
+    }
+
+    public static Application AppHost => Application.Current;
+
+
+
+
+
+    public static T GetService<T>() where T : class
+    {
+        return (Current as App)!.Host!.Services.GetService(typeof(T)) is not T service
             ? throw new ArgumentException(
                 $"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.")
             : service;
@@ -141,20 +219,10 @@ public partial class App : Application
 
     private void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
-        try
-        {
-            // Append to a resilient file log
-            var logDir = Path.Combine(AppContext.BaseDirectory, "logs");
-            Directory.CreateDirectory(logDir);
-            var path = Path.Combine(logDir, DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmm") + "-app.txt");
-            FileActionLogSink file = new(path);
-            file.Append($"{DateTimeOffset.UtcNow:O}\tApp\tUnhandledException\tError\t{e.Message}\t{e.Exception}");
-        }
-        catch
-        {
-        }
 
-        // TODO:AI - Replace with Event Logging and reporting.
+            ActivityLogger.Log("ERR", e.Message, "UnhandledException");
+            System.Diagnostics.EventLog.WriteEntry("Windows Configuration Analyzer", $"Unhandled Exception: {e.Message}\n{e.Exception.StackTrace}", EventLogEntryType.Error);
+
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
     }
 
@@ -162,13 +230,43 @@ public partial class App : Application
 
 
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
-        base.OnLaunched(args);
+        try
+        {
+           GetService<IAppNotificationService>().Show(string.Format("AppNotificationSamplePayload".GetLocalized(), AppContext.BaseDirectory));
 
-        GetService<IAppNotificationService>()
-            .Show(string.Format("AppNotificationSamplePayload".GetLocalized(), AppContext.BaseDirectory));
+            await GetService<IActivationService>().ActivateAsync(args);
 
-        GetService<IActivationService>().ActivateAsync(args);
+
+            base.OnLaunched(args);
+        }
+        catch (Exception e)
+        {
+            ActivityLogger.Log("ERR", e.Message, "OnLaunched:Failed");
+            System.Diagnostics.EventLog.WriteEntry("Windows Configuration Analyzer", $"Fatal Exception during OnLaunched: {e.Message}\n{e.StackTrace}", EventLogEntryType.Error);
+        }
     }
+
+
+    private static bool SetupCounters()
+    {
+        if (!PerformanceCounterCategory.Exists("LoggingCountersCategory"))
+        {
+            CounterCreationDataCollection counterDataCollection = new CounterCreationDataCollection
+            {
+                new CounterCreationData("LogEntries", "Number of log entries", PerformanceCounterType.NumberOfItems32)
+            };
+            
+            
+            PerformanceCounterCategory.Create("LoggingCountersCategory", "Logging performance counters", PerformanceCounterCategoryType.SingleInstance,counterDataCollection);
+        }
+        
+        LogCounter = new PerformanceCounter("LoggingCountersCategory", "LogEntries", false);
+
+        return true;
+    }
+
+
+
 }

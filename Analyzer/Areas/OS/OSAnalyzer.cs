@@ -29,7 +29,7 @@ public sealed class OSAnalyzer : IAnalyzerModule
 
     public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        var area = Area;
+        string area = Area;
         context.ActionLogger.Info(area, "Start", "Collecting OS and system information");
         List<string> warnings = new();
         List<string> errors = new();
@@ -176,8 +176,8 @@ public sealed class OSAnalyzer : IAnalyzerModule
             foreach (var s in context.Cim.Query(
                          "SELECT Name, DisplayName, StartMode, State, PathName FROM Win32_Service"))
             {
-                var state = s.GetOrDefault("State")?.ToString();
-                var start = s.GetOrDefault("StartMode")?.ToString();
+                string? state = s.GetOrDefault("State")?.ToString();
+                string? start = s.GetOrDefault("StartMode")?.ToString();
                 if (string.Equals(state, "Running", StringComparison.OrdinalIgnoreCase))
                 {
                     running++;
@@ -347,7 +347,7 @@ public sealed class OSAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "Locale", "Start");
-            foreach (var name in new[] { "Locale", "LocaleName", "sShortDate", "sTimeFormat" })
+            foreach (string name in new[] { "Locale", "LocaleName", "sShortDate", "sTimeFormat" })
             {
                 try
                 {
@@ -411,12 +411,12 @@ public sealed class OSAnalyzer : IAnalyzerModule
                 return false;
             }
 
-            var year = int.Parse(dmtf.Substring(0, 4));
-            var month = int.Parse(dmtf.Substring(4, 2));
-            var day = int.Parse(dmtf.Substring(6, 2));
-            var hour = int.Parse(dmtf.Substring(8, 2));
-            var minute = int.Parse(dmtf.Substring(10, 2));
-            var second = int.Parse(dmtf.Substring(12, 2));
+            int year = int.Parse(dmtf.Substring(0, 4));
+            int month = int.Parse(dmtf.Substring(4, 2));
+            int day = int.Parse(dmtf.Substring(6, 2));
+            int hour = int.Parse(dmtf.Substring(8, 2));
+            int minute = int.Parse(dmtf.Substring(10, 2));
+            int second = int.Parse(dmtf.Substring(12, 2));
             DateTime dt = new(year, month, day, hour, minute, second, DateTimeKind.Local);
             utc = new DateTimeOffset(dt).ToUniversalTime();
 
@@ -436,7 +436,7 @@ public sealed class OSAnalyzer : IAnalyzerModule
     {
         try
         {
-            foreach (var name in context.Registry.EnumerateSubKeys(key))
+            foreach (string name in context.Registry.EnumerateSubKeys(key))
             {
                 if (string.Equals(name, subKeyName, StringComparison.OrdinalIgnoreCase))
                 {

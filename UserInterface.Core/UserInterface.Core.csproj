@@ -5,6 +5,8 @@
 		<UseWinUi>true</UseWinUi>
 		<RootNamespace>KC.WindowsConfigurationAnalyzer.$(MSBuildProjectName)</RootNamespace>
 		<OutputType>Library</OutputType>
+		<EnableMsixTooling>true</EnableMsixTooling>
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -10,6 +10,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
 
@@ -33,13 +34,13 @@ public sealed class JsonExporter : IExporter
 
     public async Task ExportAsync(AnalyzerResult result, string targetPath, CancellationToken cancellationToken)
     {
-        var dir = Path.GetDirectoryName(targetPath);
+        string? dir = Path.GetDirectoryName(targetPath);
         if (!string.IsNullOrEmpty(dir))
         {
             Directory.CreateDirectory(dir);
         }
 
-        var tmp = targetPath + ".tmp";
+        string tmp = targetPath + ".tmp";
         await using (var fs = File.Create(tmp))
         {
             await JsonSerializer.SerializeAsync(fs, result, Options, cancellationToken);

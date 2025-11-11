@@ -26,6 +26,10 @@ public static class ResourceExtensions
 
     public static string GetLocalized(this string resourceKey)
     {
-        return ResourceLoader.GetString(resourceKey);
+        return ResourceLoader.GetString(resourceKey) ?? $@"Localized resource not found for key:{resourceKey}";
     }
+
+
+
+
 }

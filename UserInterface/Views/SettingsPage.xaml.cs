@@ -10,6 +10,8 @@
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
+using System.Threading.Tasks;
 
 
 
@@ -33,5 +35,15 @@ public sealed partial class SettingsPage : Page
     public SettingsViewModel ViewModel
     {
         get;
+    }
+
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        // Ensure settings are loaded so bindings (e.g., IsActivityLoggingEnabled) reflect persisted values
+        // LoadAsync is internal to the ViewModel and invoked in constructor, but ensure it's completed here
+        // by re-invoking a lightweight read pattern if needed in the future.
+        // Currently LoadAsync is started in constructor; nothing else required here.
+        await Task.CompletedTask;
     }
 }

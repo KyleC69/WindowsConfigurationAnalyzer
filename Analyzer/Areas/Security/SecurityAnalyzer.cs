@@ -29,7 +29,7 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
 
     public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        var area = Area;
+        string area = Area;
         context.ActionLogger.Info(area, "Start", "Collecting security configuration");
         List<string> warnings = new();
         List<string> errors = new();
@@ -45,10 +45,10 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
         Dictionary<string, object?> lsa = new();
         Dictionary<string, object?> windowsUpdate = new();
 
-        var avCount = 0;
+        int avCount = 0;
         bool? uacEnabled = null;
         bool? secureBootEnabled = null;
-        var bitlockerProtected = 0;
+        int bitlockerProtected = 0;
 
         // Windows Security Center (AV/AS/Firewall)
         try
@@ -139,7 +139,7 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "UAC", "Start");
-            var v = context.Registry.GetValue(
+            object? v = context.Registry.GetValue(
                 "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
                 "EnableLUA");
             uacEnabled = v is int i && i != 0;
@@ -174,7 +174,7 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
             defender["Services"] = services;
             // Signature info (best-effort; keys can vary by OS build)
             Dictionary<string, object?> sig = new();
-            foreach (var (k, n) in new (string key, string[] names)[]
+            foreach ((string k, string[] n) in new (string key, string[] names)[]
                      {
                          ("HKLM\\SOFTWARE\\Microsoft\\Windows Defender",
                           new[] { "EngineVersion", "SignatureVersion", "AVSignatureVersion", "ASSignatureVersion" }),
@@ -186,7 +186,7 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
                           })
                      })
             {
-                foreach (var name in n)
+                foreach (string name in n)
                 {
                     try
                     {
@@ -249,7 +249,7 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
             foreach (var sb in context.Cim.Query("SELECT SecureBootEnabled FROM MS_SecureBoot",
                          "\\\\.\\root\\wmi"))
             {
-                var v = sb.GetOrDefault("SecureBootEnabled");
+                object? v = sb.GetOrDefault("SecureBootEnabled");
                 secureBootEnabled = v is uint ui ? ui != 0 : v is int ii && ii != 0;
                 secureBoot["SecureBootEnabled"] = v;
 
@@ -274,7 +274,7 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
                          "SELECT DeviceID, ProtectionStatus, EncryptionMethod FROM Win32_EncryptableVolume",
                          "\\\\.\\root\\CIMV2\\Security\\MicrosoftVolumeEncryption"))
             {
-                var ps = vol.GetOrDefault("ProtectionStatus");
+                object? ps = vol.GetOrDefault("ProtectionStatus");
                 if (ps is uint u && u == 1)
                 {
                     bitlockerProtected++;
@@ -340,7 +340,7 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
         try
         {
             context.ActionLogger.Info(area, "LSA", "Start");
-            foreach (var name in new[]
+            foreach (string name in new[]
                          { "LmCompatibilityLevel", "RestrictAnonymous", "RestrictAnonymousSAM", "NoLMHash" })
             {
                 try

@@ -44,10 +44,11 @@
             <!--  Column 0 controls Row 0    -->
             <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="0" Margin="1" Spacing="8">
                 <TextBlock Text="Select Active Log" />
-                <ComboBox
+                <ComboBox x:Name="LogSelectorComboBox"
                     Width="300"
-                    ItemsSource="{x:Bind ViewModel.LogNames}"
-                    SelectedItem="{x:Bind ViewModel.SelectedLogName, Mode=TwoWay}" />
+                    ItemsSource="{x:Bind ViewModel.LogNames}" 
+                    SelectionChanged="{x:Bind ViewModel.Selector_OnSelectionChanged}"
+                  />
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
                     <CheckBox Content="Get all events" IsChecked="{x:Bind ViewModel.OverrideLimit, Mode=TwoWay}" />
@@ -67,73 +68,76 @@
                 </StackPanel>
             </StackPanel>
 
-
             <!-- Column 1 - Row 1 Events matching the query displayed  -->
-            <ListView Grid.Row="1" Grid.Column="1" Margin="10" Name="LogEventsListView" Width="500" Height="300"
+            <StackPanel Orientation="Vertical" VerticalAlignment="Top" Grid.Row="0" Grid.Column="1">
+
+                <ListView Margin="10" Name="LogEventsListView" Width="500" Height="300"
                       ItemsSource="{x:Bind ViewModel.LogEvents}"
                       SelectedItem="{x:Bind ViewModel.SelectedLogEvent, Mode=TwoWay}">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Padding" Value="0" />
-                        <Setter Property="Margin" Value="0" />
-                        <Setter Property="MinHeight" Value="0" />
-                    </Style>
-                </ListView.ItemContainerStyle>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="MinHeight" Value="0" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
 
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:EventLogRecordClone">
-                        <Grid Margin="0" Padding="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="24" />
-                                <ColumnDefinition Width="180" />
-                                <ColumnDefinition Width="80" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <!-- Level glyph colored by level -->
-                            <FontIcon Margin="0" Grid.Column="0" FontSize="14" Glyph="&#xEB90;"
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:EventLogRecordClone">
+                            <Grid Margin="0" Padding="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="24" />
+                                    <ColumnDefinition Width="180" />
+                                    <ColumnDefinition Width="80" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <!-- Level glyph colored by level -->
+                                <FontIcon Margin="0" Grid.Column="0" FontSize="14" Glyph="&#xEB90;"
                                       Foreground="{x:Bind Level, Converter={StaticResource EventLevelToBrushConverter}}" />
-                            <TextBlock Padding="0" Margin="0" Grid.Column="1" Text="{x:Bind TimeCreated}" />
-                            <TextBlock Padding="0" Margin="0" Grid.Column="2" Text="{x:Bind Id}" />
-                            <TextBlock Padding="0" Margin="0" Grid.Column="3" Text="{x:Bind TaskDisplayName}"
+                                <TextBlock Padding="0" Margin="0" Grid.Column="1" Text="{x:Bind TimeCreated}" />
+                                <TextBlock Padding="0" Margin="0" Grid.Column="2" Text="{x:Bind Id}" />
+                                <TextBlock Padding="0" Margin="0" Grid.Column="3" Text="{x:Bind TaskDisplayName}"
                                        TextTrimming="CharacterEllipsis" />
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
 
-
-            <ListView Grid.Row="0" Grid.Column="1" Margin="10" Name="CorrelatedEventsListView" Width="500" Height="300"
+            <!-- Column 1 - Row 1 Events matching the query displayed  -->
+            <StackPanel Orientation="Vertical" VerticalAlignment="Top" Grid.Row="1" Grid.Column="1">
+                <ListView Grid.Row="2" Grid.Column="1" Margin="10" Name="CorrelatedEventsListView" Width="500" Height="300"
                       ItemsSource="{x:Bind ViewModel.CorrelatedLogEvents}"
                       SelectedItem="{x:Bind ViewModel.CorSelectedLogEvent, Mode=TwoWay}">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Padding" Value="0" />
-                        <Setter Property="Margin" Value="0" />
-                        <Setter Property="MinHeight" Value="0" />
-                    </Style>
-                </ListView.ItemContainerStyle>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="MinHeight" Value="0" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
 
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:EventLogRecordClone">
-                        <Grid Margin="0" Padding="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="24" />
-                                <ColumnDefinition Width="180" />
-                                <ColumnDefinition Width="80" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <!-- Level glyph colored by level -->
-                            <FontIcon Margin="0" Grid.Column="0" FontSize="14" Glyph="&#xEB90;"
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:EventLogRecordClone">
+                            <Grid Margin="0" Padding="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="24" />
+                                    <ColumnDefinition Width="180" />
+                                    <ColumnDefinition Width="80" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <!-- Level glyph colored by level -->
+                                <FontIcon Margin="0" Grid.Column="0" FontSize="14" Glyph="&#xEB90;"
                                       Foreground="{x:Bind Level, Converter={StaticResource EventLevelToBrushConverter}}" />
-                            <TextBlock Padding="0" Margin="0" Grid.Column="1" Text="{x:Bind TimeCreated}" />
-                            <TextBlock Padding="0" Margin="0" Grid.Column="2" Text="{x:Bind Id}" />
-                            <TextBlock Padding="0" Margin="0" Grid.Column="3" Text="{x:Bind TaskDisplayName}"
+                                <TextBlock Padding="0" Margin="0" Grid.Column="1" Text="{x:Bind TimeCreated}" />
+                                <TextBlock Padding="0" Margin="0" Grid.Column="2" Text="{x:Bind Id}" />
+                                <TextBlock Padding="0" Margin="0" Grid.Column="3" Text="{x:Bind TaskDisplayName}"
                                        TextTrimming="CharacterEllipsis" />
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
             <!-- Column 2 Selected event properties displayed -->
             <ListView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Name="PropertiesListView" Margin="10"
                       ItemsSource="{x:Bind ViewModel.SelectedLogEventProperties}"

@@ -88,15 +88,15 @@ public sealed class DuplicateDnsRule : IRule
     public Finding? Evaluate(AnalyzerResult result)
     {
         var net = result.Areas.FirstOrDefault(a => a.Area == "Network");
-        if (net?.Details is IDictionary<string, object?> d && d.TryGetValue("Adapters", out var adaptersObj) &&
+        if (net?.Details is IDictionary<string, object?> d && d.TryGetValue("Adapters", out object? adaptersObj) &&
             adaptersObj is IEnumerable<object> adapters)
         {
             List<string> allDns = new();
-            foreach (var a in adapters)
+            foreach (object a in adapters)
             {
                 if (a is IDictionary<string, object?> ad)
                 {
-                    if (ad.TryGetValue("IPAddresses", out var ips) && ips is IEnumerable<string> list)
+                    if (ad.TryGetValue("IPAddresses", out object? ips) && ips is IEnumerable<string> list)
                     {
                         allDns.AddRange(list);
                     }
@@ -139,7 +139,7 @@ public sealed class FirewallDisabledRule : IRule
             IDictionary<string, object?>? fwProfiles =
                 result.Areas.FirstOrDefault(a => a.Area == "Network")?.Details as IDictionary<string, object?>;
 
-            if (fwProfiles is not null && fwProfiles.TryGetValue("FirewallProfiles", out var prof) &&
+            if (fwProfiles is not null && fwProfiles.TryGetValue("FirewallProfiles", out object? prof) &&
                 prof is IEnumerable<string> p)
             {
                 if (!p.Any())
@@ -169,9 +169,9 @@ public sealed class HighCpuRule : IRule
     {
         var perf = result.Areas.FirstOrDefault(a => a.Area == "Performance");
 
-        if (perf?.Details is IDictionary<string, object?> d && d.TryGetValue("CpuPercent", out var v))
+        if (perf?.Details is IDictionary<string, object?> d && d.TryGetValue("CpuPercent", out object? v))
         {
-            if (double.TryParse(v?.ToString(), out var cpu) && cpu >= 90)
+            if (double.TryParse(v?.ToString(), out double cpu) && cpu >= 90)
             {
                 return new Finding("Warning", $"High CPU usage detected: {cpu}%");
             }
@@ -197,9 +197,9 @@ public sealed class LowMemoryRule : IRule
     {
         var perf = result.Areas.FirstOrDefault(a => a.Area == "Performance");
 
-        if (perf?.Details is IDictionary<string, object?> d && d.TryGetValue("MemoryUsedPercent", out var v))
+        if (perf?.Details is IDictionary<string, object?> d && d.TryGetValue("MemoryUsedPercent", out object? v))
         {
-            if (double.TryParse(v?.ToString(), out var used) && used >= 90)
+            if (double.TryParse(v?.ToString(), out double used) && used >= 90)
             {
                 return new Finding("Warning", $"High memory utilization detected: {used}%");
             }
@@ -226,12 +226,12 @@ public sealed class SuspiciousAutorunsRule : IRule
         var s = result.Areas.FirstOrDefault(a => a.Area == "Startup");
         if (s?.Details is IDictionary<string, object?> d)
         {
-            if (d.TryGetValue("IFEO", out var ifeo) && ifeo is IEnumerable<object> list && list.Any())
+            if (d.TryGetValue("IFEO", out object? ifeo) && ifeo is IEnumerable<object> list && list.Any())
             {
                 return new Finding("Warning", "Image File Execution Options debuggers present");
             }
 
-            if (d.TryGetValue("WmiSubscriptions", out var wmi) && wmi is IEnumerable<object> wlist && wlist.Any())
+            if (d.TryGetValue("WmiSubscriptions", out object? wmi) && wmi is IEnumerable<object> wlist && wlist.Any())
             {
                 return new Finding("Warning", "WMI Event Subscriptions found (check for persistence)");
             }
@@ -256,10 +256,10 @@ public sealed class RdpExposedRule : IRule
     public Finding? Evaluate(AnalyzerResult result)
     {
         var pol = result.Areas.FirstOrDefault(a => a.Area == "Policy/GPO");
-        if (pol?.Details is IDictionary<string, object?> d && d.TryGetValue("Policies", out var pols) &&
+        if (pol?.Details is IDictionary<string, object?> d && d.TryGetValue("Policies", out object? pols) &&
             pols is IDictionary<string, object?> pd)
         {
-            var deny = GetInt(pd,
+            object? deny = GetInt(pd,
                 "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services:fDenyTSConnections");
 
             if (deny is int i && i == 0)
@@ -277,6 +277,6 @@ public sealed class RdpExposedRule : IRule
 
     private static object? GetInt(IDictionary<string, object?> d, string key)
     {
-        return d.TryGetValue(key, out var v) ? v : null;
+        return d.TryGetValue(key, out object? v) ? v : null;
     }
 }

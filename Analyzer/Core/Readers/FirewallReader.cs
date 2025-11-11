@@ -10,6 +10,7 @@
 
 using System.Collections;
 using System.Reflection;
+
 using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
 
 
@@ -24,7 +25,7 @@ public sealed class FirewallReader : IFirewallReader
     {
         try
         {
-            var policy = CreatePolicy2();
+            object? policy = CreatePolicy2();
 
             if (policy is null)
             {
@@ -32,9 +33,9 @@ public sealed class FirewallReader : IFirewallReader
             }
 
             var policyType = policy.GetType();
-            var typesObj =
+            object? typesObj =
                 policyType.InvokeMember("CurrentProfileTypes", BindingFlags.GetProperty, null, policy, null);
-            var types = typesObj is int i ? i : 0;
+            int types = typesObj is int i ? i : 0;
             List<string> list = new();
             if ((types & 0x1) != 0)
             {
@@ -67,7 +68,7 @@ public sealed class FirewallReader : IFirewallReader
     {
         try
         {
-            var policy = CreatePolicy2();
+            object? policy = CreatePolicy2();
 
             if (policy is null)
             {
@@ -75,7 +76,7 @@ public sealed class FirewallReader : IFirewallReader
             }
 
             var policyType = policy.GetType();
-            var rulesObj = policyType.InvokeMember("Rules", BindingFlags.GetProperty, null, policy, null);
+            object? rulesObj = policyType.InvokeMember("Rules", BindingFlags.GetProperty, null, policy, null);
 
             if (rulesObj is not IEnumerable rules)
             {
@@ -83,7 +84,7 @@ public sealed class FirewallReader : IFirewallReader
             }
 
             List<object> list = new();
-            foreach (var r in rules)
+            foreach (object? r in rules)
             {
                 var t = r!.GetType();
 
