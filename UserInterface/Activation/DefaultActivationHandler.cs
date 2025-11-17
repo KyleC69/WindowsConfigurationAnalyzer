@@ -8,22 +8,22 @@
 
 
 
-using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
+
+using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
+
 using Microsoft.UI.Xaml;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 
 
-
 public class DefaultActivationHandler(INavigationService navigationService)
     : ActivationHandler<LaunchActivatedEventArgs>
 {
-
-
-
 
 
     protected override bool CanHandleInternal(LaunchActivatedEventArgs args)
@@ -42,4 +42,6 @@ public class DefaultActivationHandler(INavigationService navigationService)
 
         return Task.CompletedTask;
     }
+
+
 }

@@ -8,6 +8,7 @@
 
 
 
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 using Microsoft.UI.Dispatching;
@@ -18,12 +19,15 @@ using WinUIEx;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface;
 
 
 public sealed partial class MainWindow : WindowEx
 {
+
+
     private readonly DispatcherQueue _dispatcherQueue;
 
     private readonly UISettings _settings;
@@ -58,4 +62,6 @@ public sealed partial class MainWindow : WindowEx
         // This calls comes off-thread, hence we will need to dispatch it to current app's thread
         _dispatcherQueue.TryEnqueue(TitleBarHelper.ApplySystemThemeToCaptionButtons);
     }
+
+
 }

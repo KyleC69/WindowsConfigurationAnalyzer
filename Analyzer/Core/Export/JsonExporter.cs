@@ -8,20 +8,24 @@
 
 
 
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
+using KC.WindowsConfigurationAnalyzer.Contracts;
+using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.Analyzer.Core.Export;
 
+
+namespace KC.WindowsConfigurationAnalyzer.DataProbe.Core.Export;
 
 
 public sealed class JsonExporter : IExporter
 {
+
+
     private static readonly JsonSerializerOptions Options = new()
     {
         WriteIndented = true,
@@ -34,14 +38,14 @@ public sealed class JsonExporter : IExporter
 
     public async Task ExportAsync(AnalyzerResult result, string targetPath, CancellationToken cancellationToken)
     {
-        string? dir = Path.GetDirectoryName(targetPath);
+        var dir = Path.GetDirectoryName(targetPath);
         if (!string.IsNullOrEmpty(dir))
         {
             Directory.CreateDirectory(dir);
         }
 
-        string tmp = targetPath + ".tmp";
-        await using (var fs = File.Create(tmp))
+        var tmp = targetPath + ".tmp";
+        await using (FileStream fs = File.Create(tmp))
         {
             await JsonSerializer.SerializeAsync(fs, result, Options, cancellationToken);
             await fs.FlushAsync(cancellationToken);
@@ -55,4 +59,6 @@ public sealed class JsonExporter : IExporter
 
         File.Move(tmp, targetPath);
     }
+
+
 }

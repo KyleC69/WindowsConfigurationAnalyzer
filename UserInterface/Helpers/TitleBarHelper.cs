@@ -8,17 +8,22 @@
 
 
 
+
 using System.Runtime.InteropServices;
+
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
+
 using Windows.UI;
 using Windows.UI.ViewManagement;
+
 using WinRT.Interop;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 
 // Helper class to workaround custom title bar bugs.
@@ -26,6 +31,8 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 // https://github.com/microsoft/TemplateStudio/issues/4516
 internal class TitleBarHelper
 {
+
+
     private const int Wainactive = 0x00;
     private const int Waactive = 0x01;
     private const int Wmactivate = 0x0006;
@@ -121,10 +128,12 @@ internal class TitleBarHelper
 
     public static void ApplySystemThemeToCaptionButtons()
     {
-        FrameworkElement? frame = App.AppTitlebar as FrameworkElement;
+        var frame = App.AppTitlebar as FrameworkElement;
         if (frame != null)
         {
             UpdateTitleBar(frame.ActualTheme);
         }
     }
+
+
 }

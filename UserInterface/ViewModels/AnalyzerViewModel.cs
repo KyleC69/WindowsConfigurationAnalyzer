@@ -14,42 +14,70 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Context;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Diagnostics;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Engine;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Export;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Infrastructure;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
+using KC.WindowsConfigurationAnalyzer.Contracts;
+using KC.WindowsConfigurationAnalyzer.Contracts.Models;
+using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Engine;
+using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Export;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
+using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Etw;
+using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
+// Helper model for UI selection of analyzer modules
+public sealed partial class AnalyzerModuleSelection : ObservableObject
+{
+    public AnalyzerModuleSelection(IAnalyzerModule module)
+    {
+        Module = module;
+        Name = module.Name;
+        Area = module.Area;
+    }
+
+    public IAnalyzerModule Module { get; }
+    public string Name { get; }
+    public string Area { get; }
+
+    // Pseudocode:
+    // - Replace [ObservableProperty] field with explicit backing field '_isSelected' default true.
+    // - Implement public property 'IsSelected' using SetProperty to notify changes.
+    private bool _isSelected = true; // default selected
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
+}
 
 
 public partial class AnalyzerViewModel : ObservableRecipient
 {
+
+
     private readonly ILocalSettingsService _localSettings;
     private readonly IServiceProvider _services;
+    private readonly Guid _sessionId = Guid.NewGuid(); //Application runtime session id ??
+
+    private readonly CancellationTokenSource cts = new();
 
     // AOT/WinRT-safe properties using explicit backing fields
     private bool _isRunning;
 
     private string _statusMessage = "Idle";
+    private readonly IActivityLogger _activityLogger;
 
 
 
 
 
-    public AnalyzerViewModel()
-        : this(App.GetService<IServiceProvider>())
+    public AnalyzerViewModel() : this(App.GetService<IServiceProvider>())
     {
-
     }
 
 
@@ -59,27 +87,30 @@ public partial class AnalyzerViewModel : ObservableRecipient
     public AnalyzerViewModel(IServiceProvider services)
     {
         _services = services;
-        _localSettings = App.GetService<ILocalSettingsService>();
+        _localSettings = services.GetRequiredService<ILocalSettingsService>();
+        _activityLogger = services.GetRequiredService<IActivityLogger>();
         RunAnalyzerCommand = new AsyncRelayCommand(RunAnalyzerAsync);
         OpenFolderCommand = new RelayCommand(OpenExportsFolder);
+        SelectAllCommand = new RelayCommand(SelectAllModules);
+
+        // Populate module selections from DI
+        Modules = new ObservableCollection<AnalyzerModuleSelection>(
+            _services.GetServices<IAnalyzerModule>()
+                     .Select(m => new AnalyzerModuleSelection(m))
+        );
     }
 
 
 
 
 
-    public IAsyncRelayCommand RunAnalyzerCommand
-    {
-        get;
-    }
+    public IAsyncRelayCommand RunAnalyzerCommand { get; }
 
-    public IRelayCommand OpenFolderCommand
-    {
-        get;
-    }
+    public IRelayCommand OpenFolderCommand { get; }
 
+    public IRelayCommand SelectAllCommand { get; }
 
-
+    public ObservableCollection<AnalyzerModuleSelection> Modules { get; }
 
 
     public bool IsRunning
@@ -89,7 +120,6 @@ public partial class AnalyzerViewModel : ObservableRecipient
     }
 
 
-
     public string StatusMessage
     {
         get => _statusMessage;
@@ -97,11 +127,7 @@ public partial class AnalyzerViewModel : ObservableRecipient
     }
 
 
-
-    public ObservableCollection<string> StatusMessages
-    {
-        get;
-    } = [];
+    public ObservableCollection<string> StatusMessages { get; } = [];
 
 
 
@@ -110,7 +136,8 @@ public partial class AnalyzerViewModel : ObservableRecipient
     private void Log(string message)
     {
         StatusMessage = message;
-        StatusMessages.Add($"[{DateTimeOffset.Now:HH:mm:ss}] {message}");
+        //  StatusMessages.Add($"[{DateTimeOffset.Now:HH:mm:ss}] {message}");
+        ActivityLogger.Log("INF", message, "AnalyzerViewModel");
     }
 
 
@@ -119,7 +146,7 @@ public partial class AnalyzerViewModel : ObservableRecipient
 
     private static string ApplyTemplate(string template)
     {
-        var now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = DateTimeOffset.UtcNow;
 
         return template
             .Replace("{MachineName}", Environment.MachineName)
@@ -132,61 +159,53 @@ public partial class AnalyzerViewModel : ObservableRecipient
 
 
 
+    private static string GetExportDirectory(string appliedTemplate)
+    {
+        // If template resolves to a file path (has extension), use its directory; otherwise treat as directory
+        return Path.HasExtension(appliedTemplate)
+            ? (Path.GetDirectoryName(appliedTemplate) ?? appliedTemplate)
+            : appliedTemplate;
+    }
+
+    private void SelectAllModules()
+    {
+        foreach (var m in Modules)
+        {
+            m.IsSelected = true;
+        }
+    }
+
+
+
+
 
     private async Task RunAnalyzerAsync()
     {
+
+        ActivityLogger.Log("INF", "Starting analyzer...", "RunAnalyzerAsync");
+
         if (IsRunning)
         {
             return;
         }
 
+        var selected = Modules.Where(m => m.IsSelected).Select(m => m.Module).ToList();
+        if (selected.Count == 0)
+        {
+            Log("No analyzers selected.");
+            return;
+        }
+
+        var correlationIdString = Guid.NewGuid().ToString("N"); // Unique correlation ID per run
+        IsRunning = true;
         try
         {
-            IsRunning = true;
-            Log("Starting analyzer...");
-
-            using var scope = _services.CreateScope();
-            var sp = scope.ServiceProvider;
-            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-            var eventProvider = sp.GetService<IEventProvider>();
-            AnalyzerEngine engine = new(loggerFactory.CreateLogger("WCA.UI.Run"), eventProvider: eventProvider);
-            foreach (var m in sp.GetServices<IAnalyzerModule>())
-            {
-                engine.AddModule(m);
-            }
-
-            var ctx = sp.GetRequiredService<IAnalyzerContext>();
-
-            // Ensure activity log file per run
-            var logTemplate = await _localSettings.ReadApplicationSettingAsync<string>("LogPathTemplate") ??
-                              "logs/{yyyyMMdd-HHmm}.txt";
-            var logPath = ApplyTemplate(logTemplate);
-            var logDir = Path.GetDirectoryName(logPath);
-            if (!string.IsNullOrEmpty(logDir))
-            {
-                Directory.CreateDirectory(logDir);
-            }
-
-            FileActionLogSink fileSink = new(logPath);
-            var appLogger = loggerFactory.CreateLogger("WCA.ActionLogger");
-            ActionLogger actionLogger = new(appLogger, fileSink, eventProvider);
-            AnalyzerContext contextWithFile = new(
-                sp.GetRequiredService<ILoggerFactory>().CreateLogger("WCA"),
-                sp.GetRequiredService<ITimeProvider>(),
-                actionLogger,
-                sp.GetRequiredService<IRegistryReader>(),
-                sp.GetRequiredService<ICimReader>(),
-                sp.GetRequiredService<IEventLogReader>(),
-                sp.GetRequiredService<IFirewallReader>(),
-                sp.GetRequiredService<IEnvReader>()
-            );
-
-            Log($"Logging to: {logPath}");
-            Log("Running analyzers...");
-            var result = await engine.RunAllAsync(contextWithFile);
+            // Run only selected modules
+            AnalyzerRunner runner = new(selected);
+            AnalyzerResult result = await runner.RunAllAsync(correlationIdString, _activityLogger, cts.Token);
 
             // Evaluate comprehensive rules
-            IRule[] rules = new IRule[]
+            var rules = new IRule[]
             {
                 new AvMissingRule(),
                 new DuplicateDnsRule(),
@@ -196,42 +215,78 @@ public partial class AnalyzerViewModel : ObservableRecipient
                 new SuspiciousAutorunsRule(),
                 new RdpExposedRule()
             };
+
             RuleEngine ruleEngine = new(rules);
-            var extraFindings = ruleEngine.Evaluate(result);
-            var merged = result with { GlobalFindings = result.GlobalFindings.Concat(extraFindings).ToList() };
+            IReadOnlyList<Finding> extraFindings = ruleEngine.Evaluate(result);
+            AnalyzerResult merged = result with { GlobalFindings = result.GlobalFindings.Concat(extraFindings).ToList() };
 
             // Export per area, per run using template
             var exportTemplate = await _localSettings.ReadApplicationSettingAsync<string>("ExportPathTemplate")
-                                 ?? $"exports/{Environment.MachineName}/{{yyyy-MM-dd}}/{{HHmm}}.json";
-            foreach (var area in merged.Areas)
-            {
-                var path = ApplyTemplate(exportTemplate);
-                var dir = Path.GetDirectoryName(path);
-                if (!string.IsNullOrEmpty(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
+                                 ?? Path.Combine(
+                                     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                                     "WindowsConfigurationAnalyzer",
+                                     "exports",
+                                     "{MachineName}",
+                                     "{yyyy-MM-dd}",
+                                     "{HHmm}.json");
 
-                var file = Path.Combine(dir!, $"{area.Area}.json");
-                await new JsonExporter().ExportAsync(
-                    new AnalyzerResult(merged.ComputerName, merged.ExportTimestampUtc, [area], merged.GlobalFindings,
-                        merged.ActionLog),
-                    file,
-                    CancellationToken.None);
+            var applied = ApplyTemplate(exportTemplate);
+            var exportDir = GetExportDirectory(applied);
+
+            var exportCount = 0;
+            WCAEventSource.Log.SessionStart(SessionId: Guid.NewGuid().ToString("N"), Environment.MachineName, "1.0.0", correlationIdString);
+            foreach (AreaResult area in merged.Areas)
+            {
+                try
+                {
+                    if (!string.IsNullOrEmpty(exportDir))
+                    {
+                        Directory.CreateDirectory(exportDir);
+                    }
+
+                    var file = Path.Combine(exportDir, $"{area.Area}.json");
+                    await new JsonExporter().ExportAsync(
+                        new AnalyzerResult(merged.ComputerName, merged.ExportTimestampUtc, [area], merged.GlobalFindings),
+                        file,
+                        CancellationToken.None);
+                    exportCount++;
+                }
+                catch (Exception e)
+                {
+                    WCAEventSource.Log.ExceptionError(SessionId: _sessionId.ToString("N"), CorrelationId: correlationIdString, e.Message, e.StackTrace?.ToString(), Context: "Exporting area results");
+
+                }
             }
 
-            Log($"Completed. Exports at template root: {Path.GetDirectoryName(ApplyTemplate(exportTemplate))}");
+            try
+            {
+                // Write a consolidated HTML report to help verify report generation
+                var htmlPath = Path.Combine(exportDir, "Report.html");
+                await new HtmlReportBuilder().ExportAsync(merged, htmlPath, CancellationToken.None);
+            }
+            catch (Exception e)
+            {
+                WCAEventSource.Log.ExceptionError(SessionId: _sessionId.ToString("N"), CorrelationId: correlationIdString, ExceptMessage: e.Message, ExceptStack: e.StackTrace?.ToString(), Context: "Exporting HTML report");
+            }
+
+            if (exportCount == 0)
+            {
+                Log("No area results were exported. Check analyzers and export path template.");
+            }
+
+            Log($"Completed. Exports at: {exportDir}");
         }
         catch (Exception ex)
         {
             Log($"Error: {ex.Message}");
+            WCAEventSource.Log.ExceptionError(SessionId: _sessionId.ToString("N"), CorrelationId: correlationIdString, ExceptMessage: ex.Message, ExceptStack: ex.StackTrace?.ToString(), Context: "Running analyzer");
         }
         finally
         {
             IsRunning = false;
+            //WCAEventSource.Log.SessionStop(SessionId: _sessionId.ToString("N"), Areas: merged.Areas, CorrelationId: correlationIdString); TODO: Fix params to pass necessary data
         }
     }
-
 
 
 
@@ -241,7 +296,10 @@ public partial class AnalyzerViewModel : ObservableRecipient
     {
         try
         {
-            var exportRoot = Path.Combine(AppContext.BaseDirectory, "exports");
+            var exportRoot = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "WindowsConfigurationAnalyzer",
+                "exports");
             if (!Directory.Exists(exportRoot))
             {
                 Directory.CreateDirectory(exportRoot);
@@ -259,4 +317,6 @@ public partial class AnalyzerViewModel : ObservableRecipient
             Log($"Open folder failed: {ex.Message}");
         }
     }
+
+
 }

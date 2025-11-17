@@ -16,7 +16,7 @@
   <Identity
     Name="WindowsConfigurationAnalyzer"
     Publisher="CN=Kyle Crowder"
-    Version="1.0.0.0" />
+    Version="1.0.1467.0" />
     
   <Properties>
     <DisplayName>Windows Configuration Analyzer</DisplayName>

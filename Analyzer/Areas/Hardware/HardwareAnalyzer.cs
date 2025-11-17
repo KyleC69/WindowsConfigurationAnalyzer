@@ -8,29 +8,36 @@
 
 
 
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Utilities;
+
+using System.Reflection; // added
+using System.Runtime.CompilerServices;
+
+using KC.WindowsConfigurationAnalyzer.Contracts; // added
+
+using KC.WindowsConfigurationAnalyzer.Contracts.Models;
+using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.Analyzer.Areas.Hardware;
 
+namespace KC.WindowsConfigurationAnalyzer.DataProbe.Areas.Hardware;
 
 
 public sealed class HardwareAnalyzer : IAnalyzerModule
 {
+
+
     public string Name => "Hardware Analyzer";
     public string Area => "Hardware";
+    private IActivityLogger? _logger;
 
 
 
-
-
-    public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
+    public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        string area = Area;
-        context.ActionLogger.Info(area, "Start", "Collecting hardware inventory via CIM");
+        _logger = logger;
+        var area = Area;
+        _logger.Log("INF", "Start: Collecting hardware inventory via CIM", Ctx(area));
         List<string> warnings = new();
         List<string> errors = new();
 
@@ -46,13 +53,15 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
         List<object> battery = new();
         double totalMemGb = 0;
 
-        // CPU
         try
         {
-            context.ActionLogger.Info(area, "CPU", "Start");
-            foreach (var mo in context.Cim.Query(
-                         "SELECT Name, NumberOfCores, NumberOfLogicalProcessors, MaxClockSpeed, ProcessorId, SecondLevelAddressTranslationExtensions, VirtualizationFirmwareEnabled FROM Win32_Processor"))
+            _logger.Log("INF", "CPU: Start", Ctx(area));
+            var cpuRows = await context.Cim.QueryAsync(
+                "SELECT Name, NumberOfCores, NumberOfLogicalProcessors, MaxClockSpeed, ProcessorId, SecondLevelAddressTranslationExtensions, VirtualizationFirmwareEnabled FROM Win32_Processor",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var mo in cpuRows)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 cpuList.Add(new
                 {
                     Name = mo.GetOrDefault("Name"),
@@ -64,24 +73,26 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
                     VTEnabled = mo.GetOrDefault("VirtualizationFirmwareEnabled")
                 });
             }
-
-            context.ActionLogger.Info(area, "CPU", $"Complete: count={cpuList.Count}");
+            _logger.Log("INF", $"CPU: Complete count={cpuList.Count}", Ctx(area));
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"CPU query failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "CPU", "CPU query failed", ex);
+            _logger.Log("ERR", $"CPU: CPU query failed {ex.GetType().Name}: {ex.Message}", Ctx(area));
         }
 
-        // Memory total and modules
         try
         {
-            context.ActionLogger.Info(area, "Memory", "Start");
-            foreach (var mo in context.Cim.Query(
-                         "SELECT TotalPhysicalMemory FROM Win32_ComputerSystem"))
+            _logger.Log("INF", "Memory: Start", Ctx(area));
+            var compRows = await context.Cim.QueryAsync(
+                "SELECT TotalPhysicalMemory FROM Win32_ComputerSystem",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var mo in compRows)
             {
-                object? bytes = mo.GetOrDefault("TotalPhysicalMemory");
+                cancellationToken.ThrowIfCancellationRequested();
+                var bytes = mo.GetOrDefault("TotalPhysicalMemory");
                 if (bytes is ulong ul)
                 {
                     totalMemGb = Math.Round(ul / 1024d / 1024d / 1024d, 2);
@@ -89,10 +100,12 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
 
                 break;
             }
-
-            foreach (var dimm in context.Cim.Query(
-                         "SELECT BankLabel, Capacity, DeviceLocator, Manufacturer, PartNumber, SerialNumber, Speed FROM Win32_PhysicalMemory"))
+            var dimmRows = await context.Cim.QueryAsync(
+                "SELECT BankLabel, Capacity, DeviceLocator, Manufacturer, PartNumber, SerialNumber, Speed FROM Win32_PhysicalMemory",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var dimm in dimmRows)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 memoryModules.Add(new
                 {
                     Bank = dimm.GetOrDefault("BankLabel"),
@@ -104,25 +117,27 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
                     SpeedMHz = dimm.GetOrDefault("Speed")
                 });
             }
-
-            context.ActionLogger.Info(area, "Memory", $"Complete: total={totalMemGb}GB, modules={memoryModules.Count}");
+            _logger.Log("INF", $"Memory: Complete total={totalMemGb}GB modules={memoryModules.Count}", Ctx(area));
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"Memory inventory failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "Memory", "Memory inventory failed", ex);
+            _logger.Log("ERR", $"Memory: Memory inventory failed {ex.GetType().Name}: {ex.Message}", Ctx(area));
         }
 
-        // Disks, partitions, volumes
         try
         {
-            context.ActionLogger.Info(area, "Disks", "Start");
-            foreach (var mo in context.Cim.Query(
-                         "SELECT Index, Model, Size, MediaType, SerialNumber, InterfaceType FROM Win32_DiskDrive"))
+            _logger.Log("INF", "Disks: Start", Ctx(area));
+            var diskRows = await context.Cim.QueryAsync(
+                "SELECT Index, Model, Size, MediaType, SerialNumber, InterfaceType FROM Win32_DiskDrive",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var mo in diskRows)
             {
-                object? s = mo.GetOrDefault("Size");
-                double sizeGb = s is ulong sz ? Math.Round(sz / 1024d / 1024d / 1024d, 2) : 0d;
+                cancellationToken.ThrowIfCancellationRequested();
+                var s = mo.GetOrDefault("Size");
+                var sizeGb = s is ulong sz ? Math.Round(sz / 1024d / 1024d / 1024d, 2) : 0d;
                 disks.Add(new
                 {
                     Index = Convert.ToInt32(mo.GetOrDefault("Index") ?? 0),
@@ -133,10 +148,12 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
                     InterfaceType = mo.GetOrDefault("InterfaceType")
                 });
             }
-
-            foreach (var p in context.Cim.Query(
-                         "SELECT DeviceID, DiskIndex, Index, Type, BootPartition, PrimaryPartition, Size FROM Win32_DiskPartition"))
+            var partRows = await context.Cim.QueryAsync(
+                "SELECT DeviceID, DiskIndex, Index, Type, BootPartition, PrimaryPartition, Size FROM Win32_DiskPartition",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var p in partRows)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 partitions.Add(new
                 {
                     DeviceID = p.GetOrDefault("DeviceID"),
@@ -148,10 +165,12 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
                     SizeGB = ToGb(p.GetOrDefault("Size"))
                 });
             }
-
-            foreach (var v in context.Cim.Query(
-                         "SELECT DeviceID, VolumeName, FileSystem, Size, FreeSpace, DriveType FROM Win32_LogicalDisk WHERE DriveType=3"))
+            var volRows = await context.Cim.QueryAsync(
+                "SELECT DeviceID, VolumeName, FileSystem, Size, FreeSpace, DriveType FROM Win32_LogicalDisk WHERE DriveType=3",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var v in volRows)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 volumes.Add(new
                 {
                     DeviceID = v.GetOrDefault("DeviceID"),
@@ -162,24 +181,25 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
                     DriveType = v.GetOrDefault("DriveType")
                 });
             }
-
-            context.ActionLogger.Info(area, "Disks",
-                $"Complete: disks={disks.Count}, partitions={partitions.Count}, volumes={volumes.Count}");
+            _logger.Log("INF", $"Disks: Complete disks={disks.Count} partitions={partitions.Count} volumes={volumes.Count}", Ctx(area));
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"Disk inventory failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "Disks", "Disk inventory failed", ex);
+            _logger.Log("ERR", $"Disks: Disk inventory failed {ex.GetType().Name}: {ex.Message}", Ctx(area));
         }
 
-        // GPU
         try
         {
-            context.ActionLogger.Info(area, "GPU", "Start");
-            foreach (var vc in context.Cim.Query(
-                         "SELECT Name, AdapterCompatibility, DriverVersion, DriverDate, AdapterRAM, VideoProcessor FROM Win32_VideoController"))
+            _logger.Log("INF", "GPU: Start", Ctx(area));
+            var gpuRows = await context.Cim.QueryAsync(
+                "SELECT Name, AdapterCompatibility, DriverVersion, DriverDate, AdapterRAM, VideoProcessor FROM Win32_VideoController",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var vc in gpuRows)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 gpu.Add(new
                 {
                     Name = vc.GetOrDefault("Name"),
@@ -190,85 +210,89 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
                     VideoProcessor = vc.GetOrDefault("VideoProcessor")
                 });
             }
-
-            context.ActionLogger.Info(area, "GPU", $"Complete: count={gpu.Count}");
+            _logger.Log("INF", $"GPU: Complete count={gpu.Count}", Ctx(area));
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"GPU query failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "GPU", "GPU query failed", ex);
+            _logger.Log("ERR", $"GPU: GPU query failed {ex.GetType().Name}: {ex.Message}", Ctx(area));
         }
 
-        // Baseboard and system enclosure
         try
         {
-            context.ActionLogger.Info(area, "Board", "Start");
-            foreach (var bb in context.Cim.Query(
-                         "SELECT Manufacturer, Product, SerialNumber, Version FROM Win32_BaseBoard"))
+            _logger.Log("INF", "Board: Start", Ctx(area));
+            var bbRows = await context.Cim.QueryAsync(
+                "SELECT Manufacturer, Product, SerialNumber, Version FROM Win32_BaseBoard",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var bb in bbRows)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 baseboard["Manufacturer"] = bb.GetOrDefault("Manufacturer");
                 baseboard["Product"] = bb.GetOrDefault("Product");
                 baseboard["SerialNumber"] = bb.GetOrDefault("SerialNumber");
                 baseboard["Version"] = bb.GetOrDefault("Version");
-
                 break;
             }
-
-            foreach (var enc in context.Cim.Query(
-                         "SELECT ChassisTypes, Manufacturer, SMBIOSAssetTag FROM Win32_SystemEnclosure"))
+            var encRows = await context.Cim.QueryAsync(
+                "SELECT ChassisTypes, Manufacturer, SMBIOSAssetTag FROM Win32_SystemEnclosure",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var enc in encRows)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 enclosure["ChassisTypes"] = enc.GetOrDefault("ChassisTypes");
                 enclosure["Manufacturer"] = enc.GetOrDefault("Manufacturer");
                 enclosure["AssetTag"] = enc.GetOrDefault("SMBIOSAssetTag");
-
                 break;
             }
-
-            context.ActionLogger.Info(area, "Board", "Complete");
+            _logger.Log("INF", "Board: Complete", Ctx(area));
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"Baseboard/enclosure query failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "Board", "Baseboard/enclosure query failed", ex);
+            _logger.Log("ERR", $"Board: Baseboard/enclosure query failed {ex.GetType().Name}: {ex.Message}", Ctx(area));
         }
 
-        // TPM (best-effort)
-        bool tpmPresent = false;
+        var tpmPresent = false;
         try
         {
-            context.ActionLogger.Info(area, "TPM", "Start");
-            foreach (var t in context.Cim.Query(
-                         "SELECT IsEnabled_InitialValue, IsActivated_InitialValue, SpecVersion, ManufacturerIdTxt, ManufacturerVersion FROM Win32_Tpm",
-                         "\\\\.\\root\\CIMV2\\Security\\MicrosoftTpm"))
+            _logger.Log("INF", "TPM: Start", Ctx(area));
+            var tRows = await context.Cim.QueryAsync(
+                "SELECT IsEnabled_InitialValue, IsActivated_InitialValue, SpecVersion, ManufacturerIdTxt, ManufacturerVersion FROM Win32_Tpm",
+                "\\\\.\\root\\CIMV2\\Security\\MicrosoftTpm", cancellationToken).ConfigureAwait(false);
+            foreach (var t in tRows)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 tpmPresent = true;
                 tpm["IsEnabled_InitialValue"] = t.GetOrDefault("IsEnabled_InitialValue");
                 tpm["IsActivated_InitialValue"] = t.GetOrDefault("IsActivated_InitialValue");
                 tpm["SpecVersion"] = t.GetOrDefault("SpecVersion");
                 tpm["ManufacturerIdTxt"] = t.GetOrDefault("ManufacturerIdTxt");
                 tpm["ManufacturerVersion"] = t.GetOrDefault("ManufacturerVersion");
-
                 break;
             }
-
-            context.ActionLogger.Info(area, "TPM", $"Complete: present={tpmPresent}");
+            _logger.Log("INF", $"TPM: Complete present={tpmPresent}", Ctx(area));
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"TPM query failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "TPM", "TPM query failed", ex);
+            _logger.Log("ERR", $"TPM: TPM query failed {ex.GetType().Name}: {ex.Message}", Ctx(area));
         }
 
-        // Battery (mobile devices)
         try
         {
-            context.ActionLogger.Info(area, "Battery", "Start");
-            foreach (var b in context.Cim.Query(
-                         "SELECT Name, BatteryStatus, EstimatedChargeRemaining, EstimatedRunTime FROM Win32_Battery"))
+            _logger.Log("INF", "Battery: Start", Ctx(area));
+            var batRows = await context.Cim.QueryAsync(
+                "SELECT Name, BatteryStatus, EstimatedChargeRemaining, EstimatedRunTime FROM Win32_Battery",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var b in batRows)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 battery.Add(new
                 {
                     Name = b.GetOrDefault("Name"),
@@ -277,24 +301,17 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
                     EstimatedRunTimeMin = b.GetOrDefault("EstimatedRunTime")
                 });
             }
-
-            context.ActionLogger.Info(area, "Battery", $"Complete: count={battery.Count}");
+            _logger.Log("INF", $"Battery: Complete count={battery.Count}", Ctx(area));
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"Battery query failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "Battery", "Battery query failed", ex);
+            _logger.Log("ERR", $"Battery: Battery query failed {ex.GetType().Name}: {ex.Message}", Ctx(area));
         }
 
-        var summary = new
-        {
-            CPUCount = cpuList.Count,
-            MemoryGB = totalMemGb,
-            DiskCount = disks.Count,
-            GPUCount = gpu.Count,
-            TpmPresent = tpmPresent
-        };
+        var summary = new { CPUCount = cpuList.Count, MemoryGB = totalMemGb, DiskCount = disks.Count, GPUCount = gpu.Count, TpmPresent = tpmPresent };
         var details = new
         {
             CPUs = cpuList,
@@ -309,12 +326,10 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
             TPM = tpm,
             Battery = battery
         };
-        AreaResult result = new(area, summary, details, Array.Empty<Finding>(), warnings, errors);
-        context.ActionLogger.Info(area, "Complete", "Hardware inventory collected");
-
-        return Task.FromResult(result);
+        AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
+        _logger.Log("INF", "Complete: Hardware inventory collected", Ctx(area));
+        return result;
     }
-
 
 
 
@@ -323,17 +338,18 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
     {
         try
         {
-            return v is ulong ul
-                ? Math.Round(ul / 1024d / 1024d / 1024d, 2)
-                : v is long l
-                    ? Math.Round(l / 1024d / 1024d / 1024d, 2)
-                    : v is string s && ulong.TryParse(s, out ulong p)
-                        ? Math.Round(p / 1024d / 1024d / 1024d, 2)
-                        : 0d;
+            return v is ulong ul ? Math.Round(ul / 1024d / 1024d / 1024d, 2)
+                : v is long l ? Math.Round(l / 1024d / 1024d / 1024d, 2)
+                : v is string s && ulong.TryParse(s, out var p) ? Math.Round(p / 1024d / 1024d / 1024d, 2) : 0d;
         }
-        catch
-        {
-            return 0d;
-        }
+        catch { return 0d; }
     }
+
+    private static string Ctx(string module, [CallerMemberName] string member = "", [CallerFilePath] string file = "")
+    {
+        var asm = Assembly.GetExecutingAssembly().GetName().Name ?? "Analyzer";
+        var f = Path.GetFileName(file);
+        return $"{asm} - {module} - {member} - {f}";
+    }
+
 }

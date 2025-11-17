@@ -1,9 +1,27 @@
-﻿using System.Collections.Specialized;
+﻿// Created:  2025/11/10
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  IAppNotificationService.cs
+// 
+// All Rights Reserved 2025
+// Kyle L Crowder
+
+
+
+
+using System.Collections.Specialized;
+
+
+
+
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 
+
 public interface IAppNotificationService
 {
+
+
     void Initialize();
 
     bool Show(string payload);
@@ -11,4 +29,6 @@ public interface IAppNotificationService
     NameValueCollection ParseArguments(string arguments);
 
     void Unregister();
+
+
 }

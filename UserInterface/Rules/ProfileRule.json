@@ -1,0 +1,77 @@
+﻿[
+  {
+    "WorkflowName": "UserProfileBaseline",
+    "Rules": [
+      {
+        "RuleName": "ProfilePathExists",
+        "SuccessEvent": "Profile path exists",
+        "ErrorMessage": "Profile path missing",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "Directory.Exists(input.ProfilePath)"
+      },
+      {
+        "RuleName": "NoTempProfile",
+        "SuccessEvent": "Profile is permanent",
+        "ErrorMessage": "Profile is temporary",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "!input.ProfilePath.Contains(\"TEMP\")"
+      },
+      {
+        "RuleName": "EnvVarMatch",
+        "SuccessEvent": "Environment variable matches profile path",
+        "ErrorMessage": "USERPROFILE mismatch",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "input.UserProfileEnv == input.ProfilePath"
+      },
+      {
+        "RuleName": "StandardFoldersPresent",
+        "SuccessEvent": "Standard folders present",
+        "ErrorMessage": "Missing standard folders",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "input.StandardFolders.All(f => Directory.Exists(f))"
+      },
+      {
+        "RuleName": "RegistryProfileMatch",
+        "SuccessEvent": "Registry matches profile path",
+        "ErrorMessage": "Registry mismatch",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "input.RegistryProfilePath == input.ProfilePath"
+      },
+      {
+        "RuleName": "AclFullControl",
+        "SuccessEvent": "User has full control",
+        "ErrorMessage": "ACL missing full control",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "input.AclRights.Contains(\"FullControl\")"
+      },
+      {
+        "RuleName": "NoUnexpectedAces",
+        "SuccessEvent": "No unexpected ACEs",
+        "ErrorMessage": "Unexpected ACE detected",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "!input.AclRights.Contains(\"Everyone:Write\")"
+      },
+      {
+        "RuleName": "ProfileServiceRunning",
+        "SuccessEvent": "Profile service running",
+        "ErrorMessage": "Profile service not running",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "input.ProfSvcStatus == \"Running\""
+      },
+      {
+        "RuleName": "NoTempProfileEvents",
+        "SuccessEvent": "No temp profile events",
+        "ErrorMessage": "Temp profile event detected",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "!input.EventIds.Contains(1511)"
+      },
+      {
+        "RuleName": "NoAccessDeniedEvents",
+        "SuccessEvent": "No access denied events",
+        "ErrorMessage": "Access denied event detected",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "!input.EventIds.Contains(1509)"
+      }
+    ]
+  }
+]

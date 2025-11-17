@@ -4,7 +4,27 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels"
     mc:Ignorable="d">
+    <Page.DataContext>
+        <vm:ReportViewModel />
+    </Page.DataContext>
 
-    <Grid x:Name="ContentArea" />
+
+    <Grid x:Name="ContentArea">
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,10,10,0" VerticalAlignment="Top">
+            <Button x:Name="ExportButton" Content="Run Rules Engine" Width="120" Height="30" Margin="0,0,10,0" Command="{x:Bind ViewModel.RunRulesCommand}"/>
+
+        </StackPanel>
+
+
+
+
+
+
+
+
+
+    </Grid>
 </Page>

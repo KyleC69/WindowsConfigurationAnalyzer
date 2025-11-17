@@ -8,13 +8,15 @@
 
 
 
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.Core.Services;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Core.Services;
 
 
 // This class holds sample data used by some generated pages to show how they can be used.
@@ -26,6 +28,8 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Core.Services;
 // 5. Models/SampleOrderDetail.cs
 public class SampleDataService : ISampleDataService
 {
+
+
     private List<SampleOrder> _allOrders = null!;
 
 
@@ -50,10 +54,7 @@ public class SampleDataService : ISampleDataService
         // The following is order summary data
         IEnumerable<SampleCompany> companies = AllCompanies();
 
-        return companies.SelectMany(c =>
-        {
-            return c.Orders ?? null!;
-        });
+        return companies.SelectMany(c => { return c.Orders ?? null!; });
     }
 
 
@@ -530,4 +531,6 @@ public class SampleDataService : ISampleDataService
             }
         ];
     }
+
+
 }

@@ -3,20 +3,12 @@
     <Platform Name="Any CPU" />
     <Platform Name="x64" />
   </Configurations>
-
-  <Folder Name="/.github/">
-    <File Path=".github/Copilot-Instructions.md" />
- </Folder>
-  <Folder Name="/root/">
-    <File Path=".editorconfig" />
-    <File Path="CodeMap1.dgml" />
-    <File Path="Directory.Build.props" />
-    <File Path="settings.VisualStudio.json" />
-    <File Path="WindowsConfigurationAnalyzer.sln.DotSettings.user" />
-  </Folder>
-  <Project Path="Analyzer/Analyzer.csproj">
+  <Project Path="Analyzer/DataProbe.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
+  <Project Path="Contracts/Contracts.csproj" Id="91c781d4-3ec2-4ad3-9e4a-79ef87b8d583" />
+  <Project Path="Root.shproj" Id="21ab5f55-f80a-4192-9090-45fc5b2574e9" />
+  <Project Path="RuleAnalyzer/RuleAnalyzer.csproj" Id="9dc7a8da-e179-46d7-a04f-8abaaa3b9e7e" />
   <Project Path="Tests/Tests.csproj">
     <Platform Project="x64" />
     <Build Project="false" />

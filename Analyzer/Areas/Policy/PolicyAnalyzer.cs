@@ -8,20 +8,27 @@
 
 
 
+
 using System.Xml;
 
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Utilities;
+using KC.WindowsConfigurationAnalyzer.Contracts;
+using KC.WindowsConfigurationAnalyzer.Contracts.Models;
+using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.Analyzer.Areas.Policy;
 
+
+namespace KC.WindowsConfigurationAnalyzer.DataProbe.Areas.Policy;
 
 
 public sealed class PolicyAnalyzer : IAnalyzerModule
 {
+
+
+    private IActivityLogger? _logger;
+
+
     public string Name => "Policy/GPO Analyzer";
     public string Area => "Policy/GPO";
 
@@ -29,14 +36,14 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
 
 
 
-    public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
+    public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        string area = Area;
-        context.ActionLogger.Info(area, "Start", "Collecting policy and GPO data");
+        _logger = logger;
+        var area = Area;
+        _logger.Log("INF", "Start: Collecting policy and GPO data", area);
         List<string> warnings = new();
         List<string> errors = new();
 
-        // Accumulators
         Dictionary<string, object?> policies = new();
         Dictionary<string, object?> defenderPolicies = new();
         Dictionary<string, object?> firewallPolicies = new();
@@ -45,267 +52,196 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
         List<object> rsopRegistry = new();
         List<object> registryPolFiles = new();
 
-        //1) Recursive enumeration of Software\Policies trees
         try
         {
-            context.ActionLogger.Info(area, "Tree", "Start");
-            foreach (string root in new[] { "HKLM", "HKCU" })
+            _logger.Log("INF", "Tree: Start", area);
+            foreach (var root in new[] { "HKLM", "HKCU" })
             {
-                string basePath = $"{root}\\SOFTWARE\\Policies";
+                cancellationToken.ThrowIfCancellationRequested();
+                var basePath = $"{root}\\SOFTWARE\\Policies";
                 EnumeratePolicyTree(context, basePath, policies, 12);
             }
-
-            context.ActionLogger.Info(area, "Tree", $"Complete: entries={policies.Count}");
+            _logger.Log("INF", $"Tree: Complete: entries={policies.Count}", area);
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"Policy tree enumeration failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "Tree", "Policy tree enumeration failed", ex);
+            _logger.Log("ERR", $"Tree: Policy tree enumeration failed ({ex.Message})", area);
         }
 
-        //2) Targeted policy keys (UAC, Firewall, DNS Client, RDP, Windows Update, Security Options)
         try
         {
-            context.ActionLogger.Info(area, "Targeted", "Start");
-            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System", new[]
-            {
-                "EnableLUA", "ConsentPromptBehaviorAdmin", "PromptOnSecureDesktop", "EnableInstallerDetection",
-                "DontDisplayLastUserName"
-            });
-            // Windows Firewall profiles
-            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\DomainProfile",
-                new[] { "EnableFirewall", "DefaultInboundAction", "DefaultOutboundAction" });
-            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\PrivateProfile",
-                new[] { "EnableFirewall", "DefaultInboundAction", "DefaultOutboundAction" });
-            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\PublicProfile",
-                new[] { "EnableFirewall", "DefaultInboundAction", "DefaultOutboundAction" });
-            // DNS client
-            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient",
-                new[] { "DisableSmartNameResolution", "EnableMulticast" });
-            // RDP
-            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services",
-                new[] { "fDenyTSConnections", "UserAuthentication", "fSingleSessionPerUser" });
-            // Windows Update
-            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
-                new[] { "NoAutoUpdate", "AUOptions", "ScheduledInstallDay", "ScheduledInstallTime" });
-            // Security options (LM/NTLM, anonymous restrictions)
-            ReadPolicy(context, policies, "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa",
-                new[] { "LimitBlankPasswordUse", "LmCompatibilityLevel", "RestrictAnonymous", "RestrictAnonymousSAM" });
-            context.ActionLogger.Info(area, "Targeted", "Complete");
+            _logger.Log("INF", "Targeted: Start", area);
+            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System", new List<string> { "EnableLUA", "ConsentPromptBehaviorAdmin", "PromptOnSecureDesktop", "EnableInstallerDetection", "DontDisplayLastUserName" }.AsReadOnly());
+            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\DomainProfile", new List<string> { "EnableFirewall", "DefaultInboundAction", "DefaultOutboundAction" }.AsReadOnly());
+            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\PrivateProfile", new List<string> { "EnableFirewall", "DefaultInboundAction", "DefaultOutboundAction" }.AsReadOnly());
+            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\PublicProfile", new List<string> { "EnableFirewall", "DefaultInboundAction", "DefaultOutboundAction" }.AsReadOnly());
+            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient", new List<string> { "DisableSmartNameResolution", "EnableMulticast" }.AsReadOnly());
+            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services", new List<string> { "fDenyTSConnections", "UserAuthentication", "fSingleSessionPerUser" }.AsReadOnly());
+            ReadPolicy(context, policies, "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", new List<string> { "NoAutoUpdate", "AUOptions", "ScheduledInstallDay", "ScheduledInstallTime" }.AsReadOnly());
+            ReadPolicy(context, policies, "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa", new List<string> { "LimitBlankPasswordUse", "LmCompatibilityLevel", "RestrictAnonymous", "RestrictAnonymousSAM" }.AsReadOnly());
+            _logger.Log("INF", "Targeted: Complete", area);
         }
         catch (Exception ex)
         {
             warnings.Add($"Targeted policy read failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "Targeted", "Targeted policy read failed", ex);
+            _logger.Log("ERR", $"Targeted: Targeted policy read failed ({ex.Message})", area);
         }
 
-        //3) Defender policy trees
         try
         {
-            context.ActionLogger.Info(area, "Defender", "Start");
-            foreach (string path in new[]
-                     {
-                         "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender",
-                         "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection",
-                         "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Spynet",
-                         "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Threats"
-                     })
+            _logger.Log("INF", "Defender: Start", area);
+            foreach (var path in new[] { "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender", "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection", "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Spynet", "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Threats" })
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 EnumeratePolicyTree(context, path, defenderPolicies, 6);
             }
-
-            context.ActionLogger.Info(area, "Defender", $"Complete: entries={defenderPolicies.Count}");
+            _logger.Log("INF", $"Defender: Complete: entries={defenderPolicies.Count}", area);
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"Defender policy enumeration failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "Defender", "Defender policy enumeration failed", ex);
+            _logger.Log("ERR", $"Defender: Defender policy enumeration failed ({ex.Message})", area);
         }
 
-        //4) Firewall policy trees (complete)
         try
         {
-            context.ActionLogger.Info(area, "Firewall", "Start");
-            foreach (string path in new[]
-                     {
-                         "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\DomainProfile",
-                         "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\PrivateProfile",
-                         "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\PublicProfile",
-                         "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\FirewallRules"
-                     })
+            _logger.Log("INF", "Firewall: Start", area);
+            foreach (var path in new[] { "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\DomainProfile", "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\PrivateProfile", "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\PublicProfile", "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsFirewall\\FirewallRules" })
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 EnumeratePolicyTree(context, path, firewallPolicies, 6);
             }
-
-            context.ActionLogger.Info(area, "Firewall", $"Complete: entries={firewallPolicies.Count}");
+            _logger.Log("INF", $"Firewall: Complete: entries={firewallPolicies.Count}", area);
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"Firewall policy enumeration failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "Firewall", "Firewall policy enumeration failed", ex);
+            _logger.Log("ERR", $"Firewall: Firewall policy enumeration failed ({ex.Message})", area);
         }
 
-        //5) RSOP - Computer and User GPO list and registry policy settings
         try
         {
-            context.ActionLogger.Info(area, "RSOP", "Start");
-            // GPO list - Computer
+            _logger.Log("INF", "RSOP: Start", area);
             try
             {
-                foreach (var gpo in context.Cim.Query(
-                             "SELECT Name, id, precedence FROM RSOP_GPO",
-                             "\\\\.\\root\\RSOP\\Computer"))
+                var compGpos = await context.Cim.QueryAsync("SELECT Name, id, precedence FROM RSOP_GPO", "\\\\.\\root\\RSOP\\Computer", cancellationToken).ConfigureAwait(false);
+                foreach (var gpo in compGpos)
                 {
-                    rsopComputerGpos.Add(new
-                    {
-                        Name = gpo.GetOrDefault("Name"),
-                        Id = gpo.GetOrDefault("id"),
-                        Precedence = gpo.GetOrDefault("precedence")
-                    });
+                    cancellationToken.ThrowIfCancellationRequested();
+                    rsopComputerGpos.Add(new { Name = gpo.GetOrDefault("Name"), Id = gpo.GetOrDefault("id"), Precedence = gpo.GetOrDefault("precedence") });
                 }
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
                 warnings.Add($"RSOP Computer GPO query failed: {ex.Message}");
                 errors.Add(ex.ToString());
-                context.ActionLogger.Error(area, "RSOP", "RSOP Computer GPO query failed", ex);
+                _logger.Log("ERR", $"RSOP: RSOP Computer GPO query failed ({ex.Message})", area);
             }
-
-            // GPO list - User
             try
             {
-                foreach (var gpo in context.Cim.Query(
-                             "SELECT Name, id, precedence FROM RSOP_GPO",
-                             "\\\\.\\root\\RSOP\\User"))
+                var userGpos = await context.Cim.QueryAsync("SELECT Name, id, precedence FROM RSOP_GPO", "\\\\.\\root\\RSOP\\User", cancellationToken).ConfigureAwait(false);
+                foreach (var gpo in userGpos)
                 {
-                    rsopUserGpos.Add(new
-                    {
-                        Name = gpo.GetOrDefault("Name"),
-                        Id = gpo.GetOrDefault("id"),
-                        Precedence = gpo.GetOrDefault("precedence")
-                    });
+                    cancellationToken.ThrowIfCancellationRequested();
+                    rsopUserGpos.Add(new { Name = gpo.GetOrDefault("Name"), Id = gpo.GetOrDefault("id"), Precedence = gpo.GetOrDefault("precedence") });
                 }
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
                 warnings.Add($"RSOP User GPO query failed: {ex.Message}");
                 errors.Add(ex.ToString());
-                context.ActionLogger.Error(area, "RSOP", "RSOP User GPO query failed", ex);
+                _logger.Log("ERR", $"RSOP: RSOP User GPO query failed ({ex.Message})", area);
             }
-
-            // Registry policy settings (may be large; limit depth via selection)
             try
             {
-                foreach (var s in context.Cim.Query(
-                             "SELECT KeyName, ValueName, Value, GPOID FROM RSOP_RegistryPolicySetting",
-                             "\\\\.\\root\\RSOP\\Computer"))
+                var regComp = await context.Cim.QueryAsync("SELECT KeyName, ValueName, Value, GPOID FROM RSOP_RegistryPolicySetting", "\\\\.\\root\\RSOP\\Computer", cancellationToken).ConfigureAwait(false);
+                foreach (var s in regComp)
                 {
-                    rsopRegistry.Add(new
-                    {
-                        Scope = "Computer",
-                        Key = s.GetOrDefault("KeyName"),
-                        Name = s.GetOrDefault("ValueName"),
-                        Value = s.GetOrDefault("Value"),
-                        Gpo = s.GetOrDefault("GPOID")
-                    });
+                    cancellationToken.ThrowIfCancellationRequested();
+                    rsopRegistry.Add(new { Scope = "Computer", Key = s.GetOrDefault("KeyName"), Name = s.GetOrDefault("ValueName"), Value = s.GetOrDefault("Value"), Gpo = s.GetOrDefault("GPOID") });
                 }
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
                 warnings.Add($"RSOP Registry (Computer) query failed: {ex.Message}");
                 errors.Add(ex.ToString());
-                context.ActionLogger.Error(area, "RSOP", "RSOP Registry (Computer) query failed", ex);
+                _logger.Log("ERR", $"RSOP: RSOP Registry (Computer) query failed ({ex.Message})", area);
             }
-
             try
             {
-                foreach (var s in context.Cim.Query(
-                             "SELECT KeyName, ValueName, Value, GPOID FROM RSOP_RegistryPolicySetting",
-                             "\\\\.\\root\\RSOP\\User"))
+                var regUser = await context.Cim.QueryAsync("SELECT KeyName, ValueName, Value, GPOID FROM RSOP_RegistryPolicySetting", "\\\\.\\root\\RSOP\\User", cancellationToken).ConfigureAwait(false);
+                foreach (var s in regUser)
                 {
-                    rsopRegistry.Add(new
-                    {
-                        Scope = "User",
-                        Key = s.GetOrDefault("KeyName"),
-                        Name = s.GetOrDefault("ValueName"),
-                        Value = s.GetOrDefault("Value"),
-                        Gpo = s.GetOrDefault("GPOID")
-                    });
+                    cancellationToken.ThrowIfCancellationRequested();
+                    rsopRegistry.Add(new { Scope = "User", Key = s.GetOrDefault("KeyName"), Name = s.GetOrDefault("ValueName"), Value = s.GetOrDefault("Value"), Gpo = s.GetOrDefault("GPOID") });
                 }
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
                 warnings.Add($"RSOP Registry (User) query failed: {ex.Message}");
                 errors.Add(ex.ToString());
-                context.ActionLogger.Error(area, "RSOP", "RSOP Registry (User) query failed", ex);
+                _logger.Log("ERR", $"RSOP: RSOP Registry (User) query failed ({ex.Message})", area);
             }
-
-            context.ActionLogger.Info(area, "RSOP",
-                $"Complete: compGPOs={rsopComputerGpos.Count}, userGPOs={rsopUserGpos.Count}, registry={rsopRegistry.Count}");
+            _logger.Log("INF", $"RSOP: Complete: compGPOs={rsopComputerGpos.Count}, userGPOs={rsopUserGpos.Count}, registry={rsopRegistry.Count}", area);
         }
-        catch
-        {
-            /* section-level guard */
-        }
+        catch { }
 
-        //6) Registry.pol metadata
         try
         {
-            context.ActionLogger.Info(area, "RegistryPol", "Start");
-            string sys = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            string machinePol = Path.Combine(sys, "System32", "GroupPolicy", "Machine", "Registry.pol");
-            string userPol = Path.Combine(sys, "System32", "GroupPolicy", "User", "Registry.pol");
-            foreach (var pol in new[]
-                         { (Scope: "Machine", Path: machinePol), (Scope: "User", Path: userPol) })
+            _logger.Log("INF", "RegistryPol: Start", area);
+            var sys = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            var machinePol = Path.Combine(sys, "System32", "GroupPolicy", "Machine", "Registry.pol");
+            var userPol = Path.Combine(sys, "System32", "GroupPolicy", "User", "Registry.pol");
+            foreach (var pol in new[] { (Scope: "Machine", Path: machinePol), (Scope: "User", Path: userPol) })
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (File.Exists(pol.Path))
                 {
                     FileInfo fi = new(pol.Path);
-                    registryPolFiles.Add(new
-                    {
-                        pol.Scope,
-                        pol.Path,
-                        Size = fi.Length,
-                        LastWriteUtc = fi.LastWriteTimeUtc
-                    });
+                    registryPolFiles.Add(new { pol.Scope, pol.Path, Size = fi.Length, LastWriteUtc = fi.LastWriteTimeUtc });
                 }
                 else
                 {
                     registryPolFiles.Add(new { pol.Scope, pol.Path, Size = 0L, LastWriteUtc = (DateTime?)null });
                 }
             }
-
-            context.ActionLogger.Info(area, "RegistryPol", "Complete");
+            _logger.Log("INF", "RegistryPol: Complete", area);
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"Registry.pol metadata enumeration failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "RegistryPol", "Registry.pol metadata enumeration failed", ex);
+            _logger.Log("ERR", $"RegistryPol: Registry.pol metadata enumeration failed ({ex.Message})", area);
         }
 
-        // Existing ADMX checks and compliance mapping retained
         List<object> admxResults = new();
         List<object> compliance = new();
         try
         {
-            context.ActionLogger.Info(area, "ADMX", "Start");
-            string policyDefFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                "PolicyDefinitions");
-            string locale = "en-US"; // default; future: read system UI language
+            _logger.Log("INF", "ADMX: Start", area);
+            var policyDefFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "PolicyDefinitions");
+            var locale = "en-US";
             if (Directory.Exists(policyDefFolder))
             {
-                // Validate ADMXs
-                foreach (string admx in Directory.EnumerateFiles(policyDefFolder, "*.admx",
-                             SearchOption.TopDirectoryOnly))
+                foreach (var admx in Directory.EnumerateFiles(policyDefFolder, "*.admx", SearchOption.TopDirectoryOnly))
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     try
                     {
-                        var r = AdmxValidator.Validate(admx, Path.Combine(policyDefFolder, locale));
+                        AdmxValidator.Result r = AdmxValidator.Validate(admx, Path.Combine(policyDefFolder, locale));
                         admxResults.Add(new { r.File, r.IsXmlValid, r.HasAdml, r.Root, r.State, r.Error });
                     }
                     catch (Exception vex)
@@ -313,25 +249,21 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
                         warnings.Add($"ADMX validate failed: {Path.GetFileName(admx)}: {vex.Message}");
                     }
                 }
-
-                // Build map of (key,valueName) from ADMX for rough compliance
-                var definedPairs = BuildAdmxRegistryMap(policyDefFolder);
-                HashSet<string> definedSet = new(definedPairs.Select(p => NormalizeKey(p.key) + ":" + p.valueName),
-                    StringComparer.OrdinalIgnoreCase);
+                IEnumerable<(string key, string valueName)> definedPairs = BuildAdmxRegistryMap(policyDefFolder);
+                HashSet<string> definedSet = new(definedPairs.Select(p => NormalizeKey(p.key) + ":" + p.valueName), StringComparer.OrdinalIgnoreCase);
                 foreach (var kvp in policies)
                 {
-                    string[] split = kvp.Key.Split(':');
-
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var split = kvp.Key.Split(':');
                     if (split.Length != 2)
                     {
                         continue;
                     }
 
-                    string hivePlusKey = split[0];
-                    string valName = split[1];
-                    string norm = NormalizeKey(hivePlusKey) + ":" + valName;
-                    bool known = definedSet.Contains(norm);
-                    if (!known)
+                    var hivePlusKey = split[0];
+                    var valName = split[1];
+                    var norm = NormalizeKey(hivePlusKey) + ":" + valName;
+                    if (!definedSet.Contains(norm))
                     {
                         compliance.Add(new { Key = hivePlusKey, ValueName = valName, State = "UnknownInADMX" });
                     }
@@ -342,71 +274,47 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
                 warnings.Add("PolicyDefinitions folder not found");
             }
 
-            context.ActionLogger.Info(area, "ADMX", "Complete");
+            _logger.Log("INF", "ADMX: Complete", area);
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"ADMX verification failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "ADMX", "ADMX verification failed", ex);
+            _logger.Log("ERR", $"ADMX: ADMX verification failed ({ex.Message})", area);
         }
 
-        var summary = new
-        {
-            PolicyEntries = policies.Count,
-            DefenderEntries = defenderPolicies.Count,
-            FirewallEntries = firewallPolicies.Count,
-            RsopComputerGpos = rsopComputerGpos.Count,
-            RsopUserGpos = rsopUserGpos.Count
-        };
+        var summary = new { PolicyEntries = policies.Count, DefenderEntries = defenderPolicies.Count, FirewallEntries = firewallPolicies.Count, RsopComputerGpos = rsopComputerGpos.Count, RsopUserGpos = rsopUserGpos.Count };
         var details = new
         {
             Policies = policies,
             Defender = defenderPolicies,
             Firewall = firewallPolicies,
-            RSOP = new
-            {
-                ComputerGPOs = rsopComputerGpos,
-                UserGPOs = rsopUserGpos,
-                Registry = rsopRegistry
-            },
+            RSOP = new { ComputerGPOs = rsopComputerGpos, UserGPOs = rsopUserGpos, Registry = rsopRegistry },
             RegistryPol = registryPolFiles,
             Admx = admxResults,
             PolicyCompliance = compliance
         };
-        AreaResult result = new(area, summary, details, Array.Empty<Finding>(), warnings, errors);
-        context.ActionLogger.Info(area, "Complete", "Policy and GPO collection completed");
-
-        return Task.FromResult(result);
+        AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
+        _logger.Log("INF", "Complete: Policy and GPO collection completed", area);
+        return result;
     }
 
 
 
 
-
-    private static void ReadPolicy(IAnalyzerContext context, IDictionary<string, object?> bag, string baseKey,
-                                   IEnumerable<string> names)
+    private static void ReadPolicy(IAnalyzerContext context, IDictionary<string, object?> bag, string baseKey, IEnumerable<string> names)
     {
-        foreach (string name in names)
+        foreach (var name in names)
         {
-            try
-            {
-                object? v = context.Registry.GetValue(baseKey, name);
-                bag[$"{baseKey}:{name}"] = v;
-            }
-            catch
-            {
-                // continue on error
-            }
+            try { bag[$"{baseKey}:{name}"] = context.Registry.GetValue(baseKey, name); } catch { }
         }
     }
 
 
 
 
-
-    private static void EnumeratePolicyTree(IAnalyzerContext context, string baseKey, IDictionary<string, object?> bag,
-                                            int maxDepth, int depth = 0)
+    private static void EnumeratePolicyTree(IAnalyzerContext context, string baseKey, IDictionary<string, object?> bag, int maxDepth, int depth = 0)
     {
         if (depth > maxDepth)
         {
@@ -415,27 +323,17 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
 
         try
         {
-            foreach (string name in context.Registry.EnumerateValueNames(baseKey))
+            foreach (var name in context.Registry.EnumerateValueNames(baseKey))
             {
-                try
-                {
-                    bag[$"{baseKey}:{name}"] = context.Registry.GetValue(baseKey, name);
-                }
-                catch
-                {
-                }
+                try { bag[$"{baseKey}:{name}"] = context.Registry.GetValue(baseKey, name); } catch { }
             }
-
-            foreach (string sub in context.Registry.EnumerateSubKeys(baseKey))
+            foreach (var sub in context.Registry.EnumerateSubKeys(baseKey))
             {
                 EnumeratePolicyTree(context, $"{baseKey}\\{sub}", bag, maxDepth, depth + 1);
             }
         }
-        catch
-        {
-        }
+        catch { }
     }
-
 
 
 
@@ -443,18 +341,18 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
     private static IEnumerable<(string key, string valueName)> BuildAdmxRegistryMap(string policyDefFolder)
     {
         List<(string key, string valueName)> list = new();
-        foreach (string admx in Directory.EnumerateFiles(policyDefFolder, "*.admx", SearchOption.TopDirectoryOnly))
+        foreach (var admx in Directory.EnumerateFiles(policyDefFolder, "*.admx", SearchOption.TopDirectoryOnly))
         {
             try
             {
-                using var fs = File.OpenRead(admx);
-                using XmlReader xr = XmlReader.Create(fs);
+                using FileStream fs = File.OpenRead(admx);
+                using var xr = XmlReader.Create(fs);
                 while (xr.Read())
                 {
                     if (xr.NodeType == XmlNodeType.Element)
                     {
-                        string? key = xr.GetAttribute("key");
-                        string? valName = xr.GetAttribute("valueName") ?? xr.GetAttribute("name");
+                        var key = xr.GetAttribute("key");
+                        var valName = xr.GetAttribute("valueName") ?? xr.GetAttribute("name");
                         if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(valName))
                         {
                             list.Add((key!, valName!));
@@ -462,25 +360,19 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
                     }
                 }
             }
-            catch
-            {
-            }
+            catch { }
         }
-
         return list;
     }
 
 
 
 
-
     private static string NormalizeKey(string hivePlusKey)
     {
-        // Drop HKLM/HKCU prefix when present, for comparison with ADMX relative keys
-        return hivePlusKey.StartsWith("HKLM\\", StringComparison.OrdinalIgnoreCase)
-            ? hivePlusKey.Substring(5)
-            : hivePlusKey.StartsWith("HKCU\\", StringComparison.OrdinalIgnoreCase)
-                ? hivePlusKey.Substring(5)
-                : hivePlusKey;
+        return hivePlusKey.StartsWith("HKLM\\", StringComparison.OrdinalIgnoreCase) ? hivePlusKey.Substring(5)
+            : hivePlusKey.StartsWith("HKCU\\", StringComparison.OrdinalIgnoreCase) ? hivePlusKey.Substring(5) : hivePlusKey;
     }
+
+
 }

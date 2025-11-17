@@ -1,30 +1,48 @@
-﻿using System.Diagnostics;
-using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
+﻿// Created:  2025/11/09
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  ActivityLogger.cs
+// 
+// All Rights Reserved 2025
+// Kyle L Crowder
+
+
+
+
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Text;
+
+using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
+using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Etw;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
-using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using KC.WindowsConfigurationAnalyzer.UserInterface;
-using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 
 /// <summary>
-/// High-frequency, low-overhead activity logger intended for early initialization and diagnostic tracing.
-/// Enabled by default until <see cref="InitializeAsync(ILocalSettingsService?)"/> is called and disables it via settings.
-/// This logger is buffered, bounded, and resilient: it never throws from logging calls and will drop entries when overloaded.
+///     High-frequency, low-overhead activity logger intended for early initialization and diagnostic tracing.
+///     Enabled by default until <see cref="InitializeAsync(ILocalSettingsService?)" /> is called and disables it via
+///     settings.
+///     This logger is buffered, bounded, and resilient: it never throws from logging calls and will drop entries when
+///     overloaded.
 /// </summary>
 public static class ActivityLogger
 {
+
+
+    // Protects pending count; allows quick drop when overloaded
+    private const int MaxPending = 50_000; // upper bound to avoid unbounded memory use
+
     // Default: enabled until settings service says otherwise
     private static volatile bool _isEnabled = true;
-    private static readonly string LogDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "KC.WindowsConfigurationAnalyzer", "ActivityLogs");
+
+    private static readonly string LogDirectory =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+            "KC.WindowsConfigurationAnalyzer", "ActivityLogs");
 
     private static readonly ConcurrentQueue<string> _queue = new();
     private static StreamWriter? _writer;
@@ -32,10 +50,11 @@ public static class ActivityLogger
     private static Task? _worker;
     private static readonly object _initLock = new();
     private static bool _initialized;
-
-    // Protects pending count; allows quick drop when overloaded
-    private const int MaxPending = 50_000; // upper bound to avoid unbounded memory use
     private static int _pendingCount;
+
+
+
+
 
     // Start background worker and try to create writer eagerly so logging is available as early as possible
     static ActivityLogger()
@@ -62,23 +81,37 @@ public static class ActivityLogger
         }
     }
 
+
+
+
+
+
+
+
+
+
     /// <summary>
-    /// Initialize logger with settings service. If settings explicitly disable logging (value "false"), logger will be turned off.
-    /// Call this once DI is available; logger is enabled by default until this call completes.
+    ///     Initialize logger with settings service. If settings explicitly disable logging (value "false"), logger will be
+    ///     turned off.
+    ///     Call this once DI is available; logger is enabled by default until this call completes.
     /// </summary>
     /// <param name="localSettingsService">The settings service used to read persisted flags. If null, no changes are made.</param>
     public static async Task InitializeAsync(ILocalSettingsService? localSettingsService)
     {
         if (localSettingsService is null)
+        {
             return; // nothing to do - keep default behaviour
+        }
 
         try
         {
-            var raw = await localSettingsService.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled").ConfigureAwait(false);
+            var raw = await localSettingsService.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled")
+                .ConfigureAwait(false);
             if (string.Equals(raw, "false", StringComparison.OrdinalIgnoreCase))
             {
                 // Turn off logging if settings say so
                 DisableLogging();
+
                 return;
             }
 
@@ -93,15 +126,23 @@ public static class ActivityLogger
         }
     }
 
+
+
+
+
     /// <summary>
-    /// Explicitly disable logging. This will stop the background worker and attempt to flush queued entries.
-    /// Safe to call multiple times.
+    ///     Explicitly disable logging. This will stop the background worker and attempt to flush queued entries.
+    ///     Safe to call multiple times.
     /// </summary>
     public static void DisableLogging()
     {
         lock (_initLock)
         {
-            if (!_isEnabled) return;
+            if (!_isEnabled)
+            {
+                return;
+            }
+
             _isEnabled = false;
         }
 
@@ -118,13 +159,34 @@ public static class ActivityLogger
                     EnsureWriter();
                     _writer?.WriteLine(line);
                 }
-                catch { /* swallow */ }
+                catch
+                {
+                    /* swallow */
+                }
             }
 
-            try { _writer?.Flush(); } catch { /* swallow */ }
-            try { _writer?.Dispose(); } catch { /* swallow */ }
+            try
+            {
+                _writer?.Flush();
+            }
+            catch
+            {
+                /* swallow */
+            }
+
+            try
+            {
+                _writer?.Dispose();
+            }
+            catch
+            {
+                /* swallow */
+            }
         }
-        catch { /* swallow */ }
+        catch
+        {
+            /* swallow */
+        }
         finally
         {
             _writer = null;
@@ -134,49 +196,66 @@ public static class ActivityLogger
         }
     }
 
+
+
+
+
     /// <summary>
-    /// Lightweight synchronous initializer when caller already knows enabled state and wants early init.
+    ///     Lightweight synchronous initializer when caller already knows enabled state and wants early init.
     /// </summary>
     /// <param name="enabled">True to enable logging; false to disable.</param>
     public static void Initialize(bool enabled)
     {
         lock (_initLock)
         {
-            if (_initialized) return;
+            if (_initialized)
+            {
+                return;
+            }
+
             _initialized = true;
             _isEnabled = enabled;
         }
 
         if (_isEnabled)
+        {
             EnsureWriter();
+        }
     }
 
+
+
+
+
     /// <summary>
-    /// Enqueue a log entry. This method is designed to be very low overhead and will not block the caller.
-    /// If the internal queue is full, entries will be dropped to protect application stability.
+    ///     Enqueue a log entry. This method is designed to be very low overhead and will not block the caller.
+    ///     If the internal queue is full, entries will be dropped to protect application stability.
     /// </summary>
     /// <param name="level">A short level string (e.g. "INF", "ERR").</param>
     /// <param name="message">The log message.</param>
     /// <param name="context">Optional context string.</param>
-    public static void Log(string level, string message, string context = "")
+    public static void Log(string level, string message, string context)
     {
-     //   App.LogCounter.Increment();
-        
+        //   App.LogCounter.Increment();
+
         // Fast check
         if (!_isEnabled || !_initialized)
+        {
             return;
+        }
 
         try
         {
             // Build CSV line with minimal allocations
-            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            string line = $"{Escape(timestamp)},{Escape(level)},{Escape(message)},{Escape(context)}";
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            var line = $"{Escape(timestamp)},{Escape(level)},{Escape(message)},{Escape(context)}";
 
             // Bounded enqueue using atomic counter to avoid using Count on ConcurrentQueue
             if (Interlocked.Increment(ref _pendingCount) > MaxPending)
             {
                 // drop this entry to protect app memory
                 Interlocked.Decrement(ref _pendingCount);
+
                 return;
             }
 
@@ -185,31 +264,86 @@ public static class ActivityLogger
         catch (Exception ex)
         {
             // Never throw from logging
-            try { LogFallback($"Log enqueue failed: {ex.Message}"); } catch { /* swallow */ }
+            try
+            {
+                WCAEventSource.Log.ActivityLoggerFallback($"LOGGING FAILED: {ex.Message}");
+                LogFallback($"Log enqueue failed: {ex.Message}");
+            }
+            catch
+            {
+                /* swallow */
+            }
         }
     }
 
+
+
+
+
+    public static void Info(string context, string action, string message)
+    {
+        Log("INF", $"{action}: {message}", context);
+    }
+
+
+
+
+
+    public static void Error(string context, string action, string message, Exception? ex)
+    {
+        Log("ERR", $"{action}: {message}", context);
+        //TODO: Also send to event log!
+    }
+
+
+
+
+
+    public static void Warn(string context, string action, string message)
+    {
+        Log("WRN", $"{action}: {message}", context);
+        //TODO: Also send to event log!
+    }
+
+
+
+
+
     /// <summary>
-    /// Flush queued entries to disk. Best-effort and non-blocking.
+    ///     Flush queued entries to disk. Best-effort and non-blocking.
     /// </summary>
     public static void Flush()
     {
         try
         {
             // Wait briefly for worker to drain
-            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
             while (_pendingCount > 0 && sw.Elapsed < TimeSpan.FromSeconds(2))
             {
                 Thread.Sleep(50);
             }
 
-            try { _writer?.Flush(); } catch { /* swallow */ }
+            try
+            {
+                _writer?.Flush();
+            }
+            catch
+            {
+                /* swallow */
+            }
         }
-        catch { /* swallow */ }
+        catch
+        {
+            /* swallow */
+        }
     }
 
+
+
+
+
     /// <summary>
-    /// Shutdown logger and flush. Call during application exit.
+    ///     Shutdown logger and flush. Call during application exit.
     /// </summary>
     public static void Shutdown()
     {
@@ -219,7 +353,14 @@ public static class ActivityLogger
 
             if (_worker != null)
             {
-                try { _worker.Wait(2000); } catch { /* swallow */ }
+                try
+                {
+                    _worker.Wait(2000);
+                }
+                catch
+                {
+                    /* swallow */
+                }
             }
 
             while (_queue.TryDequeue(out var line))
@@ -229,13 +370,34 @@ public static class ActivityLogger
                     EnsureWriter();
                     _writer?.WriteLine(line);
                 }
-                catch { /* swallow */ }
+                catch
+                {
+                    /* swallow */
+                }
             }
 
-            try { _writer?.Flush(); } catch { /* swallow */ }
-            try { _writer?.Dispose(); } catch { /* swallow */ }
+            try
+            {
+                _writer?.Flush();
+            }
+            catch
+            {
+                /* swallow */
+            }
+
+            try
+            {
+                _writer?.Dispose();
+            }
+            catch
+            {
+                /* swallow */
+            }
         }
-        catch { /* swallow */ }
+        catch
+        {
+            /* swallow */
+        }
         finally
         {
             _writer = null;
@@ -247,20 +409,34 @@ public static class ActivityLogger
         }
     }
 
+
+
+
+
     private static void EnsureWriter()
     {
-        if (!_isEnabled) return;
-        if (_writer != null) return;
+        if (!_isEnabled)
+        {
+            return;
+        }
+
+        if (_writer != null)
+        {
+            return;
+        }
 
         lock (_initLock)
         {
-            if (_writer != null) return;
+            if (_writer != null)
+            {
+                return;
+            }
 
             try
             {
                 Directory.CreateDirectory(LogDirectory);
-                string fileName = $"ActivityLog_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-                string logFilePath = Path.Combine(LogDirectory, fileName);
+                var fileName = $"ActivityLog_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                var logFilePath = Path.Combine(LogDirectory, fileName);
 
                 var fs = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
                 _writer = new StreamWriter(fs, Encoding.UTF8) { AutoFlush = false };
@@ -275,6 +451,10 @@ public static class ActivityLogger
         }
     }
 
+
+
+
+
     private static async Task ProcessQueueAsync(CancellationToken ct)
     {
         try
@@ -283,7 +463,9 @@ public static class ActivityLogger
             {
                 // Attempt to create writer if absent and logging is enabled
                 if (_isEnabled)
+                {
                     EnsureWriter();
+                }
 
                 // Dequeue and write as many as available
                 while (_queue.TryDequeue(out var line))
@@ -300,36 +482,73 @@ public static class ActivityLogger
                     catch (Exception ex)
                     {
                         // Swallow write exceptions but record fallback
-                        try { LogFallback($"Log write failed: {ex.Message}"); } catch { /* swallow */ }
+                        try
+                        {
+                            LogFallback($"Log write failed: {ex.Message}");
+                        }
+                        catch
+                        {
+                            /* swallow */
+                        }
                     }
                 }
 
                 // Ensure data is flushed to disk after processing available items to reduce truncation on abrupt exit
-                try { await _writer?.FlushAsync(ct); } catch { /* swallow */ }
+                try
+                {
+                    await _writer?.FlushAsync(ct)!;
+                }
+                catch
+                {
+                    /* swallow */
+                }
 
                 // Batch interval
                 await Task.Delay(200, ct).ConfigureAwait(false);
             }
         }
-        catch (OperationCanceledException) { /* expected on shutdown */ }
+        catch (OperationCanceledException)
+        {
+            /* expected on shutdown */
+        }
         catch (Exception ex)
         {
-            try { LogFallback($"Logging worker failed: {ex.Message}"); } catch { /* swallow */ }
+            try
+            {
+                LogFallback($"Logging worker failed: {ex.Message}");
+            }
+            catch
+            {
+                /* swallow */
+            }
         }
     }
 
+
+
+
+
     private static string Escape(string? input)
     {
-        if (string.IsNullOrEmpty(input)) return string.Empty;
-        return input.Contains(",") ? $"\"{input.Replace("\"", "\"\"")}\"" : input;
+        return string.IsNullOrEmpty(input) ? string.Empty : input.Contains(",") ? $"\"{input.Replace("\"", "\"\"")}\"" : input;
     }
+
+
+
+
 
     private static void LogFallback(string error)
     {
         try
         {
-            System.Diagnostics.EventLog.WriteEntry("Application", error, System.Diagnostics.EventLogEntryType.Warning);
+            WCAEventSource.Log.ActivityLoggerFallback(error);
+            EventLog.WriteEntry("Application", error, EventLogEntryType.Warning);
         }
-        catch { /* swallow */ }
+        catch
+        {
+            /* swallow */
+        }
     }
+
+
 }

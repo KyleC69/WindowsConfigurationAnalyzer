@@ -8,17 +8,22 @@
 
 
 
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
+
 using Microsoft.UI.Xaml.Controls;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 
-
 public sealed partial class AnalyzerPage : Page
 {
+
+
     public AnalyzerPage()
     {
         ViewModel = App.GetService<AnalyzerViewModel>();
@@ -29,8 +34,7 @@ public sealed partial class AnalyzerPage : Page
 
 
 
-    public AnalyzerViewModel ViewModel
-    {
-        get;
-    }
+    public AnalyzerViewModel ViewModel { get; }
+
+
 }

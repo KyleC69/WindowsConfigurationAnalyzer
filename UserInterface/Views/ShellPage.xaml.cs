@@ -8,23 +8,29 @@
 
 
 
-using Windows.System;
-using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
+
+using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+
+using Windows.System;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 
-
 // TODO: Update NavigationViewItem titles and icons in ShellPage.xaml.
 public sealed partial class ShellPage : Page
 {
+
+
     public ShellPage(ShellViewModel viewModel)
     {
         ViewModel = viewModel;
@@ -46,10 +52,7 @@ public sealed partial class ShellPage : Page
 
 
 
-    public ShellViewModel ViewModel
-    {
-        get;
-    }
+    public ShellViewModel ViewModel { get; }
 
 
 
@@ -77,7 +80,7 @@ public sealed partial class ShellPage : Page
 
 
     private void NavigationViewControl_DisplayModeChanged(NavigationView sender,
-                                                          NavigationViewDisplayModeChangedEventArgs args)
+        NavigationViewDisplayModeChangedEventArgs args)
     {
         AppTitleBar.Margin = new Thickness
         {
@@ -111,12 +114,14 @@ public sealed partial class ShellPage : Page
 
 
     private static void OnKeyboardAcceleratorInvoked(KeyboardAccelerator sender,
-                                                     KeyboardAcceleratorInvokedEventArgs args)
+        KeyboardAcceleratorInvokedEventArgs args)
     {
-        INavigationService navigationService = App.GetService<INavigationService>();
+        var navigationService = App.GetService<INavigationService>();
 
         var result = navigationService.GoBack();
 
         args.Handled = result;
     }
+
+
 }

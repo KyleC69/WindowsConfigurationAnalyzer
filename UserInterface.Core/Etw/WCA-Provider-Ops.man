@@ -1,0 +1,528 @@
+<instrumentationManifest xmlns="http://schemas.microsoft.com/win/2004/08/events">
+ <instrumentation xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:win="http://manifests.microsoft.com/win/2004/08/windows/events">
+  <events xmlns="http://schemas.microsoft.com/win/2004/08/events">
+<provider name="WCA-Provider" guid="{6bfde06a-0e76-53be-3771-2e44fb5386ee}" resourceFileName="WCA-ProviderResources.dll" messageFileName="WCA-ProviderResources.dll" symbol="WCAProvider">
+ <channels>
+  <channel chid="Operational" name="WCA-Provider/Operational" value="17" type="Operational" enabled="true"/>
+  <channel chid="Admin" name="WCA-Provider/Admin" value="16" type="Admin" enabled="true"/>
+ </channels>
+ <tasks>
+  <task name="Control" message="$(string.task_Control)" value="1"/>
+  <task name="Discovery" message="$(string.task_Discovery)" value="2"/>
+  <task name="Analysis" message="$(string.task_Analysis)" value="3"/>
+  <task name="Warning" message="$(string.task_Warning)" value="4"/>
+  <task name="Error" message="$(string.task_Error)" value="5"/>
+  <task name="Export" message="$(string.task_Export)" value="6"/>
+  <task name="Integration" message="$(string.task_Integration)" value="7"/>
+  <task name="Module" message="$(string.task_Module)" value="8"/>
+  <task name="RulesEngine" message="$(string.task_RulesEngine)" value="9"/>
+  <task name="Complete" message="$(string.task_Complete)" value="10"/>
+  <task name="Action" message="$(string.task_Action)" value="11"/>
+  <task name="ActionRelated" message="$(string.task_ActionRelated)" value="12"/>
+  <task name="EventSourceMessage" message="$(string.task_EventSourceMessage)" value="65534"/>
+ </tasks>
+ <opcodes>
+  <opcode name="Analyze" message="$(string.opcode_Analyze)" value="11"/>
+  <opcode name="Capture" message="$(string.opcode_Capture)" value="12"/>
+  <opcode name="Export" message="$(string.opcode_Export)" value="13"/>
+  <opcode name="Execute" message="$(string.opcode_Execute)" value="14"/>
+  <opcode name="RuleExecute" message="$(string.opcode_RuleExecute)" value="15"/>
+  <opcode name="RuleResult" message="$(string.opcode_RuleResult)" value="16"/>
+  <opcode name="RuleError" message="$(string.opcode_RuleError)" value="17"/>
+  <opcode name="RuleSummary" message="$(string.opcode_RuleSummary)" value="18"/>
+  <opcode name="ActionStart" message="$(string.opcode_ActionStart)" value="19"/>
+  <opcode name="ActionStop" message="$(string.opcode_ActionStop)" value="20"/>
+  <opcode name="Analysis" message="$(string.opcode_Analysis)" value="22"/>
+  <opcode name="Import" message="$(string.opcode_Import)" value="23"/>
+  <opcode name="Exported" message="$(string.opcode_Exported)" value="24"/>
+  <opcode name="ExportFailed" message="$(string.opcode_ExportFailed)" value="25"/>
+  <opcode name="PerfDiscovered" message="$(string.opcode_PerfDiscovered)" value="26"/>
+  <opcode name="PerfIssue" message="$(string.opcode_PerfIssue)" value="27"/>
+  <opcode name="IntegrationPoint" message="$(string.opcode_IntegrationPoint)" value="28"/>
+  <opcode name="IntegrationFailure" message="$(string.opcode_IntegrationFailure)" value="29"/>
+  <opcode name="ReaderDiscovered" message="$(string.opcode_ReaderDiscovered)" value="30"/>
+  <opcode name="ReaderFailure" message="$(string.opcode_ReaderFailure)" value="31"/>
+  <opcode name="DiagnosticInfo" message="$(string.opcode_DiagnosticInfo)" value="32"/>
+  <opcode name="DiagnosticFailure" message="$(string.opcode_DiagnosticFailure)" value="33"/>
+  <opcode name="UINotify" message="$(string.opcode_UINotify)" value="34"/>
+  <opcode name="UIWarn" message="$(string.opcode_UIWarn)" value="35"/>
+  <opcode name="DatabaseEntry" message="$(string.opcode_DatabaseEntry)" value="36"/>
+  <opcode name="DatabaseFailure" message="$(string.opcode_DatabaseFailure)" value="37"/>
+  <opcode name="AuditTrail" message="$(string.opcode_AuditTrail)" value="38"/>
+  <opcode name="AuditWarn" message="$(string.opcode_AuditWarn)" value="39"/>
+  <opcode name="NetworkConnection" message="$(string.opcode_NetworkConnection)" value="40"/>
+  <opcode name="NetworkFailure" message="$(string.opcode_NetworkFailure)" value="41"/>
+  <opcode name="OSInfo" message="$(string.opcode_OSInfo)" value="42"/>
+  <opcode name="OSFailure" message="$(string.opcode_OSFailure)" value="43"/>
+  <opcode name="ConfigSetting" message="$(string.opcode_ConfigSetting)" value="44"/>
+  <opcode name="ConfigWarn" message="$(string.opcode_ConfigWarn)" value="45"/>
+  <opcode name="ConfigFailure" message="$(string.opcode_ConfigFailure)" value="46"/>
+  <opcode name="ExceptionFailure" message="$(string.opcode_ExceptionFailure)" value="47"/>
+  <opcode name="ActivityLoggerFallbackOp" message="$(string.opcode_ActivityLoggerFallbackOp)" value="48"/>
+  <opcode name="RulesEngineFailure" message="$(string.opcode_RulesEngineFailure)" value="49"/>
+  <opcode name="ActionFailure" message="$(string.opcode_ActionFailure)" value="50"/>
+  <opcode name="AuditCaptureOp" message="$(string.opcode_AuditCaptureOp)" value="51"/>
+  <opcode name="AuditAnalyzeOp" message="$(string.opcode_AuditAnalyzeOp)" value="52"/>
+  <opcode name="ReadersCaptureOp" message="$(string.opcode_ReadersCaptureOp)" value="53"/>
+  <opcode name="ReadersAnalyzeOp" message="$(string.opcode_ReadersAnalyzeOp)" value="54"/>
+  <opcode name="SecurityWarn" message="$(string.opcode_SecurityWarn)" value="55"/>
+ </opcodes>
+ <keywords>
+  <keyword name="Analyzer" message="$(string.keyword_Analyzer)" mask="0x1"/>
+  <keyword name="Security" message="$(string.keyword_Security)" mask="0x2"/>
+  <keyword name="Performance" message="$(string.keyword_Performance)" mask="0x4"/>
+  <keyword name="Export" message="$(string.keyword_Export)" mask="0x8"/>
+  <keyword name="Integration" message="$(string.keyword_Integration)" mask="0x10"/>
+  <keyword name="Readers" message="$(string.keyword_Readers)" mask="0x20"/>
+  <keyword name="Diagnostics" message="$(string.keyword_Diagnostics)" mask="0x40"/>
+  <keyword name="UI" message="$(string.keyword_UI)" mask="0x80"/>
+  <keyword name="Database" message="$(string.keyword_Database)" mask="0x100"/>
+  <keyword name="Audit" message="$(string.keyword_Audit)" mask="0x200"/>
+  <keyword name="Network" message="$(string.keyword_Network)" mask="0x400"/>
+  <keyword name="OS" message="$(string.keyword_OS)" mask="0x800"/>
+  <keyword name="Configuration" message="$(string.keyword_Configuration)" mask="0x1000"/>
+  <keyword name="RulesEngine" message="$(string.keyword_RulesEngine)" mask="0x2000"/>
+  <keyword name="Action" message="$(string.keyword_Action)" mask="0x4000"/>
+  <keyword name="Session3" message="$(string.keyword_Session3)" mask="0x100000000000"/>
+  <keyword name="Session2" message="$(string.keyword_Session2)" mask="0x200000000000"/>
+  <keyword name="Session1" message="$(string.keyword_Session1)" mask="0x400000000000"/>
+  <keyword name="Session0" message="$(string.keyword_Session0)" mask="0x800000000000"/>
+ </keywords>
+ <events>
+  <event value="0" version="0" level="win:LogAlways" symbol="EventSourceMessage" task="EventSourceMessage" template="EventSourceMessageArgs"/>
+  <event value="2002" version="0" level="win:Informational" symbol="AnalyzeAreaStart" keywords="Analyzer" opcode="win:Start" task="Analysis" channel="Operational" template="AnalyzeAreaStartArgs"/>
+  <event value="2003" version="0" level="win:Informational" symbol="AnalyzeAreaComplete" keywords="Analyzer" task="Analysis" channel="Operational" template="AnalyzeAreaCompleteArgs"/>
+  <event value="2004" version="0" level="win:Informational" symbol="AnalyzeComplete" keywords="Analyzer" task="Complete" channel="Operational" template="AnalyzeCompleteArgs"/>
+  <event value="2101" version="0" level="win:Informational" symbol="SecuritySettingDiscovered" keywords="Security" opcode="win:Extension" task="Discovery" channel="Operational" template="SecuritySettingDiscoveredArgs"/>
+  <event value="2102" version="0" level="win:Warning" symbol="SecurityConfigurationWarning" keywords="Security" opcode="SecurityWarn" task="Analysis" channel="Operational" template="SecurityConfigurationWarningArgs"/>
+  <event value="2201" version="0" level="win:Informational" symbol="PerformanceCounterDiscovered" keywords="Performance" opcode="PerfDiscovered" task="Discovery" channel="Operational" template="PerformanceCounterDiscoveredArgs"/>
+  <event value="2202" version="0" level="win:Warning" symbol="PerformanceIssueDetected" keywords="Performance" opcode="PerfIssue" task="Analysis" channel="Operational" template="PerformanceIssueDetectedArgs"/>
+  <event value="2301" version="0" level="win:Informational" symbol="IntegrationPointDiscovered" keywords="Integration" opcode="IntegrationPoint" task="Integration" channel="Operational" template="IntegrationPointDiscoveredArgs"/>
+  <event value="2302" version="0" level="win:Error" symbol="IntegrationFailed" keywords="Integration" opcode="IntegrationFailure" task="Integration" channel="Operational" template="IntegrationFailedArgs"/>
+  <event value="2401" version="0" level="win:Informational" symbol="ReaderDiscovered" keywords="Readers" opcode="ReaderDiscovered" task="Discovery" channel="Operational" template="ReaderDiscoveredArgs"/>
+  <event value="2402" version="0" level="win:Error" symbol="ReaderError" keywords="Readers" opcode="ReaderFailure" task="Discovery" channel="Operational" template="ReaderErrorArgs"/>
+  <event value="2501" version="0" level="win:Informational" symbol="DiagnosticInfoFound" keywords="Diagnostics" opcode="DiagnosticInfo" task="Discovery" channel="Operational" template="DiagnosticInfoFoundArgs"/>
+  <event value="2502" version="0" level="win:Error" symbol="DiagnosticError" keywords="Diagnostics" opcode="DiagnosticFailure" task="Discovery" channel="Operational" template="DiagnosticErrorArgs"/>
+  <event value="2601" version="0" level="win:Informational" symbol="UINotification" message="$(string.event_UINotification)" keywords="UI" opcode="UINotify" task="Control" channel="Admin" template="UINotificationArgs"/>
+  <event value="2602" version="0" level="win:Warning" symbol="UIWarning" keywords="UI" opcode="UIWarn" task="Control" channel="Operational" template="UIWarningArgs"/>
+  <event value="2701" version="0" level="win:Informational" symbol="DatabaseEntryDiscovered" keywords="Database" opcode="DatabaseEntry" task="Discovery" channel="Operational" template="DatabaseEntryDiscoveredArgs"/>
+  <event value="2702" version="0" level="win:Error" symbol="DatabaseError" keywords="Database" opcode="DatabaseFailure" task="Discovery" channel="Operational" template="DatabaseErrorArgs"/>
+  <event value="2801" version="0" level="win:Informational" symbol="AuditTrailEntryFound" keywords="Audit" opcode="AuditTrail" task="Discovery" channel="Operational" template="AuditTrailEntryFoundArgs"/>
+  <event value="2802" version="0" level="win:Warning" symbol="AuditWarning" keywords="Audit" opcode="AuditWarn" task="Discovery" channel="Operational" template="AuditWarningArgs"/>
+  <event value="2901" version="0" level="win:Informational" symbol="NetworkConnectionDiscovered" keywords="Network" opcode="NetworkConnection" task="Discovery" channel="Operational" template="NetworkConnectionDiscoveredArgs"/>
+  <event value="2902" version="0" level="win:Error" symbol="NetworkError" keywords="Network" opcode="NetworkFailure" task="Discovery" channel="Operational" template="NetworkErrorArgs"/>
+  <event value="3001" version="0" level="win:Informational" symbol="OSInfoDiscovered" keywords="OS" opcode="OSInfo" task="Discovery" channel="Operational" template="OSInfoDiscoveredArgs"/>
+  <event value="3002" version="0" level="win:Error" symbol="OSError" keywords="OS" opcode="OSFailure" task="Discovery" channel="Operational" template="OSErrorArgs"/>
+  <event value="3101" version="0" level="win:Informational" symbol="ConfigurationSettingDiscovered" keywords="Configuration" opcode="ConfigSetting" task="Discovery" channel="Operational" template="ConfigurationSettingDiscoveredArgs"/>
+  <event value="3102" version="0" level="win:Warning" symbol="ConfigurationWarning" keywords="Configuration" opcode="ConfigWarn" task="Discovery" channel="Operational" template="ConfigurationWarningArgs"/>
+  <event value="3103" version="0" level="win:Error" symbol="ConfigurationError" keywords="Configuration" opcode="ConfigFailure" task="Discovery" channel="Operational" template="ConfigurationErrorArgs"/>
+  <event value="4301" version="0" level="win:Informational" symbol="RuleExecutionStart" keywords="RulesEngine" opcode="Execute" task="RulesEngine" channel="Operational" template="RuleExecutionStartArgs"/>
+  <event value="4302" version="0" level="win:Informational" symbol="RuleExecutionResult" keywords="RulesEngine" opcode="RuleResult" task="RulesEngine" channel="Operational" template="RuleExecutionResultArgs"/>
+  <event value="4303" version="0" level="win:Error" symbol="RuleExecutionError" keywords="RulesEngine" opcode="RuleError" task="RulesEngine" channel="Operational" template="RuleExecutionErrorArgs"/>
+  <event value="4304" version="0" level="win:Informational" symbol="RulesEngineSummary" keywords="RulesEngine" opcode="RuleSummary" task="RulesEngine" channel="Operational" template="RulesEngineSummaryArgs"/>
+  <event value="1001" version="0" level="win:Informational" symbol="SessionStart" keywords="Analyzer" opcode="win:Start" task="Control" channel="Operational" template="SessionStartArgs"/>
+  <event value="1002" version="0" level="win:Informational" symbol="SessionStop" keywords="Analyzer" opcode="win:Stop" task="Control" channel="Operational" template="SessionStopArgs"/>
+  <event value="1003" version="0" level="win:Error" symbol="ExceptionError" keywords="Analyzer" opcode="ExceptionFailure" task="Error" channel="Operational" template="ExceptionErrorArgs"/>
+  <event value="1004" version="0" level="win:Warning" symbol="ExceptionWarning" keywords="Analyzer" task="Warning" channel="Operational" template="ExceptionWarningArgs"/>
+  <event value="3201" version="0" level="win:Informational" symbol="StartupCapture" keywords="Diagnostics" opcode="Capture" task="Module" channel="Operational" template="StartupCaptureArgs"/>
+  <event value="3202" version="0" level="win:Informational" symbol="StartupAnalysis" keywords="Diagnostics" opcode="Analyze" task="Module" channel="Operational" template="StartupAnalysisArgs"/>
+  <event value="3401" version="0" level="win:Informational" symbol="AuditCapture" keywords="Audit" opcode="AuditCaptureOp" task="Module" channel="Operational" template="AuditCaptureArgs"/>
+  <event value="3402" version="0" level="win:Informational" symbol="AuditAnalysis" keywords="Audit" opcode="AuditAnalyzeOp" task="Module" channel="Operational" template="AuditAnalysisArgs"/>
+  <event value="3601" version="0" level="win:Informational" symbol="ExportCapture" keywords="Export" opcode="Capture" task="Export" channel="Operational" template="ExportCaptureArgs"/>
+  <event value="3602" version="0" level="win:Informational" symbol="ExportAnalysis" keywords="Export" opcode="Analyze" task="Export" channel="Operational" template="ExportAnalysisArgs"/>
+  <event value="3610" version="0" level="win:Informational" symbol="ExportCompleted" keywords="Export" task="Export" channel="Operational" template="ExportCompletedArgs"/>
+  <event value="3801" version="0" level="win:Informational" symbol="ReadersCapture" keywords="Readers" opcode="ReadersCaptureOp" task="Module" channel="Operational" template="ReadersCaptureArgs"/>
+  <event value="3802" version="0" level="win:Informational" symbol="ReadersAnalysis" keywords="Readers" opcode="ReadersAnalyzeOp" task="Module" channel="Operational" template="ReadersAnalysisArgs"/>
+  <event value="4001" version="0" level="win:Error" symbol="ActivityLoggerFallback" keywords="UI" opcode="ActivityLoggerFallbackOp" task="Error" channel="Operational" template="ActivityLoggerFallbackArgs"/>
+  <event value="4300" version="0" level="win:Error" symbol="RulesEngineError" keywords="Analyzer" opcode="RulesEngineFailure" task="Error" channel="Operational" template="RulesEngineErrorArgs"/>
+  <event value="4215" version="0" level="win:Informational" symbol="ActionStartWithRelated" keywords="Analyzer" opcode="win:Start" task="ActionRelated" channel="Operational" template="ActionStartWithRelatedArgs"/>
+  <event value="4220" version="0" level="win:Informational" symbol="ActionStop" keywords="Analyzer" opcode="win:Stop" task="Action" channel="Operational" template="ActionStopArgs"/>
+  <event value="4210" version="0" level="win:Informational" symbol="ActionStart" keywords="Action" opcode="win:Start" task="Action" channel="Operational" template="ActionStartArgs"/>
+  <event value="4211" version="0" level="win:Error" symbol="ActionFailed" keywords="Action" opcode="ActionFailure" task="Error" channel="Operational" template="ActionFailedArgs"/>
+ </events>
+ <templates>
+  <template tid="EventSourceMessageArgs">
+   <data name="message" inType="win:UnicodeString"/>
+  </template>
+  <template tid="AnalyzeAreaStartArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="Area" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="AnalyzeAreaCompleteArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="Area" inType="win:UnicodeString"/>
+   <data name="FindingsCount" inType="win:UInt32"/>
+   <data name="Severity" inType="win:UnicodeString"/>
+   <data name="Summary" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="AnalyzeCompleteArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="Areas" inType="win:UInt32"/>
+   <data name="Warnings" inType="win:UInt32"/>
+   <data name="Errors" inType="win:UInt32"/>
+   <data name="ElapsedSeconds" inType="win:Double"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="SecuritySettingDiscoveredArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="SettingName" inType="win:UnicodeString"/>
+   <data name="Value" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="SecurityConfigurationWarningArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="SettingName" inType="win:UnicodeString"/>
+   <data name="WarningMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="PerformanceCounterDiscoveredArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="CounterName" inType="win:UnicodeString"/>
+   <data name="Value" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="PerformanceIssueDetectedArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="CounterName" inType="win:UnicodeString"/>
+   <data name="IssueMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="IntegrationPointDiscoveredArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="IntegrationName" inType="win:UnicodeString"/>
+   <data name="Status" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="IntegrationFailedArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="IntegrationName" inType="win:UnicodeString"/>
+   <data name="ErrorMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ReaderDiscoveredArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="ReaderName" inType="win:UnicodeString"/>
+   <data name="Status" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ReaderErrorArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="ReaderName" inType="win:UnicodeString"/>
+   <data name="ErrorMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="DiagnosticInfoFoundArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="InfoType" inType="win:UnicodeString"/>
+   <data name="Details" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="DiagnosticErrorArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="ErrorType" inType="win:UnicodeString"/>
+   <data name="ErrorMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="UINotificationArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="Message" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="UIWarningArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="Message" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="DatabaseEntryDiscoveredArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="TableName" inType="win:UnicodeString"/>
+   <data name="Key" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="DatabaseErrorArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="TableName" inType="win:UnicodeString"/>
+   <data name="ErrorMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="AuditTrailEntryFoundArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="EventType" inType="win:UnicodeString"/>
+   <data name="Details" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="AuditWarningArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="EventType" inType="win:UnicodeString"/>
+   <data name="WarningMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="NetworkConnectionDiscoveredArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="Protocol" inType="win:UnicodeString"/>
+   <data name="Address" inType="win:UnicodeString"/>
+   <data name="Port" inType="win:Int32"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="NetworkErrorArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="Protocol" inType="win:UnicodeString"/>
+   <data name="Address" inType="win:UnicodeString"/>
+   <data name="Port" inType="win:Int32"/>
+   <data name="ErrorMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="OSInfoDiscoveredArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="InfoType" inType="win:UnicodeString"/>
+   <data name="Details" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="OSErrorArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="ErrorType" inType="win:UnicodeString"/>
+   <data name="ErrorMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ConfigurationSettingDiscoveredArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="SettingName" inType="win:UnicodeString"/>
+   <data name="Value" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ConfigurationWarningArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="SettingName" inType="win:UnicodeString"/>
+   <data name="WarningMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ConfigurationErrorArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="SettingName" inType="win:UnicodeString"/>
+   <data name="ErrorMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="RuleExecutionStartArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="RuleName" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="RuleExecutionResultArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="RuleName" inType="win:UnicodeString"/>
+   <data name="Success" inType="win:Boolean"/>
+   <data name="Message" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="RuleExecutionErrorArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="RuleName" inType="win:UnicodeString"/>
+   <data name="ErrorMessage" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="RulesEngineSummaryArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="RulesExecuted" inType="win:UInt32"/>
+   <data name="RulesPassed" inType="win:UInt32"/>
+   <data name="RulesFailed" inType="win:UInt32"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="SessionStartArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="Computer" inType="win:UnicodeString"/>
+   <data name="Version" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="SessionStopArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="Areas" inType="win:Int32"/>
+   <data name="Warnings" inType="win:Int32"/>
+   <data name="Errors" inType="win:Int32"/>
+   <data name="ElapsedSeconds" inType="win:Double"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ExceptionErrorArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+   <data name="ExceptMessage" inType="win:UnicodeString"/>
+   <data name="ExceptStack" inType="win:UnicodeString"/>
+   <data name="Context" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ExceptionWarningArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+   <data name="ExceptMessage" inType="win:UnicodeString"/>
+   <data name="ExceptStack" inType="win:UnicodeString"/>
+   <data name="Context" inType="win:UnicodeString"/>
+  </template>
+  <template tid="StartupCaptureArgs">
+   <data name="Module" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+   <data name="ItemCount" inType="win:UInt32"/>
+   <data name="DurationMs" inType="win:UInt32"/>
+   <data name="Details" inType="win:UnicodeString"/>
+  </template>
+  <template tid="StartupAnalysisArgs">
+   <data name="Module" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+   <data name="FindingsCount" inType="win:UInt32"/>
+   <data name="Severity" inType="win:UnicodeString"/>
+   <data name="Summary" inType="win:UnicodeString"/>
+  </template>
+  <template tid="AuditCaptureArgs">
+   <data name="Module" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+   <data name="ItemCount" inType="win:UInt32"/>
+   <data name="DurationMs" inType="win:UInt32"/>
+   <data name="Details" inType="win:UnicodeString"/>
+  </template>
+  <template tid="AuditAnalysisArgs">
+   <data name="Module" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+   <data name="FindingsCount" inType="win:UInt32"/>
+   <data name="Severity" inType="win:UnicodeString"/>
+   <data name="Summary" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ExportCaptureArgs">
+   <data name="Module" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+   <data name="ItemCount" inType="win:UInt32"/>
+   <data name="DurationMs" inType="win:UInt32"/>
+   <data name="Details" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ExportAnalysisArgs">
+   <data name="Module" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+   <data name="FindingsCount" inType="win:UInt32"/>
+   <data name="Severity" inType="win:UnicodeString"/>
+   <data name="Summary" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ExportCompletedArgs">
+   <data name="SessionId" inType="win:UnicodeString"/>
+   <data name="Format" inType="win:UnicodeString"/>
+   <data name="Path" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ReadersCaptureArgs">
+   <data name="Module" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+   <data name="ItemCount" inType="win:UInt32"/>
+   <data name="DurationMs" inType="win:UInt32"/>
+   <data name="Details" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ReadersAnalysisArgs">
+   <data name="Module" inType="win:UnicodeString"/>
+   <data name="CorrelationId" inType="win:UnicodeString"/>
+   <data name="FindingsCount" inType="win:UInt32"/>
+   <data name="Severity" inType="win:UnicodeString"/>
+   <data name="Summary" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ActivityLoggerFallbackArgs">
+   <data name="error" inType="win:UnicodeString"/>
+  </template>
+  <template tid="RulesEngineErrorArgs">
+   <data name="noResultsFromRuleExecution" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ActionStartWithRelatedArgs">
+   <data name="message" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ActionStopArgs">
+   <data name="message" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ActionStartArgs">
+   <data name="message" inType="win:UnicodeString"/>
+  </template>
+  <template tid="ActionFailedArgs">
+   <data name="appInitializationHasFailed" inType="win:UnicodeString"/>
+   <data name="message" inType="win:UnicodeString"/>
+  </template>
+ </templates>
+</provider>
+</events>
+</instrumentation>
+<localization>
+ <resources culture="en-US">
+  <stringTable>
+   <string id="event_UINotification" value="User Interface Notification: %1"/>
+   <string id="keyword_Action" value="Action"/>
+   <string id="keyword_Analyzer" value="Analyzer"/>
+   <string id="keyword_Audit" value="Audit"/>
+   <string id="keyword_Configuration" value="Configuration"/>
+   <string id="keyword_Database" value="Database"/>
+   <string id="keyword_Diagnostics" value="Diagnostics"/>
+   <string id="keyword_Export" value="Export"/>
+   <string id="keyword_Integration" value="Integration"/>
+   <string id="keyword_Network" value="Network"/>
+   <string id="keyword_OS" value="OS"/>
+   <string id="keyword_Performance" value="Performance"/>
+   <string id="keyword_Readers" value="Readers"/>
+   <string id="keyword_RulesEngine" value="RulesEngine"/>
+   <string id="keyword_Security" value="Security"/>
+   <string id="keyword_Session0" value="Session0"/>
+   <string id="keyword_Session1" value="Session1"/>
+   <string id="keyword_Session2" value="Session2"/>
+   <string id="keyword_Session3" value="Session3"/>
+   <string id="keyword_UI" value="UI"/>
+   <string id="opcode_ActionFailure" value="ActionFailure"/>
+   <string id="opcode_ActionStart" value="ActionStart"/>
+   <string id="opcode_ActionStop" value="ActionStop"/>
+   <string id="opcode_ActivityLoggerFallbackOp" value="ActivityLoggerFallbackOp"/>
+   <string id="opcode_Analysis" value="Analysis"/>
+   <string id="opcode_Analyze" value="Analyze"/>
+   <string id="opcode_AuditAnalyzeOp" value="AuditAnalyzeOp"/>
+   <string id="opcode_AuditCaptureOp" value="AuditCaptureOp"/>
+   <string id="opcode_AuditTrail" value="AuditTrail"/>
+   <string id="opcode_AuditWarn" value="AuditWarn"/>
+   <string id="opcode_Capture" value="Capture"/>
+   <string id="opcode_ConfigFailure" value="ConfigFailure"/>
+   <string id="opcode_ConfigSetting" value="ConfigSetting"/>
+   <string id="opcode_ConfigWarn" value="ConfigWarn"/>
+   <string id="opcode_DatabaseEntry" value="DatabaseEntry"/>
+   <string id="opcode_DatabaseFailure" value="DatabaseFailure"/>
+   <string id="opcode_DiagnosticFailure" value="DiagnosticFailure"/>
+   <string id="opcode_DiagnosticInfo" value="DiagnosticInfo"/>
+   <string id="opcode_ExceptionFailure" value="ExceptionFailure"/>
+   <string id="opcode_Execute" value="Execute"/>
+   <string id="opcode_Export" value="Export"/>
+   <string id="opcode_ExportFailed" value="ExportFailed"/>
+   <string id="opcode_Exported" value="Exported"/>
+   <string id="opcode_Import" value="Import"/>
+   <string id="opcode_IntegrationFailure" value="IntegrationFailure"/>
+   <string id="opcode_IntegrationPoint" value="IntegrationPoint"/>
+   <string id="opcode_NetworkConnection" value="NetworkConnection"/>
+   <string id="opcode_NetworkFailure" value="NetworkFailure"/>
+   <string id="opcode_OSFailure" value="OSFailure"/>
+   <string id="opcode_OSInfo" value="OSInfo"/>
+   <string id="opcode_PerfDiscovered" value="PerfDiscovered"/>
+   <string id="opcode_PerfIssue" value="PerfIssue"/>
+   <string id="opcode_ReaderDiscovered" value="ReaderDiscovered"/>
+   <string id="opcode_ReaderFailure" value="ReaderFailure"/>
+   <string id="opcode_ReadersAnalyzeOp" value="ReadersAnalyzeOp"/>
+   <string id="opcode_ReadersCaptureOp" value="ReadersCaptureOp"/>
+   <string id="opcode_RuleError" value="RuleError"/>
+   <string id="opcode_RuleExecute" value="RuleExecute"/>
+   <string id="opcode_RuleResult" value="RuleResult"/>
+   <string id="opcode_RuleSummary" value="RuleSummary"/>
+   <string id="opcode_RulesEngineFailure" value="RulesEngineFailure"/>
+   <string id="opcode_SecurityWarn" value="SecurityWarn"/>
+   <string id="opcode_UINotify" value="UINotify"/>
+   <string id="opcode_UIWarn" value="UIWarn"/>
+   <string id="task_Action" value="Action"/>
+   <string id="task_ActionRelated" value="ActionRelated"/>
+   <string id="task_Analysis" value="Analysis"/>
+   <string id="task_Complete" value="Complete"/>
+   <string id="task_Control" value="Control"/>
+   <string id="task_Discovery" value="Discovery"/>
+   <string id="task_Error" value="Error"/>
+   <string id="task_EventSourceMessage" value="EventSourceMessage"/>
+   <string id="task_Export" value="Export"/>
+   <string id="task_Integration" value="Integration"/>
+   <string id="task_Module" value="Module"/>
+   <string id="task_RulesEngine" value="RulesEngine"/>
+   <string id="task_Warning" value="Warning"/>
+  </stringTable>
+ </resources>
+</localization>
+</instrumentationManifest>

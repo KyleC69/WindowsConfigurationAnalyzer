@@ -8,8 +8,10 @@
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 
+using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 
 
 // Extend this class to implement new ActivationHandlers. See DefaultActivationHandler for an example.
@@ -17,6 +19,8 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 public abstract class ActivationHandler<T> : IActivationHandler
     where T : class
 {
+
+
     public bool CanHandle(object args)
     {
         return args is T && CanHandleInternal((args as T)!);
@@ -47,4 +51,6 @@ public abstract class ActivationHandler<T> : IActivationHandler
 
     // Override this method to add the logic for your activation handler.
     protected abstract Task HandleInternalAsync(T args);
+
+
 }

@@ -8,17 +8,21 @@
 
 
 
+
 using System.Runtime.InteropServices;
 using System.Text;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 
-
 public class RuntimeHelper
 {
+
+
     public static bool IsMsix
     {
         get
@@ -35,4 +39,6 @@ public class RuntimeHelper
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern int GetCurrentPackageFullName(ref int packageFullNameLength, StringBuilder? packageFullName);
+
+
 }

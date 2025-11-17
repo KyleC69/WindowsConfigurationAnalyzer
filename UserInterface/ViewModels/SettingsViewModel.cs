@@ -8,6 +8,7 @@
 
 
 
+
 using System.Reflection;
 using System.Windows.Input;
 
@@ -23,12 +24,15 @@ using Windows.ApplicationModel;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 
 public partial class SettingsViewModel : ObservableRecipient
 {
+
+
     private readonly ILocalSettingsService _localSettings;
     // Plan:
     // - Replace [ObservableProperty] fields with explicit backing fields and public properties.
@@ -41,11 +45,15 @@ public partial class SettingsViewModel : ObservableRecipient
     private ElementTheme _elementTheme;
 
     private string? _exportPathTemplate;
+    private bool _isActivityLogEnabled;
 
     private string? _logPathTemplate;
 
     private string _versionDescription = string.Empty;
-    private bool _isActivityLogEnabled;
+
+
+
+
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettings)
     {
@@ -61,11 +69,14 @@ public partial class SettingsViewModel : ObservableRecipient
                 _elementTheme = param;
                 await _themeSelectorService.SetThemeAsync(param);
             }
-
         });
 
         _ = LoadAsync();
     }
+
+
+
+
 
     public ElementTheme ElementTheme
     {
@@ -73,15 +84,18 @@ public partial class SettingsViewModel : ObservableRecipient
         set => SetProperty(ref _elementTheme, value);
     }
 
+
     public string VersionDescription
     {
         get => _versionDescription;
         set => SetProperty(ref _versionDescription, value);
     }
 
+
     public string? ExportPathTemplate
     {
         get => _exportPathTemplate;
+
         set
         {
             if (SetProperty(ref _exportPathTemplate, value))
@@ -91,9 +105,11 @@ public partial class SettingsViewModel : ObservableRecipient
         }
     }
 
+
     public string? LogPathTemplate
     {
         get => _logPathTemplate;
+
         set
         {
             if (SetProperty(ref _logPathTemplate, value))
@@ -103,33 +119,34 @@ public partial class SettingsViewModel : ObservableRecipient
         }
     }
 
-    public ICommand SwitchThemeCommand
-    {
-        get;
-    }
 
-
+    public ICommand SwitchThemeCommand { get; }
 
 
     /// <summary>
-    /// Gets or sets a value indicating whether activity logging is enabled in the application.
+    ///     Gets or sets a value indicating whether activity logging is enabled in the application.
     /// </summary>
     /// <remarks>
-    /// When enabled, activity logging captures and stores application events for diagnostic or auditing purposes.
-    /// Changes to this property are persisted using the local settings service.
+    ///     When enabled, activity logging captures and stores application events for diagnostic or auditing purposes.
+    ///     Changes to this property are persisted using the local settings service.
     /// </remarks>
     public bool IsActivityLoggingEnabled
     {
         get => _isActivityLogEnabled;
+
         set
         {
             if (SetProperty(ref _isActivityLogEnabled, value))
+            // Persist as JSON-friendly lowercase boolean literal to align with deserialization logic
             {
-                // Persist as JSON-friendly lowercase boolean literal to align with deserialization logic
                 _ = _localSettings.SaveApplicationSettingAsync("IsActivityLoggingEnabled", value ? "true" : "false");
             }
         }
     }
+
+
+
+
 
     private async Task LoadAsync()
     {
@@ -140,17 +157,31 @@ public partial class SettingsViewModel : ObservableRecipient
 
         // Load Activity Logging setting (default to false if missing)
         var raw = await _localSettings.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled");
-        bool parsed = false;
+        var parsed = false;
         if (!string.IsNullOrWhiteSpace(raw))
         {
             // Accept JSON booleans (true/false) or string representations
-            if (raw.Equals("true", StringComparison.OrdinalIgnoreCase)) parsed = true;
-            else if (raw.Equals("false", StringComparison.OrdinalIgnoreCase)) parsed = false;
-            else _ = bool.TryParse(raw, out parsed);
+            if (raw.Equals("true", StringComparison.OrdinalIgnoreCase))
+            {
+                parsed = true;
+            }
+            else if (raw.Equals("false", StringComparison.OrdinalIgnoreCase))
+            {
+                parsed = false;
+            }
+            else
+            {
+                _ = bool.TryParse(raw, out parsed);
+            }
         }
+
         _isActivityLogEnabled = parsed;
         OnPropertyChanged(nameof(IsActivityLoggingEnabled));
     }
+
+
+
+
 
     private static string GetVersionDescription()
     {
@@ -158,7 +189,7 @@ public partial class SettingsViewModel : ObservableRecipient
 
         if (RuntimeHelper.IsMsix)
         {
-            var packageVersion = Package.Current.Id.Version;
+            PackageVersion packageVersion = Package.Current.Id.Version;
 
             version = new Version(packageVersion.Major, packageVersion.Minor, packageVersion.Build,
                 packageVersion.Revision);
@@ -171,4 +202,6 @@ public partial class SettingsViewModel : ObservableRecipient
         return
             $"{"AppDisplayName".GetLocalized()} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
     }
+
+
 }

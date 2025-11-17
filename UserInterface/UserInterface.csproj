@@ -1,100 +1,113 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>WinExe</OutputType>
-        <UseWinUI>true</UseWinUI>
-        <ApplicationManifest>app.manifest</ApplicationManifest>
-        <EnableMsixTooling>true</EnableMsixTooling>
-        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-        <!-- Disable WindowsAppSDK self-contained mode to avoid mt.exe manifest merge during build -->
-        <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
-        <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
-        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-        <ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
-        <RootNamespace>KC.WindowsConfigurationAnalyzer.$(MSBuildProjectName)</RootNamespace>
-        <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-        <Authors>Kyle Crowder</Authors>
-        <!-- Do not invoke MSIX packaging / PRI generation during normal build -->
-        <GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
-        <Description>A Windows Forensic Configuration Analyzer</Description>
-        <Copyright>2025</Copyright>
-        <AssemblyName>KC.WindowsConfigurationAnalyzer</AssemblyName>
-        <WindowsPackageType>MSIX</WindowsPackageType>
-        <PlatformTarget>AnyCPU</PlatformTarget>
-        <SignAssembly>False</SignAssembly>
-        <Title>Windows Configuration Analyzer</Title>
-        <PackageCertificateThumbprint>372A8416A304336FDF3099CE982CA060AF3C1A30</PackageCertificateThumbprint>
-        <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-        <Platforms>AnyCPU;x64</Platforms>
-    </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<UseWinUI>true</UseWinUI>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<EnableMsixTooling>true</EnableMsixTooling>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<!-- Disable WindowsAppSDK self-contained mode to avoid mt.exe manifest merge during build -->
+		<WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+		<TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
+		<RootNamespace>KC.WindowsConfigurationAnalyzer.$(MSBuildProjectName)</RootNamespace>
+		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+		<Authors>Kyle Crowder</Authors>
+		<!-- Do not invoke MSIX packaging / PRI generation during normal build -->
+		<GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
+		<Description>A Windows Forensic Configuration Analyzer</Description>
+		<Copyright>2025</Copyright>
+		<AssemblyName>KC.WindowsConfigurationAnalyzer</AssemblyName>
+		<WindowsPackageType>MSIX</WindowsPackageType>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<SignAssembly>True</SignAssembly>
+		<Title>Windows Configuration Analyzer</Title>
+		<PackageCertificateThumbprint>372A8416A304336FDF3099CE982CA060AF3C1A30</PackageCertificateThumbprint>
+		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+		<Platforms>AnyCPU;x64</Platforms>
+	</PropertyGroup>
 
 
-    <ItemGroup>
-        <PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250402" />
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-        <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
-        <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
-        <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
-        <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.0" />
-        <PackageReference Include="WinUIEx" Version="2.9.0" />
-    </ItemGroup>
+	<PropertyGroup>
+		<MyProjectDir>$(MSBuildProjectDirectory)</MyProjectDir>
+	</PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Analyzer\Analyzer.csproj" />
-        <ProjectReference Include="..\UserInterface.Core\UserInterface.Core.csproj" />
-    </ItemGroup>
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+			<_Parameter1>ProjectDirectory</_Parameter1>
+			<_Parameter2>$(MyProjectDir)</_Parameter2>
+		</AssemblyAttribute>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250402" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251106002" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
+		<PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.0" />
+		<PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.0" />
+		<PackageReference Include="WinUIEx" Version="2.9.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Analyzer\DataProbe.csproj" />
+		<ProjectReference Include="..\Contracts\Contracts.csproj" />
+		<ProjectReference Include="..\RuleAnalyzer\RuleAnalyzer.csproj" />
+		<ProjectReference Include="..\UserInterface.Core\UserInterface.Core.csproj" />
+	</ItemGroup>
 
 
-    <ItemGroup>
-        <None Update="appsettings.json">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
+	<ItemGroup>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-        <IsPublishable>False</IsPublishable>
-        <WarningLevel>8</WarningLevel>
-        <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<IsPublishable>False</IsPublishable>
+		<WarningLevel>8</WarningLevel>
+		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+	</PropertyGroup>
 
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      <IsPublishable>False</IsPublishable>
-      <WarningLevel>8</WarningLevel>
-      <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<IsPublishable>False</IsPublishable>
+		<WarningLevel>8</WarningLevel>
+		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+	</PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <IsPublishable>False</IsPublishable>
-        <WarningLevel>8</WarningLevel>
-        <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<IsPublishable>False</IsPublishable>
+		<WarningLevel>8</WarningLevel>
+		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+	</PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      <IsPublishable>False</IsPublishable>
-      <WarningLevel>8</WarningLevel>
-      <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<IsPublishable>False</IsPublishable>
+		<WarningLevel>8</WarningLevel>
+		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+	</PropertyGroup>
 
-    <ItemGroup>
-        <Compile Remove="F:\NuGetPackages\microsoft.windowsappsdk.foundation\1.8.250906002\buildTransitive\..\include\MddBootstrapAutoInitializer.cs" />
-    </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="F:\NuGetPackages\microsoft.windowsappsdk.foundation\1.8.250906002\buildTransitive\..\include\MddBootstrapAutoInitializer.cs" />
+	</ItemGroup>
 
-    <ItemGroup>
-      <Content Remove="Assets\BadgeLogo.scale-100.png" />
-      <Content Remove="Assets\BadgeLogo.scale-125.png" />
-      <Content Remove="Assets\BadgeLogo.scale-150.png" />
-      <Content Remove="Assets\BadgeLogo.scale-200.png" />
-      <Content Remove="Assets\BadgeLogo.scale-400.png" />
-    </ItemGroup>
+	<ItemGroup>
+		<Content Remove="Assets\BadgeLogo.scale-100.png" />
+		<Content Remove="Assets\BadgeLogo.scale-125.png" />
+		<Content Remove="Assets\BadgeLogo.scale-150.png" />
+		<Content Remove="Assets\BadgeLogo.scale-200.png" />
+		<Content Remove="Assets\BadgeLogo.scale-400.png" />
+	</ItemGroup>
 
- 
 
-    <ItemGroup>
-      <AdditionalFiles Include="Package.appxmanifest" />
-    </ItemGroup>
+	<ItemGroup>
+		<AdditionalFiles Include="Package.appxmanifest" />
+	</ItemGroup>
 
- 
+
 </Project>

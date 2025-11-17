@@ -8,13 +8,15 @@
 
 
 
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 
 // Helper class to set the navigation target for a NavigationViewItem.
@@ -26,6 +28,8 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 // NavigationHelper.SetNavigateTo(navigationViewItem, typeof(MainViewModel).FullName);
 public class NavigationHelper
 {
+
+
     public static readonly DependencyProperty NavigateToProperty =
         DependencyProperty.RegisterAttached("NavigateTo", typeof(string), typeof(NavigationHelper),
             new PropertyMetadata(null));
@@ -47,4 +51,6 @@ public class NavigationHelper
     {
         item.SetValue(NavigateToProperty, value);
     }
+
+
 }

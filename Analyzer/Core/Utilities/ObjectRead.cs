@@ -8,16 +8,20 @@
 
 
 
+
 using System.Reflection;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.Analyzer.Core.Utilities;
 
+
+namespace KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
 
 
 public static class ObjectRead
 {
+
+
     public static bool TryGetProperty(object? obj, string name, out object? value)
     {
         value = null;
@@ -32,8 +36,8 @@ public static class ObjectRead
             return dict.TryGetValue(name, out value);
         }
 
-        var type = obj.GetType();
-        var prop =
+        Type type = obj.GetType();
+        PropertyInfo? prop =
             type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
 
         if (prop is null)
@@ -52,7 +56,7 @@ public static class ObjectRead
 
     public static T? GetPropertyAs<T>(object? obj, string name)
     {
-        if (TryGetProperty(obj, name, out object? v) && v is T t)
+        if (TryGetProperty(obj, name, out var v) && v is T t)
         {
             return t;
         }
@@ -60,7 +64,7 @@ public static class ObjectRead
         try
         {
             // Handle numeric conversions where possible
-            if (TryGetProperty(obj, name, out object? v2) && v2 is not null)
+            if (TryGetProperty(obj, name, out var v2) && v2 is not null)
             {
                 return (T)Convert.ChangeType(v2, typeof(T));
             }
@@ -69,6 +73,8 @@ public static class ObjectRead
         {
         }
 
-        return default(T?);
+        return default;
     }
+
+
 }

@@ -8,7 +8,9 @@
 
 
 
-using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
+
+using KC.WindowsConfigurationAnalyzer.Contracts;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -16,12 +18,15 @@ using Microsoft.Xaml.Interactivity;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.Behaviors;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Behaviors;
 
 
 public class NavigationViewHeaderBehavior : Behavior<NavigationView>
 {
+
+
     private static NavigationViewHeaderBehavior? _current;
 
     public static readonly DependencyProperty DefaultHeaderProperty =
@@ -46,12 +51,7 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
 
     private Page? _currentPage;
 
-    public DataTemplate? DefaultHeaderTemplate
-    {
-        get;
-        set;
-    }
-
+    public DataTemplate? DefaultHeaderTemplate { get; set; }
 
 
     public object DefaultHeader
@@ -64,8 +64,10 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
 
 
 
-    public static NavigationViewHeaderMode GetHeaderMode(Page item) =>
-        (NavigationViewHeaderMode)item.GetValue(HeaderModeProperty);
+    public static NavigationViewHeaderMode GetHeaderMode(Page item)
+    {
+        return (NavigationViewHeaderMode)item.GetValue(HeaderModeProperty);
+    }
 
 
 
@@ -80,7 +82,10 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
 
 
 
-    public static object GetHeaderContext(Page item) => item.GetValue(HeaderContextProperty);
+    public static object GetHeaderContext(Page item)
+    {
+        return item.GetValue(HeaderContextProperty);
+    }
 
 
 
@@ -95,7 +100,10 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
 
 
 
-    public static DataTemplate GetHeaderTemplate(Page item) => (DataTemplate)item.GetValue(HeaderTemplateProperty);
+    public static DataTemplate GetHeaderTemplate(Page item)
+    {
+        return (DataTemplate)item.GetValue(HeaderTemplateProperty);
+    }
 
 
 
@@ -114,7 +122,7 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
     {
         base.OnAttached();
 
-        INavigationService navigationService = App.GetService<INavigationService>();
+        var navigationService = App.GetService<INavigationService>();
         navigationService.Navigated += OnNavigated;
 
         _current = this;
@@ -128,7 +136,7 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
     {
         base.OnDetaching();
 
-        INavigationService navigationService = App.GetService<INavigationService>();
+        var navigationService = App.GetService<INavigationService>();
         navigationService.Navigated -= OnNavigated;
     }
 
@@ -174,7 +182,6 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
 
 
 
-
     private void UpdateHeaderTemplate()
     {
         if (_currentPage != null)
@@ -183,4 +190,6 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
             AssociatedObject.HeaderTemplate = headerTemplate ?? DefaultHeaderTemplate;
         }
     }
+
+
 }

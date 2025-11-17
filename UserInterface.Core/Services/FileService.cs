@@ -8,6 +8,7 @@
 
 
 
+
 using System.Text;
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
@@ -16,25 +17,27 @@ using Newtonsoft.Json;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.Core.Services;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Core.Services;
 
 
 public class FileService : IFileService
 {
+
+
     public T? Read<T>(string folderPath, string fileName)
     {
-        string path = Path.Combine(folderPath, fileName);
+        var path = Path.Combine(folderPath, fileName);
 
         if (!File.Exists(path))
         {
-            return default(T?);
+            return default;
         }
 
-        string json = File.ReadAllText(path);
+        var json = File.ReadAllText(path);
 
         return JsonConvert.DeserializeObject<T>(json);
-
     }
 
 
@@ -48,7 +51,7 @@ public class FileService : IFileService
             Directory.CreateDirectory(folderPath);
         }
 
-        string fileContent = JsonConvert.SerializeObject(content);
+        var fileContent = JsonConvert.SerializeObject(content);
         File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
     }
 
@@ -63,4 +66,6 @@ public class FileService : IFileService
             File.Delete(Path.Combine(folderPath, fileName));
         }
     }
+
+
 }

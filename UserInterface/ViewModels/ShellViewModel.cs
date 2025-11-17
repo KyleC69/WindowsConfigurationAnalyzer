@@ -8,19 +8,27 @@
 
 
 
+
 using CommunityToolkit.Mvvm.ComponentModel;
+
+using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
+
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 
-
 public partial class ShellViewModel : ObservableRecipient
 {
+
+
     private bool _isBackEnabled;
 
     private object? _selected;
@@ -47,7 +55,6 @@ public partial class ShellViewModel : ObservableRecipient
     }
 
 
-
     public object? Selected
     {
         get => _selected;
@@ -55,16 +62,9 @@ public partial class ShellViewModel : ObservableRecipient
     }
 
 
+    public INavigationService NavigationService { get; }
 
-    public INavigationService NavigationService
-    {
-        get;
-    }
-
-    public INavigationViewService NavigationViewService
-    {
-        get;
-    }
+    public INavigationViewService NavigationViewService { get; }
 
 
 
@@ -81,10 +81,12 @@ public partial class ShellViewModel : ObservableRecipient
             return;
         }
 
-        var selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
+        NavigationViewItem? selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
         if (selectedItem != null)
         {
             _selected = selectedItem;
         }
     }
+
+
 }

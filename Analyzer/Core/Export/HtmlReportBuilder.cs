@@ -8,31 +8,35 @@
 
 
 
+
 using System.Net;
 using System.Text;
 using System.Text.Json;
 
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
+using KC.WindowsConfigurationAnalyzer.Contracts;
+using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.Analyzer.Core.Export;
 
+
+namespace KC.WindowsConfigurationAnalyzer.DataProbe.Core.Export;
 
 
 public sealed class HtmlReportBuilder : IExporter
 {
+
+
     public async Task ExportAsync(AnalyzerResult result, string targetPath, CancellationToken cancellationToken)
     {
-        string? dir = Path.GetDirectoryName(targetPath);
+        var dir = Path.GetDirectoryName(targetPath);
         if (!string.IsNullOrEmpty(dir))
         {
             Directory.CreateDirectory(dir);
         }
 
-        string html = BuildHtml(result);
-        string tmp = targetPath + ".tmp";
+        var html = BuildHtml(result);
+        var tmp = targetPath + ".tmp";
         await File.WriteAllTextAsync(tmp, html, Encoding.UTF8, cancellationToken);
         if (File.Exists(targetPath))
         {
@@ -57,15 +61,15 @@ public sealed class HtmlReportBuilder : IExporter
         sb.Append("<h2>System: ").Append(E(r.ComputerName)).Append(" | Exported: ")
             .Append(E(r.ExportTimestampUtc.ToString("u"))).Append("</h2>");
 
-        int crit = r.GlobalFindings.Count(f => f.Severity.Equals("Critical", StringComparison.OrdinalIgnoreCase));
-        int warn = r.GlobalFindings.Count(f => f.Severity.Equals("Warning", StringComparison.OrdinalIgnoreCase));
+        var crit = r.GlobalFindings.Count(f => f.Severity.Equals("Critical", StringComparison.OrdinalIgnoreCase));
+        var warn = r.GlobalFindings.Count(f => f.Severity.Equals("Warning", StringComparison.OrdinalIgnoreCase));
         sb.Append("<section id='summary'><h3>Summary</h3><ul>");
         sb.Append("<li>Critical Findings: <span class='critical'>").Append(crit).Append("</span></li>");
         sb.Append("<li>Warnings: <span class='warning'>").Append(warn).Append("</span></li>");
         sb.Append("<li>Areas: ").Append(r.Areas.Count).Append("</li>");
         sb.Append("</ul></section>");
 
-        foreach (var a in r.Areas)
+        foreach (AreaResult a in r.Areas)
         {
             sb.Append("<section><h3>").Append(E(a.Area)).Append("</h3>");
             if (a.Warnings.Count > 0)
@@ -81,9 +85,9 @@ public sealed class HtmlReportBuilder : IExporter
             if (a.Anomalies.Count > 0)
             {
                 sb.Append("<ul>");
-                foreach (var f in a.Anomalies)
+                foreach (Finding f in a.Anomalies)
                 {
-                    string cls = CssFor(f.Severity);
+                    var cls = CssFor(f.Severity);
                     sb.Append("<li class='").Append(cls).Append("'>").Append(E(f.Severity)).Append(": ")
                         .Append(E(f.Message)).Append("</li>");
                 }
@@ -95,7 +99,7 @@ public sealed class HtmlReportBuilder : IExporter
             if (a.Details is not null)
             {
                 sb.Append("<details><summary>Details</summary><pre>");
-                string json = JsonSerializer.Serialize(a.Details, new JsonSerializerOptions { WriteIndented = true });
+                var json = JsonSerializer.Serialize(a.Details, new JsonSerializerOptions { WriteIndented = true });
                 sb.Append(E(json));
                 sb.Append("</pre></details>");
             }
@@ -103,21 +107,6 @@ public sealed class HtmlReportBuilder : IExporter
             sb.Append("</section>");
         }
 
-        if (r.ActionLog.Count > 0)
-        {
-            sb.Append(
-                "<section id='actionlog'><h3>Action Log</h3><table><tr><th>Time (UTC)</th><th>Area</th><th>Action</th><th>Level</th><th>Message</th></tr>");
-            foreach (var e in r.ActionLog)
-            {
-                sb.Append("<tr><td>").Append(E(e.TimestampUtc.ToString("u"))).Append("</td>")
-                    .Append("<td>").Append(E(e.Area)).Append("</td>")
-                    .Append("<td>").Append(E(e.Action)).Append("</td>")
-                    .Append("<td>").Append(E(e.Level)).Append("</td>")
-                    .Append("<td>").Append(E(e.Message)).Append("</td></tr>");
-            }
-
-            sb.Append("</table></section>");
-        }
 
         sb.Append("</body></html>");
 
@@ -142,4 +131,6 @@ public sealed class HtmlReportBuilder : IExporter
     {
         return WebUtility.HtmlEncode(s ?? string.Empty);
     }
+
+
 }

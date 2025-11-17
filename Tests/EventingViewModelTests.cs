@@ -1,10 +1,11 @@
 // Created:  2025/11/04
-// Solution:
-// Project:
-// File:
+// Solution: WindowsConfigurationAnalyzer
+// Project:  Tests
+// File:  EventingViewModelTests.cs
 // 
 // All Rights Reserved 2025
 // Kyle L Crowder
+
 
 
 
@@ -15,17 +16,18 @@ using FluentAssertions;
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.Tests;
 
 
-
 [TestClass]
 public class EventingViewModelTests
 {
+
+
     [TestMethod]
     public async Task EventingViewModel_Loads_LogNames_And_Applies_Filter_Query()
     {
@@ -82,7 +84,6 @@ public class EventingViewModelTests
         vm.LogNames.Should().NotBeNull();
 
         vm.LogNames.Count.Should().BeGreaterThan(0);
-
     }
 
 
@@ -92,16 +93,14 @@ public class EventingViewModelTests
     [TestMethod]
     public async Task LoadEventsFromLogByName()
     {
-
         EventingViewModel vm = new();
 
         await vm.LoadEventsFromActiveLogAsync("System");
 
         vm.LogEvents.Should().NotBeEmpty();
-
-
-
     }
+
+
 
 
 
@@ -113,7 +112,7 @@ public class EventingViewModelTests
         try
         {
             EventLogSession session = new();
-            foreach (string? name in session.GetLogNames())
+            foreach (var name in session.GetLogNames())
             {
                 try
                 {
@@ -121,6 +120,7 @@ public class EventingViewModelTests
                     if (cfg.IsEnabled && cfg.LogType != EventLogType.Analytical)
                     {
                         logName = name;
+
                         break;
                     }
                 }
@@ -138,19 +138,21 @@ public class EventingViewModelTests
         if (string.IsNullOrWhiteSpace(logName))
         {
             Assert.Inconclusive("No accessible event logs available on this environment.");
+
             return;
         }
 
         EventingViewModel vm = new()
         {
             HoursBack = 1 // positive window
-		};
-        MethodInfo? method = typeof(EventingViewModel).GetMethod("BuildEventLogQuery", BindingFlags.Instance | BindingFlags.NonPublic);
+        };
+        MethodInfo? method =
+            typeof(EventingViewModel).GetMethod("BuildEventLogQuery", BindingFlags.Instance | BindingFlags.NonPublic);
         method.Should().NotBeNull();
 
         // Act
-        EventLogQuery filtered = (EventLogQuery)method!.Invoke(vm, new object[] { logName!, false })!;
-        EventLogQuery unfiltered = (EventLogQuery)method.Invoke(vm, new object[] { logName!, true })!;
+        var filtered = (EventLogQuery)method!.Invoke(vm, new object[] { logName!, false })!;
+        var unfiltered = (EventLogQuery)method.Invoke(vm, new object[] { logName!, true })!;
 
         // Assert: constructing a reader and attempting a single read should not throw for either query
         Action useFiltered = () =>
@@ -168,4 +170,6 @@ public class EventingViewModelTests
         useFiltered.Should().NotThrow();
         useUnfiltered.Should().NotThrow();
     }
+
+
 }

@@ -8,32 +8,35 @@
 
 
 
+
 using System.Diagnostics.CodeAnalysis;
+
+using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.ViewModels;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
+
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
 
-
 // For more information on navigation between pages see
 // https://github.com/microsoft/TemplateStudio/blob/main/docs/WinUI/navigation.md
 public class NavigationService(IPageService pageService) : INavigationService
 {
+
+
     private Frame? _frame;
     private object? _lastParameterUsed;
 
 
-
-
-
     public event NavigatedEventHandler? Navigated;
-
 
 
     public Frame? Frame
@@ -56,7 +59,6 @@ public class NavigationService(IPageService pageService) : INavigationService
             RegisterFrameEvents();
         }
     }
-
 
 
     [MemberNotNullWhen(true, nameof(Frame), nameof(_frame))]
@@ -89,8 +91,8 @@ public class NavigationService(IPageService pageService) : INavigationService
 
     public bool NavigateTo(string pageKey, object? parameter = null, bool clearNavigation = false)
     {
-        ActivityLogger.Log("INF", $"Navigating to {pageKey} with parameter {parameter}",$"{pageKey}");
-        var pageType = pageService.GetPageType(pageKey);
+        ActivityLogger.Log("INF", $"Navigating to {pageKey} with parameter {parameter}", $"{pageKey}");
+        Type pageType = pageService.GetPageType(pageKey);
 
         if (_frame != null && (_frame.Content?.GetType() != pageType ||
                                (parameter != null && !parameter.Equals(_lastParameterUsed))))
@@ -159,4 +161,6 @@ public class NavigationService(IPageService pageService) : INavigationService
             Navigated?.Invoke(sender, e);
         }
     }
+
+
 }

@@ -8,16 +8,19 @@
 
 
 
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
 
 public class ActivationService(
@@ -26,6 +29,8 @@ public class ActivationService(
     IThemeSelectorService themeSelectorService)
     : IActivationService
 {
+
+
     private UIElement? _shell;
 
 
@@ -92,4 +97,6 @@ public class ActivationService(
         await themeSelectorService.SetRequestedThemeAsync();
         await Task.CompletedTask;
     }
+
+
 }

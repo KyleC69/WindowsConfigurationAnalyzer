@@ -361,3 +361,13 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/CodeMap1.dgml
+/Directory.Build.props
+/Microsoft.WindowsAppRuntime.pri.xml
+/settings.VisualStudio.json
+/Root.shproj
+/.editorconfig.txt
+/.editorconfig
+/.gitattributes
+/.gitignore
+/.gitignore

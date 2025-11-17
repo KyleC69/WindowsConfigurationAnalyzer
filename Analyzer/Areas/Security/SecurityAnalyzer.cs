@@ -8,18 +8,25 @@
 
 
 
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Utilities;
+
+using KC.WindowsConfigurationAnalyzer.Contracts;
+using KC.WindowsConfigurationAnalyzer.Contracts.Models;
+using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.Analyzer.Areas.Security;
 
+
+namespace KC.WindowsConfigurationAnalyzer.DataProbe.Areas.Security;
 
 
 public sealed class SecurityAnalyzer : IAnalyzerModule
 {
+
+
+    private IActivityLogger? _logger;
+
+
     public string Name => "Security Analyzer";
     public string Area => "Security";
 
@@ -27,14 +34,14 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
 
 
 
-    public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
+    public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        string area = Area;
-        context.ActionLogger.Info(area, "Start", "Collecting security configuration");
+        _logger = logger;
+        var area = Area;
+        _logger.Log("INF", "Start: Collecting security configuration", area);
         List<string> warnings = new();
         List<string> errors = new();
 
-        // Sections
         Dictionary<string, object?> secCenter = new();
         Dictionary<string, object?> defender = new();
         Dictionary<string, object?> deviceGuard = new();
@@ -45,47 +52,51 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
         Dictionary<string, object?> lsa = new();
         Dictionary<string, object?> windowsUpdate = new();
 
-        int avCount = 0;
+        var avCount = 0;
         bool? uacEnabled = null;
         bool? secureBootEnabled = null;
-        int bitlockerProtected = 0;
+        var bitlockerProtected = 0;
 
         // Windows Security Center (AV/AS/Firewall)
         try
         {
-            context.ActionLogger.Info(area, "SecCenter", "Start");
+            _logger.Log("INF", "SecCenter: Start", area);
             List<object> av = new();
             List<object> fw = new();
             List<object> asw = new();
             try
             {
-                foreach (var mo in context.Cim.Query(
-                             "SELECT displayName, pathToSignedProductExe, productState, timestamp FROM AntiVirusProduct",
-                             "\\\\.\\root\\SecurityCenter2"))
+                var avRows = await context.Cim.QueryAsync(
+                    "SELECT displayName, pathToSignedProductExe, productState, timestamp FROM AntiVirusProduct",
+                    "\\\\.\\root\\SecurityCenter2", cancellationToken).ConfigureAwait(false);
+                foreach (var mo in avRows)
                 {
-                    Dictionary<string, object?> item = new()
+                    cancellationToken.ThrowIfCancellationRequested();
+                    av.Add(new Dictionary<string, object?>
                     {
                         ["Name"] = mo.GetOrDefault("displayName"),
                         ["Path"] = mo.GetOrDefault("pathToSignedProductExe"),
                         ["State"] = mo.GetOrDefault("productState"),
                         ["Timestamp"] = mo.GetOrDefault("timestamp")
-                    };
-                    av.Add(item);
+                    });
                 }
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
                 warnings.Add($"SecurityCenter2 AntiVirusProduct query failed: {ex.Message}");
                 errors.Add(ex.ToString());
-                context.ActionLogger.Error(area, "SecCenter", "AntiVirusProduct query failed", ex);
+                _logger.Log("ERR", $"SecCenter: AntiVirusProduct query failed ({ex.Message})", area);
             }
 
             try
             {
-                foreach (var mo in context.Cim.Query(
-                             "SELECT displayName, pathToSignedProductExe, productState, timestamp FROM FirewallProduct",
-                             "\\\\.\\root\\SecurityCenter2"))
+                var fwRows = await context.Cim.QueryAsync(
+                    "SELECT displayName, pathToSignedProductExe, productState, timestamp FROM FirewallProduct",
+                    "\\\\.\\root\\SecurityCenter2", cancellationToken).ConfigureAwait(false);
+                foreach (var mo in fwRows)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     fw.Add(new
                     {
                         Name = mo.GetOrDefault("displayName"),
@@ -95,19 +106,22 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
                     });
                 }
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
                 warnings.Add($"SecurityCenter2 FirewallProduct query failed: {ex.Message}");
                 errors.Add(ex.ToString());
-                context.ActionLogger.Error(area, "SecCenter", "FirewallProduct query failed", ex);
+                _logger.Log("ERR", $"SecCenter: FirewallProduct query failed ({ex.Message})", area);
             }
 
             try
             {
-                foreach (var mo in context.Cim.Query(
-                             "SELECT displayName, pathToSignedProductExe, productState, timestamp FROM AntiSpywareProduct",
-                             "\\\\.\\root\\SecurityCenter2"))
+                var asRows = await context.Cim.QueryAsync(
+                    "SELECT displayName, pathToSignedProductExe, productState, timestamp FROM AntiSpywareProduct",
+                    "\\\\.\\root\\SecurityCenter2", cancellationToken).ConfigureAwait(false);
+                foreach (var mo in asRows)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     asw.Add(new
                     {
                         Name = mo.GetOrDefault("displayName"),
@@ -117,50 +131,50 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
                     });
                 }
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
                 warnings.Add($"SecurityCenter2 AntiSpywareProduct query failed: {ex.Message}");
                 errors.Add(ex.ToString());
-                context.ActionLogger.Error(area, "SecCenter", "AntiSpywareProduct query failed", ex);
+                _logger.Log("ERR", $"SecCenter: AntiSpywareProduct query failed ({ex.Message})", area);
             }
 
             secCenter["Antivirus"] = av;
             secCenter["Firewall"] = fw;
             secCenter["AntiSpyware"] = asw;
             avCount = av.Count;
-            context.ActionLogger.Info(area, "SecCenter", $"Complete: AV={av.Count}, FW={fw.Count}, AS={asw.Count}");
+            _logger.Log("INF", $"SecCenter: Complete: AV={av.Count}, FW={fw.Count}, AS={asw.Count}", area);
         }
-        catch
-        {
-            /* guarded above */
-        }
+        catch { }
 
         // UAC basic
         try
         {
-            context.ActionLogger.Info(area, "UAC", "Start");
-            object? v = context.Registry.GetValue(
-                "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
-                "EnableLUA");
+            _logger.Log("INF", "UAC: Start", area);
+            var v = context.Registry.GetValue(
+                "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System", "EnableLUA");
             uacEnabled = v is int i && i != 0;
             lsa["UAC_EnableLUA"] = v;
-            context.ActionLogger.Info(area, "UAC", $"Complete: EnableLUA={v ?? "null"}");
+            _logger.Log("INF", $"UAC: Complete: EnableLUA={v ?? "null"}", area);
         }
         catch (Exception ex)
         {
             warnings.Add($"UAC read failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "UAC", "UAC read failed", ex);
+            _logger.Log("ERR", $"UAC: UAC read failed ({ex.Message})", area);
         }
 
         // Defender service and signatures
         try
         {
-            context.ActionLogger.Info(area, "Defender", "Start");
+            _logger.Log("INF", "Defender: Start", area);
             List<object> services = new();
-            foreach (var s in context.Cim.Query(
-                         "SELECT Name, State, StartMode, PathName, DisplayName FROM Win32_Service WHERE Name='WinDefend' OR Name='Sense'"))
+            var svcRows = await context.Cim.QueryAsync(
+                "SELECT Name, State, StartMode, PathName, DisplayName FROM Win32_Service WHERE Name='WinDefend' OR Name='Sense'",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var s in svcRows)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 services.Add(new
                 {
                     Name = s.GetOrDefault("Name"),
@@ -170,111 +184,92 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
                     DisplayName = s.GetOrDefault("DisplayName")
                 });
             }
-
             defender["Services"] = services;
-            // Signature info (best-effort; keys can vary by OS build)
             Dictionary<string, object?> sig = new();
-            foreach ((string k, string[] n) in new (string key, string[] names)[]
+            foreach (var (k, n) in new (string key, string[] names)[]
                      {
                          ("HKLM\\SOFTWARE\\Microsoft\\Windows Defender",
-                          new[] { "EngineVersion", "SignatureVersion", "AVSignatureVersion", "ASSignatureVersion" }),
+                             ["EngineVersion", "SignatureVersion", "AVSignatureVersion", "ASSignatureVersion"]),
                          ("HKLM\\SOFTWARE\\Microsoft\\Windows Defender\\Signature Updates",
-                          new[]
-                          {
-                              "EngineVersion", "AVSignatureVersion", "IASignatureVersion", "ASSignatureVersion",
-                              "LastUpdateTime"
-                          })
+                         ["EngineVersion", "AVSignatureVersion", "IASignatureVersion", "ASSignatureVersion", "LastUpdateTime"])
                      })
             {
-                foreach (string name in n)
+                foreach (var name in n)
                 {
-                    try
-                    {
-                        sig[$"{k}:{name}"] = context.Registry.GetValue(k, name);
-                    }
-                    catch
-                    {
-                    }
+                    try { sig[$"{k}:{name}"] = context.Registry.GetValue(k, name); } catch { }
                 }
             }
-
             defender["Signatures"] = sig;
-            context.ActionLogger.Info(area, "Defender", "Complete");
+            _logger.Log("INF", "Defender: Complete", area);
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"Defender inspection failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "Defender", "Defender inspection failed", ex);
+            _logger.Log("ERR", $"Defender: Defender inspection failed ({ex.Message})", area);
         }
 
         // Device Guard / Credential Guard
         try
         {
-            context.ActionLogger.Info(area, "DeviceGuard", "Start");
-            foreach (var dg in context.Cim.Query("SELECT * FROM Win32_DeviceGuard",
-                         "\\\\.\\root\\Microsoft\\Windows\\DeviceGuard"))
+            _logger.Log("INF", "DeviceGuard: Start", area);
+            var dgRows = await context.Cim.QueryAsync(
+                "SELECT * FROM Win32_DeviceGuard", "\\\\.\\root\\Microsoft\\Windows\\DeviceGuard", cancellationToken).ConfigureAwait(false);
+            foreach (var dg in dgRows)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 deviceGuard["SecurityServicesConfigured"] = dg.GetOrDefault("SecurityServicesConfigured");
                 deviceGuard["SecurityServicesRunning"] = dg.GetOrDefault("SecurityServicesRunning");
                 deviceGuard["VirtualizationBasedSecurityStatus"] = dg.GetOrDefault("VirtualizationBasedSecurityStatus");
                 deviceGuard["HVCIProtectionLevel"] = dg.GetOrDefault("HVCIProtectionLevel");
-
                 break;
             }
-
-            // LSA Protection (RunAsPPL)
-            try
-            {
-                lsa["RunAsPPL"] =
-                    context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa", "RunAsPPL");
-            }
-            catch
-            {
-            }
-
-            context.ActionLogger.Info(area, "DeviceGuard", "Complete");
+            try { lsa["RunAsPPL"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa", "RunAsPPL"); } catch { }
+            _logger.Log("INF", "DeviceGuard: Complete", area);
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"DeviceGuard query failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "DeviceGuard", "DeviceGuard query failed", ex);
+            _logger.Log("ERR", $"DeviceGuard: DeviceGuard query failed ({ex.Message})", area);
         }
 
         // Secure Boot
         try
         {
-            context.ActionLogger.Info(area, "SecureBoot", "Start");
-            foreach (var sb in context.Cim.Query("SELECT SecureBootEnabled FROM MS_SecureBoot",
-                         "\\\\.\\root\\wmi"))
+            _logger.Log("INF", "SecureBoot: Start", area);
+            var sbRows = await context.Cim.QueryAsync(
+                "SELECT SecureBootEnabled FROM MS_SecureBoot", "\\\\.\\root\\wmi", cancellationToken).ConfigureAwait(false);
+            foreach (var sb in sbRows)
             {
-                object? v = sb.GetOrDefault("SecureBootEnabled");
+                cancellationToken.ThrowIfCancellationRequested();
+                var v = sb.GetOrDefault("SecureBootEnabled");
                 secureBootEnabled = v is uint ui ? ui != 0 : v is int ii && ii != 0;
                 secureBoot["SecureBootEnabled"] = v;
-
                 break;
             }
-
-            context.ActionLogger.Info(area, "SecureBoot",
-                $"Complete: Enabled={secureBootEnabled?.ToString() ?? "null"} ");
+            _logger.Log("INF", $"SecureBoot: Complete: Enabled={secureBootEnabled?.ToString() ?? "null"} ", area);
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"Secure Boot query failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "SecureBoot", "Secure Boot query failed", ex);
+            _logger.Log("ERR", $"SecureBoot: Secure Boot query failed ({ex.Message})", area);
         }
 
         // BitLocker
         try
         {
-            context.ActionLogger.Info(area, "BitLocker", "Start");
-            foreach (var vol in context.Cim.Query(
-                         "SELECT DeviceID, ProtectionStatus, EncryptionMethod FROM Win32_EncryptableVolume",
-                         "\\\\.\\root\\CIMV2\\Security\\MicrosoftVolumeEncryption"))
+            _logger.Log("INF", "BitLocker: Start", area);
+            var blRows = await context.Cim.QueryAsync(
+                "SELECT DeviceID, ProtectionStatus, EncryptionMethod FROM Win32_EncryptableVolume", "\\\\.\\root\\CIMV2\\Security\\MicrosoftVolumeEncryption", cancellationToken).ConfigureAwait(false);
+            foreach (var vol in blRows)
             {
-                object? ps = vol.GetOrDefault("ProtectionStatus");
+                cancellationToken.ThrowIfCancellationRequested();
+                var ps = vol.GetOrDefault("ProtectionStatus");
                 if (ps is uint u && u == 1)
                 {
                     bitlockerProtected++;
@@ -287,119 +282,88 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
                     EncryptionMethod = vol.GetOrDefault("EncryptionMethod")
                 });
             }
-
-            context.ActionLogger.Info(area, "BitLocker", $"Complete: protected={bitlockerProtected}");
+            _logger.Log("INF", $"BitLocker: Complete: protected={bitlockerProtected}", area);
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"BitLocker query failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "BitLocker", "BitLocker query failed", ex);
+            _logger.Log("ERR", $"BitLocker: BitLocker query failed ({ex.Message})", area);
         }
 
         // RDP/NLA
         try
         {
-            context.ActionLogger.Info(area, "RDP", "Start");
-            rdp["fDenyTSConnections"] =
-                context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server",
-                    "fDenyTSConnections");
-            rdp["UserAuthentication"] = context.Registry.GetValue(
-                "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp",
-                "UserAuthentication");
-            context.ActionLogger.Info(area, "RDP", "Complete");
+            _logger.Log("INF", "RDP: Start", area);
+            rdp["fDenyTSConnections"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server", "fDenyTSConnections");
+            rdp["UserAuthentication"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp", "UserAuthentication");
+            _logger.Log("INF", "RDP: Complete", area);
         }
         catch (Exception ex)
         {
             warnings.Add($"RDP read failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "RDP", "RDP read failed", ex);
+            _logger.Log("ERR", $"RDP: RDP read failed ({ex.Message})", area);
         }
 
         // SMBv1 state
         try
         {
-            context.ActionLogger.Info(area, "SMB", "Start");
-            smb["Server_SMB1"] =
-                context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters",
-                    "SMB1");
-            smb["Client_MRxSmb10_Start"] =
-                context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Services\\mrxsmb10", "Start");
-            smb["Client_MRxSmb20_Start"] =
-                context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Services\\mrxsmb20", "Start");
-            context.ActionLogger.Info(area, "SMB", "Complete");
+            _logger.Log("INF", "SMB: Start", area);
+            smb["Server_SMB1"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters", "SMB1");
+            smb["Client_MRxSmb10_Start"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Services\\mrxsmb10", "Start");
+            smb["Client_MRxSmb20_Start"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Services\\mrxsmb20", "Start");
+            _logger.Log("INF", "SMB: Complete", area);
         }
         catch (Exception ex)
         {
             warnings.Add($"SMB read failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "SMB", "SMB read failed", ex);
+            _logger.Log("ERR", $"SMB: SMB read failed ({ex.Message})", area);
         }
 
-        // LSA hardening/security options
+        // LSA hardening
         try
         {
-            context.ActionLogger.Info(area, "LSA", "Start");
-            foreach (string name in new[]
-                         { "LmCompatibilityLevel", "RestrictAnonymous", "RestrictAnonymousSAM", "NoLMHash" })
+            _logger.Log("INF", "LSA: Start", area);
+            foreach (var name in new[] { "LmCompatibilityLevel", "RestrictAnonymous", "RestrictAnonymousSAM", "NoLMHash" })
             {
-                try
-                {
-                    lsa[name] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa", name);
-                }
-                catch
-                {
-                }
+                try { lsa[name] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa", name); } catch { }
             }
-
-            context.ActionLogger.Info(area, "LSA", "Complete");
+            _logger.Log("INF", "LSA: Complete", area);
         }
         catch (Exception ex)
         {
             warnings.Add($"LSA read failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "LSA", "LSA read failed", ex);
+            _logger.Log("ERR", $"LSA: LSA read failed ({ex.Message})", area);
         }
 
         // Windows Update
         try
         {
-            context.ActionLogger.Info(area, "WU", "Start");
-            // Service state
-            foreach (var s in context.Cim.Query(
-                         "SELECT Name, State, StartMode FROM Win32_Service WHERE Name='wuauserv'"))
+
+            _logger.Log("INF", "WU: Start", area);
+            var wuSvc = await context.Cim.QueryAsync(
+                "SELECT Name, State, StartMode FROM Win32_Service WHERE Name='wuauserv'",
+                null, cancellationToken).ConfigureAwait(false);
+            foreach (var s in wuSvc)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 windowsUpdate["Service_State"] = s.GetOrDefault("State");
                 windowsUpdate["Service_StartMode"] = s.GetOrDefault("StartMode");
             }
-
-            // AU options and last success times (best-effort)
-            try
-            {
-                windowsUpdate["AUOptions"] = context.Registry.GetValue(
-                    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update", "AUOptions");
-            }
-            catch
-            {
-            }
-
-            try
-            {
-                windowsUpdate["LastSuccessTime"] = context.Registry.GetValue(
-                    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\Results\\Install",
-                    "LastSuccessTime");
-            }
-            catch
-            {
-            }
-
-            context.ActionLogger.Info(area, "WU", "Complete");
+            try { windowsUpdate["AUOptions"] = context.Registry.GetValue("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update", "AUOptions"); } catch { }
+            try { windowsUpdate["LastSuccessTime"] = context.Registry.GetValue("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\Results\\Install", "LastSuccessTime"); } catch { }
+            _logger.Log("INF", "WU: Complete", area);
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             warnings.Add($"Windows Update inspection failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "WU", "Windows Update inspection failed", ex);
+            _logger.Log("ERR", $"WU: Windows Update inspection failed ({ex.Message})", area);
         }
 
         var summary = new
@@ -421,9 +385,11 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
             LSA = lsa,
             WindowsUpdate = windowsUpdate
         };
-        AreaResult result = new(area, summary, details, Array.Empty<Finding>(), warnings, errors);
-        context.ActionLogger.Info(area, "Complete", "Security configuration collected");
+        AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
+        _logger.Log("INF", "Complete: Security configuration collected", area);
 
-        return Task.FromResult(result);
+        return result;
     }
+
+
 }

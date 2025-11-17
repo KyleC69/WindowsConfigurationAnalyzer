@@ -8,34 +8,38 @@
 
 
 
+
 using System.Collections;
 using System.Reflection;
 
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
+using KC.WindowsConfigurationAnalyzer.Contracts;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.Analyzer.Core.Readers;
 
+
+namespace KC.WindowsConfigurationAnalyzer.DataProbe.Core.Readers;
 
 
 public sealed class FirewallReader : IFirewallReader
 {
+
+
     public IEnumerable<string> GetProfiles()
     {
         try
         {
-            object? policy = CreatePolicy2();
+            var policy = CreatePolicy2();
 
             if (policy is null)
             {
-                return Array.Empty<string>();
+                return new List<string>().AsReadOnly();
             }
 
-            var policyType = policy.GetType();
-            object? typesObj =
+            Type policyType = policy.GetType();
+            var typesObj =
                 policyType.InvokeMember("CurrentProfileTypes", BindingFlags.GetProperty, null, policy, null);
-            int types = typesObj is int i ? i : 0;
+            var types = typesObj is int i ? i : 0;
             List<string> list = new();
             if ((types & 0x1) != 0)
             {
@@ -56,7 +60,7 @@ public sealed class FirewallReader : IFirewallReader
         }
         catch
         {
-            return Array.Empty<string>();
+            return new List<string>().AsReadOnly();
         }
     }
 
@@ -68,26 +72,25 @@ public sealed class FirewallReader : IFirewallReader
     {
         try
         {
-            object? policy = CreatePolicy2();
+            var policy = CreatePolicy2();
 
             if (policy is null)
             {
-                return Array.Empty<object>();
+                return new List<object>().AsReadOnly();
             }
 
-            var policyType = policy.GetType();
-            object? rulesObj = policyType.InvokeMember("Rules", BindingFlags.GetProperty, null, policy, null);
+            Type policyType = policy.GetType();
+            var rulesObj = policyType.InvokeMember("Rules", BindingFlags.GetProperty, null, policy, null);
 
             if (rulesObj is not IEnumerable rules)
             {
-                return Array.Empty<object>();
+                return new List<object>().AsReadOnly();
             }
 
             List<object> list = new();
-            foreach (object? r in rules)
+            foreach (var r in rules)
             {
-                var t = r!.GetType();
-
+                Type t = r!.GetType();
 
 
                 object? Get(string name)
@@ -101,7 +104,6 @@ public sealed class FirewallReader : IFirewallReader
                         return null;
                     }
                 }
-
 
 
                 list.Add(new
@@ -123,7 +125,7 @@ public sealed class FirewallReader : IFirewallReader
         }
         catch
         {
-            return Array.Empty<object>();
+            return new List<object>().AsReadOnly();
         }
     }
 
@@ -135,7 +137,7 @@ public sealed class FirewallReader : IFirewallReader
     {
         try
         {
-            Type? t = Type.GetTypeFromProgID("HNetCfg.FwPolicy2");
+            var t = Type.GetTypeFromProgID("HNetCfg.FwPolicy2");
 
             return t is null ? null : Activator.CreateInstance(t);
         }
@@ -144,4 +146,6 @@ public sealed class FirewallReader : IFirewallReader
             return null;
         }
     }
+
+
 }

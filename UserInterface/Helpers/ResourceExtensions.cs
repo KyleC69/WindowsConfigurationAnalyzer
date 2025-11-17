@@ -8,16 +8,20 @@
 
 
 
+
 using Microsoft.Windows.ApplicationModel.Resources;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 
-
 public static class ResourceExtensions
 {
+
+
     private static readonly ResourceLoader ResourceLoader = new();
 
 
@@ -28,8 +32,6 @@ public static class ResourceExtensions
     {
         return ResourceLoader.GetString(resourceKey) ?? $@"Localized resource not found for key:{resourceKey}";
     }
-
-
 
 
 }

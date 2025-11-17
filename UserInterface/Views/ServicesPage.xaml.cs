@@ -8,18 +8,24 @@
 
 
 
+
 using CommunityToolkit.WinUI.UI.Controls;
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
+
 using Microsoft.UI.Xaml.Controls;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 
-
 public sealed partial class ServicesPage : Page
 {
+
+
     public ServicesPage()
     {
         ViewModel = App.GetService<ServicesViewModel>();
@@ -30,10 +36,7 @@ public sealed partial class ServicesPage : Page
 
 
 
-    public ServicesViewModel ViewModel
-    {
-        get;
-    }
+    public ServicesViewModel ViewModel { get; }
 
 
 
@@ -46,4 +49,6 @@ public sealed partial class ServicesPage : Page
             ViewModel.EnsureItemSelected();
         }
     }
+
+
 }

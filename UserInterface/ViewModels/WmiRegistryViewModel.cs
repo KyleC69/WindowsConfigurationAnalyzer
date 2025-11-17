@@ -8,8 +8,11 @@
 
 
 
+
 using System.Collections.ObjectModel;
+
 using CommunityToolkit.Mvvm.ComponentModel;
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.ViewModels;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
@@ -17,20 +20,18 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Services;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 
 public partial class WmiRegistryViewModel : ObservableRecipient, INavigationAware
 {
+
+
     private readonly ISampleDataService _sampleDataService = new SampleDataService();
 
     private SampleOrder? _selected;
-
-
-
-
-
 
 
     public SampleOrder? Selected
@@ -40,11 +41,7 @@ public partial class WmiRegistryViewModel : ObservableRecipient, INavigationAwar
     }
 
 
-
-    public ObservableCollection<SampleOrder> SampleItems
-    {
-        get;
-    } = [];
+    public ObservableCollection<SampleOrder> SampleItems { get; } = [];
 
 
 
@@ -55,13 +52,12 @@ public partial class WmiRegistryViewModel : ObservableRecipient, INavigationAwar
         SampleItems.Clear();
 
         // TODO: Replace with real data.
-        var data = await _sampleDataService.GetListDetailsDataAsync();
+        IEnumerable<SampleOrder> data = await _sampleDataService.GetListDetailsDataAsync();
 
-        foreach (var item in data)
+        foreach (SampleOrder item in data)
         {
             SampleItems.Add(item);
         }
-
     }
 
 
@@ -80,4 +76,6 @@ public partial class WmiRegistryViewModel : ObservableRecipient, INavigationAwar
     {
         _selected ??= SampleItems.First();
     }
+
+
 }

@@ -1,26 +1,47 @@
-﻿using System.Collections.Specialized;
+﻿// Created:  2025/11/10
+// Solution: WindowsConfigurationAnalyzer
+// Project:  UserInterface
+// File:  AppNotificationService.cs
+// 
+// All Rights Reserved 2025
+// Kyle L Crowder
+
+
+
+
+using System.Collections.Specialized;
 using System.Web;
 
+using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
-using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 using Microsoft.Windows.AppNotifications;
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.Notifications;
+
+
+
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
+
 
 public class AppNotificationService : IAppNotificationService
 {
+
+
     private readonly INavigationService _navigationService;
+
+
+
+
 
     public AppNotificationService(INavigationService navigationService)
     {
         _navigationService = navigationService;
     }
 
-    ~AppNotificationService()
-    {
-        Unregister();
-    }
+
+
+
 
     public void Initialize()
     {
@@ -28,6 +49,50 @@ public class AppNotificationService : IAppNotificationService
 
         AppNotificationManager.Default.Register();
     }
+
+
+
+
+
+    public bool Show(string payload)
+    {
+        var appNotification = new AppNotification(payload);
+
+        AppNotificationManager.Default.Show(appNotification);
+
+        return appNotification.Id != 0;
+    }
+
+
+
+
+
+    public NameValueCollection ParseArguments(string arguments)
+    {
+        return HttpUtility.ParseQueryString(arguments);
+    }
+
+
+
+
+
+    public void Unregister()
+    {
+        AppNotificationManager.Default.Unregister();
+    }
+
+
+
+
+
+    ~AppNotificationService()
+    {
+        Unregister();
+    }
+
+
+
+
 
     public void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
     {
@@ -44,28 +109,12 @@ public class AppNotificationService : IAppNotificationService
 
         App.MainWindow.DispatcherQueue.TryEnqueue(() =>
         {
-            App.MainWindow.ShowMessageDialogAsync("TODO: Handle notification invocations when your app is already running.", "Notification Invoked");
+            App.MainWindow.ShowMessageDialogAsync(
+                "TODO: Handle notification invocations when your app is already running.", "Notification Invoked");
 
             App.MainWindow.BringToFront();
         });
     }
 
-    public bool Show(string payload)
-    {
-        var appNotification = new AppNotification(payload);
 
-        AppNotificationManager.Default.Show(appNotification);
-
-        return appNotification.Id != 0;
-    }
-
-    public NameValueCollection ParseArguments(string arguments)
-    {
-        return HttpUtility.ParseQueryString(arguments);
-    }
-
-    public void Unregister()
-    {
-        AppNotificationManager.Default.Unregister();
-    }
 }

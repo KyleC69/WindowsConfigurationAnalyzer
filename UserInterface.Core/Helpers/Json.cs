@@ -8,18 +8,22 @@
 
 
 
-using Newtonsoft.Json;
-using System;
+
 using System.Globalization;
+
+using Newtonsoft.Json;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Core.Helpers;
 
 
-
 public static class Json
 {
+
+
     public static async Task<T?> ToObjectAsync<T>(string value)
     {
         if (value is null)
@@ -38,18 +42,18 @@ public static class Json
         // If target is an enum, try parsing directly from the token (common case like "Dark")
         if (typeof(T).IsEnum)
         {
-            if (Enum.TryParse(typeof(T), trimmed, ignoreCase: true, out var enumVal))
+            if (Enum.TryParse(typeof(T), trimmed, true, out var enumVal))
             {
                 return (T)enumVal;
             }
         }
 
         // Detect whether the input already looks like JSON. If not, quote it so Json.NET can parse it as a string.
-        bool looksLikeJson = trimmed.StartsWith("{") || trimmed.StartsWith("[") || trimmed.StartsWith("\"")
-                             || string.Equals(trimmed, "true", StringComparison.OrdinalIgnoreCase)
-                             || string.Equals(trimmed, "false", StringComparison.OrdinalIgnoreCase)
-                             || string.Equals(trimmed, "null", StringComparison.OrdinalIgnoreCase)
-                             || double.TryParse(trimmed, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
+        var looksLikeJson = trimmed.StartsWith("{") || trimmed.StartsWith("[") || trimmed.StartsWith("\"")
+                            || string.Equals(trimmed, "true", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(trimmed, "false", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(trimmed, "null", StringComparison.OrdinalIgnoreCase)
+                            || double.TryParse(trimmed, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
 
         var jsonInput = value;
         if (!looksLikeJson)
@@ -76,4 +80,6 @@ public static class Json
     {
         return await Task.Run<string>(() => JsonConvert.SerializeObject(value));
     }
+
+
 }

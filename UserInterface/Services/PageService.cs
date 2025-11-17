@@ -8,21 +8,28 @@
 
 
 
+
 using CommunityToolkit.Mvvm.ComponentModel;
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
+
 using Microsoft.UI.Xaml.Controls;
+
 using ApplicationsPage = KC.WindowsConfigurationAnalyzer.UserInterface.Views.ApplicationsPage;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
 
-
 public class PageService : IPageService
 {
+
+
     private readonly Dictionary<string, Type> _pages = [];
 
 
@@ -76,7 +83,7 @@ public class PageService : IPageService
                 throw new ArgumentException($"The key {key} is already configured in PageService");
             }
 
-            var type = typeof(TV);
+            Type type = typeof(TV);
 
             if (_pages.ContainsValue(type))
             {
@@ -87,4 +94,6 @@ public class PageService : IPageService
             _pages.Add(key, type);
         }
     }
+
+
 }

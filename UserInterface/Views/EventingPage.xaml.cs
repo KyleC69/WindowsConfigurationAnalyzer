@@ -8,6 +8,7 @@
 
 
 
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 using Microsoft.UI.Xaml;
@@ -15,12 +16,15 @@ using Microsoft.UI.Xaml.Controls;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 
 public sealed partial class EventingPage : Page
 {
+
+
     public EventingPage()
     {
         ViewModel = App.GetService<EventingViewModel>();
@@ -35,10 +39,7 @@ public sealed partial class EventingPage : Page
 
 
 
-    public EventingViewModel ViewModel
-    {
-        get;
-    }
+    public EventingViewModel ViewModel { get; }
 
 
 
@@ -50,12 +51,9 @@ public sealed partial class EventingPage : Page
         {
             ViewModel.OnNavigatedTo(null!);
         }
+
         LogSelectorComboBox.SelectedIndex = 0;
     }
-
-
-
-
 
 
 }

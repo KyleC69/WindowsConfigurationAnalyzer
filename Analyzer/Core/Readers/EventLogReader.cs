@@ -8,18 +8,23 @@
 
 
 
+
 using System.Diagnostics;
+using System.Security;
 
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
+using KC.WindowsConfigurationAnalyzer.Contracts;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.Analyzer.Core.Readers;
 
+
+namespace KC.WindowsConfigurationAnalyzer.DataProbe.Core.Readers;
 
 
 public sealed class EventLogReader : IEventLogReader
 {
+
+
     public EventLogSummary? GetSummary(string logName)
     {
         try
@@ -31,9 +36,9 @@ public sealed class EventLogReader : IEventLogReader
                 return new EventLogSummary(logName, 0, null);
             }
 
-            int lastIndex = ev.Entries.Count - 1;
-            var last = ev.Entries[lastIndex];
-            var lastUtc = DateTime.SpecifyKind(last.TimeGenerated, DateTimeKind.Local).ToUniversalTime();
+            var lastIndex = ev.Entries.Count - 1;
+            EventLogEntry? last = ev.Entries[lastIndex];
+            DateTime lastUtc = DateTime.SpecifyKind(last.TimeGenerated, DateTimeKind.Local).ToUniversalTime();
 
             return new EventLogSummary(logName, ev.Entries.Count, lastUtc);
         }
@@ -41,7 +46,7 @@ public sealed class EventLogReader : IEventLogReader
         {
             return null;
         }
-        catch (System.Security.SecurityException)
+        catch (SecurityException)
         {
             return null;
         }
@@ -49,7 +54,7 @@ public sealed class EventLogReader : IEventLogReader
         {
             return null;
         }
-        catch (System.IO.IOException)
+        catch (IOException)
         {
             return null;
         }
@@ -58,4 +63,6 @@ public sealed class EventLogReader : IEventLogReader
             return null;
         }
     }
+
+
 }

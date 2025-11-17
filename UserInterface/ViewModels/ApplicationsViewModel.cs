@@ -8,25 +8,27 @@
 
 
 
+
 using System.Collections.ObjectModel;
+
 using CommunityToolkit.Mvvm.ComponentModel;
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.ViewModels;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 
 public partial class ApplicationsViewModel(ISampleDataService sampleDataService) : ObservableRecipient, INavigationAware
 {
 
+
     private SampleOrder? _selected;
-
-
-
 
 
     public SampleOrder? Selected
@@ -36,11 +38,7 @@ public partial class ApplicationsViewModel(ISampleDataService sampleDataService)
     }
 
 
-
-    public ObservableCollection<SampleOrder> SampleItems
-    {
-        get;
-    } = [];
+    public ObservableCollection<SampleOrder> SampleItems { get; } = [];
 
 
 
@@ -51,13 +49,12 @@ public partial class ApplicationsViewModel(ISampleDataService sampleDataService)
         SampleItems.Clear();
 
         // TODO: Replace with real data.
-        var data = await sampleDataService.GetListDetailsDataAsync();
+        IEnumerable<SampleOrder> data = await sampleDataService.GetListDetailsDataAsync();
 
-        foreach (var item in data)
+        foreach (SampleOrder item in data)
         {
             SampleItems.Add(item);
         }
-
     }
 
 
@@ -76,4 +73,6 @@ public partial class ApplicationsViewModel(ISampleDataService sampleDataService)
     {
         Selected ??= SampleItems.First();
     }
+
+
 }

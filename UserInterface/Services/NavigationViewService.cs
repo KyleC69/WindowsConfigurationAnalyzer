@@ -8,26 +8,29 @@
 
 
 
+
 using System.Diagnostics.CodeAnalysis;
+
+using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
+
 using Microsoft.UI.Xaml.Controls;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
 
-
 public class NavigationViewService(INavigationService navigationService, IPageService pageService)
     : INavigationViewService
 {
 
+
     private NavigationView? _navigationView;
-
-
-
 
 
     public IList<object>? MenuItems => _navigationView?.MenuItems;
@@ -92,7 +95,7 @@ public class NavigationViewService(INavigationService navigationService, IPageSe
         }
         else
         {
-            NavigationViewItem? selectedItem = args.InvokedItemContainer as NavigationViewItem;
+            var selectedItem = args.InvokedItemContainer as NavigationViewItem;
 
             if (selectedItem?.GetValue(NavigationHelper.NavigateToProperty) is string pageKey)
             {
@@ -107,14 +110,14 @@ public class NavigationViewService(INavigationService navigationService, IPageSe
 
     private NavigationViewItem? GetSelectedItem(IEnumerable<object> menuItems, Type pageType)
     {
-        foreach (var item in menuItems.OfType<NavigationViewItem>())
+        foreach (NavigationViewItem item in menuItems.OfType<NavigationViewItem>())
         {
             if (IsMenuItemForPageType(item, pageType))
             {
                 return item;
             }
 
-            var selectedChild = GetSelectedItem(item.MenuItems, pageType);
+            NavigationViewItem? selectedChild = GetSelectedItem(item.MenuItems, pageType);
 
             if (selectedChild != null)
             {
@@ -134,4 +137,6 @@ public class NavigationViewService(INavigationService navigationService, IPageSe
         return menuItem.GetValue(NavigationHelper.NavigateToProperty) is string pageKey &&
                pageService.GetPageType(pageKey) == sourcePageType;
     }
+
+
 }

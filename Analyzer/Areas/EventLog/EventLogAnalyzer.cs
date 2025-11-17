@@ -8,41 +8,45 @@
 
 
 
+
 using System.Diagnostics.Eventing.Reader;
 
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Models;
+using KC.WindowsConfigurationAnalyzer.Contracts;
+using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.Analyzer.Areas.EventLog;
 
+namespace KC.WindowsConfigurationAnalyzer.DataProbe.Areas.EventLog;
 
 
 public sealed class EventLogAnalyzer : IAnalyzerModule
 {
+
+
     public string Name => "Event Log Analyzer";
     public string Area => "EventLog";
+    public IActivityLogger? _logger;
 
 
 
 
-
-    public Task<AreaResult> AnalyzeAsync(IAnalyzerContext context, CancellationToken cancellationToken)
+    public Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
-        string area = Area;
-        context.ActionLogger.Info(area, "Start", "Collecting event log inventory and summaries");
+        _logger = logger;
+        var area = Area;
+        _logger.Log(area, "Start", "Collecting event log inventory and summaries");
         List<string> warnings = new();
         List<string> errors = new();
 
         List<object> logs = new();
-        int scanned = 0;
+        var scanned = 0;
         try
         {
-            context.ActionLogger.Info(area, "EnumerateLogs", "Start");
+            _logger.Log(area, "EnumerateLogs", "Start");
             using EventLogSession session = new();
             IEnumerable<string>? names = session.GetLogNames();
-            foreach (string name in names)
+            foreach (var name in names)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Dictionary<string, object?> entry = new()
@@ -75,7 +79,7 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
                 long? recordCount = null;
                 try
                 {
-                    var info = session.GetLogInformation(name, PathType.LogName);
+                    EventLogInformation? info = session.GetLogInformation(name, PathType.LogName);
                     recordCount = info.RecordCount;
                     entry["RecordCount"] = recordCount;
                     entry["IsLogFull"] = info.IsLogFull;
@@ -102,12 +106,12 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
                     EventLogQuery query = new(name, PathType.LogName) { ReverseDirection = true };
                     using EventLogReader reader = new(query);
                     List<Dictionary<string, object?>> recent = new();
-                    int maxToScan = 1000; // cap to limit cost
+                    var maxToScan = 1000; // cap to limit cost
                     int countCritical = 0, countError = 0, countWarning = 0, countInfo = 0;
                     DateTime? newest = null, oldest = null;
-                    for (int i = 0; i < maxToScan; i++)
+                    for (var i = 0; i < maxToScan; i++)
                     {
-                        using var rec = reader.ReadEvent();
+                        using EventRecord? rec = reader.ReadEvent();
 
                         if (rec is null)
                         {
@@ -120,7 +124,7 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
                         }
 
                         oldest = rec.TimeCreated;
-                        byte? lvl = rec.Level; //1=Critical,2=Error,3=Warning,4=Info,5=Verbose
+                        var lvl = rec.Level; //1=Critical,2=Error,3=Warning,4=Info,5=Verbose
                         if (lvl == 1)
                         {
                             countCritical++;
@@ -167,7 +171,7 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
                 {
                     warnings.Add($"Scan failed for '{name}': {exScan.Message}");
                     errors.Add(exScan.ToString());
-                    context.ActionLogger.Error(area, "ScanLog", $"Scan failed for {name}", exScan);
+                    _logger.Log("ERR", $"Scan failed for {name}", $"{area}");
                     entry["ScanError"] = exScan.Message;
                 }
 
@@ -175,21 +179,21 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
                 scanned++;
                 if (scanned % 25 == 0)
                 {
-                    context.ActionLogger.Info(area, "EnumerateLogs", $"Progress: {scanned} logs");
+                    _logger.Log(area, "EnumerateLogs", $"Progress: {scanned} logs");
                 }
             }
 
-            context.ActionLogger.Info(area, "EnumerateLogs", $"Complete: scanned={scanned}");
+            _logger.Log(area, "EnumerateLogs", $"Complete: scanned={scanned}");
         }
         catch (Exception ex)
         {
             warnings.Add($"Log enumeration failed: {ex.Message}");
             errors.Add(ex.ToString());
-            context.ActionLogger.Error(area, "EnumerateLogs", "Log enumeration failed", ex);
+            _logger.Log("ERR", $"Log enumeration failed: {ex.Message}", "Event Log Analyzer");
         }
 
         // Add quick spotlight for classic core logs in case they were missing
-        foreach (string core in new[] { "System", "Application", "Security" })
+        foreach (var core in new[] { "System", "Application", "Security" })
         {
             if (!logs.Any(l => string.Equals((l as Dictionary<string, object?>)?["LogName"]?.ToString(), core,
                     StringComparison.OrdinalIgnoreCase)))
@@ -212,9 +216,11 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
 
         var summary = new { Logs = logs.Count, Scanned = scanned };
         var details = new { Logs = logs };
-        AreaResult result = new(area, summary, details, Array.Empty<Finding>(), warnings, errors);
-        context.ActionLogger.Info(area, "Complete", "Event log inventory collected");
+        AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
+        _logger.Log(area, "Complete", "Event log inventory collected");
 
         return Task.FromResult(result);
     }
+
+
 }

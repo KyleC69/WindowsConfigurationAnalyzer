@@ -8,27 +8,31 @@
 
 
 
+
 using System.Xml;
 using System.Xml.Schema;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.Analyzer.Areas.Policy;
 
+
+namespace KC.WindowsConfigurationAnalyzer.DataProbe.Areas.Policy;
 
 
 internal static class AdmxValidator
 {
+
+
     public static Result Validate(string admxPath, string? admlDirectory)
     {
-        string state = "OK";
+        var state = "OK";
         string? error = null;
         string? root = null;
-        bool xmlValid = true;
+        var xmlValid = true;
         try
         {
-            using var fs = File.OpenRead(admxPath);
-            using XmlReader xr = XmlReader.Create(fs, CreateSettingsIfSchemaPresent(admxPath));
+            using FileStream fs = File.OpenRead(admxPath);
+            using var xr = XmlReader.Create(fs, CreateSettingsIfSchemaPresent(admxPath));
             while (xr.Read())
             {
                 if (xr.NodeType == XmlNodeType.Element)
@@ -46,10 +50,10 @@ internal static class AdmxValidator
             error = ex.ToString();
         }
 
-        string? admlPath = admlDirectory is null
+        var admlPath = admlDirectory is null
             ? null
             : Path.Combine(admlDirectory, Path.GetFileNameWithoutExtension(admxPath) + ".adml");
-        bool hasAdml = admlPath is not null && File.Exists(admlPath);
+        var hasAdml = admlPath is not null && File.Exists(admlPath);
         if (!hasAdml)
         {
             state = state == "OK" ? "Missing ADML" : state + "; Missing ADML";
@@ -72,12 +76,12 @@ internal static class AdmxValidator
         try
         {
             // If a local schema exists next to the ADMX or in PolicyDefinitions folder, attach it for validation
-            string folder = Path.GetDirectoryName(admxPath)!;
-            string schema = Path.Combine(folder, "PolicyDefinitions.xsd");
+            var folder = Path.GetDirectoryName(admxPath)!;
+            var schema = Path.Combine(folder, "PolicyDefinitions.xsd");
             if (File.Exists(schema))
             {
                 settings.Schemas = new XmlSchemaSet();
-                using var s = File.OpenRead(schema);
+                using FileStream s = File.OpenRead(schema);
                 settings.Schemas.Add(null, XmlReader.Create(s));
                 settings.ValidationType = ValidationType.Schema;
                 settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
@@ -99,4 +103,6 @@ internal static class AdmxValidator
 
 
     public sealed record Result(string File, bool IsXmlValid, bool HasAdml, string? Root, string State, string? Error);
+
+
 }

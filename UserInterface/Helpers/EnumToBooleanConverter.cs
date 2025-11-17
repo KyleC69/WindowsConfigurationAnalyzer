@@ -8,17 +8,21 @@
 
 
 
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 
-
 public class EnumToBooleanConverter : IValueConverter
 {
+
+
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         if (parameter is string enumString)
@@ -46,4 +50,6 @@ public class EnumToBooleanConverter : IValueConverter
             ? Enum.Parse(typeof(ElementTheme), enumString)
             : throw new ArgumentException("ExceptionEnumToBooleanConverterParameterMustBeAnEnumName");
     }
+
+
 }

@@ -8,18 +8,23 @@
 
 
 
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 
-
 public sealed partial class ServicesDetailControl : UserControl
 {
+
+
     public static readonly DependencyProperty ListDetailsMenuItemProperty =
         DependencyProperty.Register("ListDetailsMenuItem", typeof(SampleOrder), typeof(ServicesDetailControl),
             new PropertyMetadata(null, OnListDetailsMenuItemPropertyChanged));
@@ -54,4 +59,6 @@ public sealed partial class ServicesDetailControl : UserControl
             control.ForegroundElement.ChangeView(0, 0, 1);
         }
     }
+
+
 }

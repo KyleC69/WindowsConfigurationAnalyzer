@@ -8,18 +8,24 @@
 
 
 
+
 using CommunityToolkit.WinUI.UI.Controls;
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
+
 using Microsoft.UI.Xaml.Controls;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 
-
 public sealed partial class WmiRegistryPage : Page
 {
+
+
     public WmiRegistryPage()
     {
         ViewModel = App.GetService<WmiRegistryViewModel>();
@@ -31,10 +37,7 @@ public sealed partial class WmiRegistryPage : Page
 
 
 
-    public WmiRegistryViewModel ViewModel
-    {
-        get;
-    }
+    public WmiRegistryViewModel ViewModel { get; }
 
 
 
@@ -47,4 +50,6 @@ public sealed partial class WmiRegistryPage : Page
             ViewModel.EnsureItemSelected();
         }
     }
+
+
 }

@@ -8,6 +8,7 @@
 
 
 
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
@@ -15,23 +16,19 @@ using Microsoft.UI.Xaml;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Services;
 
 
 public class ThemeSelectorService(ILocalSettingsService localSettingsService) : IThemeSelectorService
 {
+
+
     private const string SettingsKey = "AppBackgroundRequestedTheme";
 
 
-
-
-
-    public ElementTheme Theme
-    {
-        get;
-        set;
-    } = ElementTheme.Default;
+    public ElementTheme Theme { get; set; } = ElementTheme.Default;
 
 
 
@@ -90,4 +87,6 @@ public class ThemeSelectorService(ILocalSettingsService localSettingsService) : 
     {
         await localSettingsService.SaveApplicationSettingAsync(SettingsKey, theme.ToString());
     }
+
+
 }

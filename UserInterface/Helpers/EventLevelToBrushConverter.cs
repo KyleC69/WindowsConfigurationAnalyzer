@@ -8,18 +8,22 @@
 
 
 
+
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
+
+namespace KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 
 public sealed class EventLevelToBrushConverter : IValueConverter
 {
+
+
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         byte level = 0;
@@ -56,14 +60,14 @@ public sealed class EventLevelToBrushConverter : IValueConverter
         }
 
         return level switch
-               {
-                   1 => new SolidColorBrush(Colors.DarkRed), // Critical
-                   2 => new SolidColorBrush(Colors.Red), // Error
-                   3 => new SolidColorBrush(Colors.Orange), // Warning
-                   4 => new SolidColorBrush(Colors.CornflowerBlue), // Information
-                   5 => new SolidColorBrush(Colors.Gray), // Verbose
-                   _ => new SolidColorBrush(Colors.Gray)
-               };
+        {
+            1 => new SolidColorBrush(Colors.DarkRed), // Critical
+            2 => new SolidColorBrush(Colors.Red), // Error
+            3 => new SolidColorBrush(Colors.Orange), // Warning
+            4 => new SolidColorBrush(Colors.CornflowerBlue), // Information
+            5 => new SolidColorBrush(Colors.Gray), // Verbose
+            _ => new SolidColorBrush(Colors.Gray)
+        };
     }
 
 
@@ -74,4 +78,6 @@ public sealed class EventLevelToBrushConverter : IValueConverter
     {
         throw new NotImplementedException();
     }
+
+
 }

@@ -8,20 +8,24 @@
 
 
 
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
+
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using System.Threading.Tasks;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 
-
 // TODO: Set the URL for your privacy policy by updating SettingsPage_PrivacyTermsLink.NavigateUri in Resources.resw.
 public sealed partial class SettingsPage : Page
 {
+
+
     public SettingsPage()
     {
         ViewModel = App.GetService<SettingsViewModel>();
@@ -32,10 +36,11 @@ public sealed partial class SettingsPage : Page
 
 
 
-    public SettingsViewModel ViewModel
-    {
-        get;
-    }
+    public SettingsViewModel ViewModel { get; }
+
+
+
+
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -46,4 +51,6 @@ public sealed partial class SettingsPage : Page
         // Currently LoadAsync is started in constructor; nothing else required here.
         await Task.CompletedTask;
     }
+
+
 }

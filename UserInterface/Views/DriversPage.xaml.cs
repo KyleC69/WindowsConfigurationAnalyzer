@@ -8,18 +8,24 @@
 
 
 
+
 using CommunityToolkit.WinUI.UI.Controls;
+
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
+
 using Microsoft.UI.Xaml.Controls;
+
+
 
 
 
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 
-
 public sealed partial class DriversPage : Page
 {
+
+
     public DriversPage()
     {
         ViewModel = App.GetService<DriversViewModel>();
@@ -30,10 +36,7 @@ public sealed partial class DriversPage : Page
 
 
 
-    public DriversViewModel ViewModel
-    {
-        get;
-    }
+    public DriversViewModel ViewModel { get; }
 
 
 
@@ -46,4 +49,6 @@ public sealed partial class DriversPage : Page
             ViewModel.EnsureItemSelected();
         }
     }
+
+
 }

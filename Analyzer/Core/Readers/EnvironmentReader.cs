@@ -8,18 +8,22 @@
 
 
 
+
 using System.Collections;
 
-using KC.WindowsConfigurationAnalyzer.Analyzer.Core.Contracts;
+using KC.WindowsConfigurationAnalyzer.Contracts;
 
 
 
-namespace KC.WindowsConfigurationAnalyzer.Analyzer.Core.Readers;
 
+
+namespace KC.WindowsConfigurationAnalyzer.DataProbe.Core.Readers;
 
 
 public sealed class EnvironmentReader : IEnvReader
 {
+
+
     public string MachineName => Environment.MachineName;
     public string OSVersionString => Environment.OSVersion.VersionString;
     public bool Is64BitOS => Environment.Is64BitOperatingSystem;
@@ -35,8 +39,8 @@ public sealed class EnvironmentReader : IEnvReader
         Dictionary<string, string?> dict = new();
         foreach (DictionaryEntry kvp in Environment.GetEnvironmentVariables())
         {
-            string key = kvp.Key?.ToString() ?? string.Empty;
-            string? val = kvp.Value?.ToString();
+            var key = kvp.Key?.ToString() ?? string.Empty;
+            var val = kvp.Value?.ToString();
             if (!dict.ContainsKey(key))
             {
                 dict[key] = val;
@@ -45,4 +49,6 @@ public sealed class EnvironmentReader : IEnvReader
 
         return dict;
     }
+
+
 }
