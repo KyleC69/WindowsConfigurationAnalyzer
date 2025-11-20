@@ -1,84 +1,119 @@
-{
-  "WorkflowName": "EventSourceProviderManifestRegistration",
-  "Rules": [
+
     {
-      "RuleName": "ProviderNameProvided",
-      "Expression": "string.IsNullOrWhiteSpace(ProviderName) == false",
-      "SuccessEvent": "Provider name provided",
-      "ErrorMessage": "Provider name is missing"
-    },
-    {
-      "RuleName": "ManifestFileExists",
-      "Expression": "FileExists(ManifestPath) == true",
-      "SuccessEvent": "Manifest file exists",
-      "ErrorMessage": "Manifest file not found at ManifestPath"
-    },
-    {
-      "RuleName": "ManifestParsed",
-      "Expression": "ManifestContent != null",
-      "SuccessEvent": "Manifest parsed",
-      "ErrorMessage": "Manifest could not be parsed or returned empty"
-    },
-    {
-      "RuleName": "ProviderRegisteredInRegistry",
-      "Expression": "RegisteredProviders != null && RegisteredProviders.Contains(ProviderName)",
-      "SuccessEvent": "Provider present in installed providers list",
-      "ErrorMessage": "Provider not found among registered providers"
-    },
-    {
-      "RuleName": "ProviderRegisteredInWevtutil",
-      "Expression": "WevtutilQuery != null && WevtutilQuery.IndexOf(ProviderName, StringComparison.OrdinalIgnoreCase) >= 0",
-      "SuccessEvent": "Provider listed in wevtutil output",
-      "ErrorMessage": "Provider not listed by wevtutil query"
-    },
-    {
-      "RuleName": "ManifestChannelsMatchRegistryBindings",
-      "Expression": "ChannelNamesFromManifest != null && ChannelNamesFromRegistry != null && Enumerable.SequenceEqual(ChannelNamesFromManifest.OrderBy(c => c), ChannelNamesFromRegistry.OrderBy(c => c))",
-      "SuccessEvent": "Manifest channel names match registry bindings",
-      "ErrorMessage": "Channel names in manifest do not match registry bindings"
-    },
-    {
-      "RuleName": "ManifestChannelNameNormalization",
-      "Expression": "ChannelNamesFromManifest != null && ChannelNamesFromRegistry != null && AreNamesEquivalent(ChannelNamesFromManifest, ChannelNamesFromRegistry)",
-      "SuccessEvent": "Channel names equivalent after normalization (slashes, dashes, casing)",
-      "ErrorMessage": "Channel names mismatch even after normalization"
-    },
-    {
-      "RuleName": "ManifestFileAclSecure",
-      "Expression": "FileAcl != null && EvaluateFileAcl(FileAcl)",
-      "SuccessEvent": "Manifest file ACLs meet policy",
-      "ErrorMessage": "Manifest file ACLs violate expected policy"
-    },
-    {
-      "RuleName": "RegistryAclsSecure",
-      "Expression": "RegistryAcls != null && EvaluateRegistryAcl(RegistryAcls)",
-      "SuccessEvent": "Registry ACLs meet policy",
-      "ErrorMessage": "Registry ACLs violate expected policy"
-    },
-    {
-      "RuleName": "ManifestInstallMatchesProviderHash",
-      "Expression": "ManifestContent != null && RegistryKeys != null && VerifyManifestHash(ManifestContent, RegistryKeys)",
-      "SuccessEvent": "Installed manifest hash matches registry-recorded hash",
-      "ErrorMessage": "Mismatch between manifest file hash and registry manifest reference"
-    },
-    {
-      "RuleName": "AuditEvidenceAttached",
-      "Expression": "ProbeTimestamp != null && ProbeTimestamp != \"\"",
-      "SuccessEvent": "Audit timestamp provided",
-      "ErrorMessage": "Probe timestamp missing"
+        "$schema": ".\\EventSourceProviderIntegrityCheck.schema.json",
+        "Rules": [
+            {
+                "RuleName": "ProviderNameProvided",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "string.IsNullOrWhiteSpace(ProviderName) == false"
+                },
+                "SuccessMessage": "Provider name provided",
+                "FailureMessage": "Provider name is missing"
+            },
+            {
+                "RuleName": "ManifestFileExists",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "FileExists(ManifestPath) == true"
+                },
+                "SuccessMessage": "Manifest file exists",
+                "FailureMessage": "Manifest file not found at ManifestPath"
+            },
+            {
+                "RuleName": "ManifestParsed",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "ManifestContent != null"
+                },
+                "SuccessMessage": "Manifest parsed",
+                "FailureMessage": "Manifest could not be parsed or returned empty"
+            },
+            {
+                "RuleName": "ProviderRegisteredInRegistry",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "RegisteredProviders != null && RegisteredProviders.Contains(ProviderName)"
+                },
+                "SuccessMessage": "Provider present in installed providers list",
+                "FailureMessage": "Provider not found among registered providers"
+            },
+            {
+                "RuleName": "ProviderRegisteredInWevtutil",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "WevtutilQuery != null && WevtutilQuery.IndexOf(ProviderName, StringComparison.OrdinalIgnoreCase) >= 0"
+                },
+                "SuccessMessage": "Provider listed in wevtutil output",
+                "FailureMessage": "Provider not listed by wevtutil query"
+            },
+            {
+                "RuleName": "ManifestChannelsMatchRegistryBindings",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "ChannelNamesFromManifest != null && ChannelNamesFromRegistry != null && Enumerable.SequenceEqual(ChannelNamesFromManifest.OrderBy(c => c), ChannelNamesFromRegistry.OrderBy(c => c))"
+                },
+                "SuccessMessage": "Manifest channel names match registry bindings",
+                "FailureMessage": "Channel names in manifest do not match registry bindings"
+            },
+            {
+                "RuleName": "ManifestChannelNameNormalization",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "ChannelNamesFromManifest != null && ChannelNamesFromRegistry != null && AreNamesEquivalent(ChannelNamesFromManifest, ChannelNamesFromRegistry)"
+                },
+                "SuccessMessage": "Channel names equivalent after normalization (slashes, dashes, casing)",
+                "FailureMessage": "Channel names mismatch even after normalization"
+            },
+            {
+                "RuleName": "ManifestFileAclSecure",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "FileAcl != null && EvaluateFileAcl(FileAcl)"
+                },
+                "SuccessMessage": "Manifest file ACLs meet policy",
+                "FailureMessage": "Manifest file ACLs violate expected policy"
+            },
+            {
+                "RuleName": "RegistryAclsSecure",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "RegistryAcls != null && EvaluateRegistryAcl(RegistryAcls)"
+                },
+                "SuccessMessage": "Registry ACLs meet policy",
+                "FailureMessage": "Registry ACLs violate expected policy"
+            },
+            {
+                "RuleName": "ManifestInstallMatchesProviderHash",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "ManifestContent != null && RegistryKeys != null && VerifyManifestHash(ManifestContent, RegistryKeys)"
+                },
+                "SuccessMessage": "Installed manifest hash matches registry-recorded hash",
+                "FailureMessage": "Mismatch between manifest file hash and registry manifest reference"
+            },
+            {
+                "RuleName": "AuditEvidenceAttached",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "ProbeTimestamp != null && ProbeTimestamp != \"\""
+                },
+                "SuccessMessage": "Audit timestamp provided",
+                "FailureMessage": "Probe timestamp missing"
+            }
+        ],
+        "WorkflowName": "EventSourceProviderManifestRegistration",
+        "WorkflowParameters": {
+            "ProviderName": "",
+            "ManifestPath": "",
+            "ManifestContent": null,
+            "RegistryKeys": null,
+            "RegisteredProviders": null,
+            "ChannelNamesFromManifest": null,
+            "ChannelNamesFromRegistry": null,
+            "FileAcl": null,
+            "RegistryAcls": null,
+            "WevtutilQuery": "",
+            "ProbeTimestamp": ""
+        }
     }
-  ],
-  "WorkflowParameters": {
-    "ProviderName": "",
-    "ManifestPath": "",
-    "ManifestContent": null,
-    "RegistryKeys": null,
-    "RegisteredProviders": null,
-    "ChannelNamesFromManifest": null,
-    "ChannelNamesFromRegistry": null,
-    "FileAcl": null,
-    "RegistryAcls": null,
-    "WevtutilQuery": "",
-    "ProbeTimestamp": ""
-  }
-}

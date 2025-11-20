@@ -1,0 +1,97 @@
+﻿
+    {
+        "$schema": "./EventSourceProviderIntegrityCheck.schema.json",
+        "Rules": [
+            {
+                "RuleName": "ProfilePathExists",
+                "SuccessMessage": "Profile path exists",
+                "ErrorMessage": "Profile path missing",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "Directory.Exists(input.ProfilePath)"
+                }
+            },
+            {
+                "RuleName": "NoTempProfile",
+                "SuccessMessage": "Profile is permanent",
+                "ErrorMessage": "Profile is temporary",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "!input.ProfilePath.Contains(\"TEMP\")"
+                }
+            },
+            {
+                "RuleName": "EnvVarMatch",
+                "SuccessMessage": "Environment variable matches profile path",
+                "ErrorMessage": "USERPROFILE mismatch",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "input.UserProfileEnv == input.ProfilePath"
+                }
+            },
+            {
+                "RuleName": "StandardFoldersPresent",
+                "SuccessMessage": "Standard folders present",
+                "ErrorMessage": "Missing standard folders",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "input.StandardFolders.All(f => Directory.Exists(f))"
+                }
+            },
+            {
+                "RuleName": "RegistryProfileMatch",
+                "SuccessMessage": "Registry matches profile path",
+                "ErrorMessage": "Registry mismatch",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "input.RegistryProfilePath == input.ProfilePath"
+                }
+            },
+            {
+                "RuleName": "AclFullControl",
+                "SuccessMessage": "User has full control",
+                "ErrorMessage": "ACL missing full control",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "input.AclRights.Contains(\"FullControl\")"
+                }
+            },
+            {
+                "RuleName": "NoUnexpectedAces",
+                "SuccessMessage": "No unexpected ACEs",
+                "ErrorMessage": "Unexpected ACE detected",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "!input.AclRights.Contains(\"Everyone:Write\")"
+                }
+            },
+            {
+                "RuleName": "ProfileServiceRunning",
+                "SuccessMessage": "Profile service running",
+                "ErrorMessage": "Profile service not running",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "input.ProfSvcStatus == \"Running\""
+                }
+            },
+            {
+                "RuleName": "NoTempProfileEvents",
+                "SuccessMessage": "No temp profile events",
+                "ErrorMessage": "Temp profile event detected",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "!input.EventIds.Contains(1511)"
+                }
+            },
+            {
+                "RuleName": "NoAccessDeniedEvents",
+                "SuccessMessage": "No access denied events",
+                "ErrorMessage": "Access denied event detected",
+                "Expression": {
+                    "ExpressionType": "LambdaExpression",
+                    "ExpressionText": "!input.EventIds.Contains(1509)"
+                }
+            }
+        ],
+        "WorkflowName": "UserProfileBaseline"
+    }

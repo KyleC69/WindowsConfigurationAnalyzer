@@ -38,6 +38,11 @@ public class RulesEngineWrapper
         // Accept either a single workflow JSON or an array of workflows
         Workflow[] workflows = JsonSerializer.Deserialize<Workflow[]>(rulesetJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                                ?? Array.Empty<Workflow>();
+        if (workflows.Length == 0)
+        {
+          
+            throw new ArgumentException("No workflows found in the provided JSON ruleset.");
+        }
         _engine = new RulesEngine.RulesEngine(workflows);
         RegisterHelpers();
     }
@@ -80,7 +85,35 @@ public class RulesEngineWrapper
 
 
 
-    // Execute a named workflow (or the only workflow) against facts
+    /// <summary>
+    /// Executes the specified workflow using the provided facts and operator identity, 
+    /// and returns a detailed rule result artifact containing the execution results.
+    /// </summary>
+    /// <param name="workflowName">
+    /// The name of the workflow to execute. This corresponds to a predefined workflow in the rules engine.
+    /// </param>
+    /// <param name="facts">
+    /// The <see cref="ProbeFacts"/> object containing the input data and context required for rule evaluation.
+    /// </param>
+    /// <param name="operatorIdentity">
+    /// An optional identifier for the operator initiating the execution. Defaults to an empty string if not provided.
+    /// </param>
+    /// <returns>
+    /// A <see cref="RuleResultArtifact"/> object containing the results of the rule execution, 
+    /// including raw rule results, helper outputs, and additional metadata.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown if <paramref name="workflowName"/> or <paramref name="facts"/> is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the specified workflow cannot be found or executed.
+    /// </exception>
+    /// <remarks>
+    /// This method invokes all rules in the specified workflow and collects the results. 
+    /// It also attempts to compute additional helper outputs for evidence purposes, 
+    /// such as file hashes and name equivalence checks. Errors during helper output computation 
+    /// are caught and do not affect the overall execution result.
+    /// </remarks>
     public async Task<RuleResultArtifact> ExecuteAsync(string workflowName, ProbeFacts facts, string operatorIdentity = "")
     {
         var input = new object[] { facts };

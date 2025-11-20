@@ -447,7 +447,7 @@ public sealed class WCAEventSource : EventSource
     // Exception events for catch blocks
     [Event(1003, Level = EventLevel.Error, Task = Tasks.Error, Opcode = Opcodes.ExceptionFailure,
            Keywords = Keywords.Analyzer, Channel = EventChannel.Operational)]
-    public void ExceptionError(string SessionId, string CorrelationId, string ExceptMessage, string ExceptStack, string Context)
+    public void ExceptionError(string SessionId, string CorrelationId, string ExceptMessage, string? ExceptStack, string Context)
     {
         WriteEvent(1003, SessionId, CorrelationId, ExceptMessage, ExceptStack, Context);
     }

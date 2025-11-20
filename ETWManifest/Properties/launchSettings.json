@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Support.GenerateETWManifest": {
+      "commandName": "Project",
+      "commandLineArgs": "--outfile WCA.ETWManifest.Provider.dll",
+      "hotReloadEnabled": false
+    }
+  }
+}

@@ -46,7 +46,7 @@ public class RulesRunner
         var json = File.ReadAllText(Path.Combine(App.ProjectDir!,"Rules","ProfileRule.json"));
         var workflows = System.Text.Json.JsonSerializer.Deserialize<List<Workflow>>(json);
         List<RuleResultTree>? results;
-        var rulesEngine = new RulesEngine.RulesEngine(workflows.ToArray(), null);
+        var rulesEngine = new RulesEngine.RulesEngine(workflows?.ToArray(), null);
 
         try
         {

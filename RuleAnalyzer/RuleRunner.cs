@@ -20,13 +20,16 @@ namespace KC.WindowsConfigurationAnalyzer.RuleAnalyzer;
 //Class will serve as the main entry point for running rules
 public partial class RuleRunner
 {
+
+
+    private readonly IActivityLogger _logger;
     public static string? ProjectDir => Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "ProjectDirectory")?.Value;
 
 
 
     public RuleRunner(IActivityLogger logger)
     {
-
+                _logger = logger;
     }
 
     public async Task RunRulesAsync()

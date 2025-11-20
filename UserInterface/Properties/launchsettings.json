@@ -1,10 +1,13 @@
-﻿{
-    "profiles": {
-      "UserInterface (Package)": {
-        "commandName": "MsixPackage"
-      },
-      "UserInterface (Unpackaged)": {
-        "commandName": "Project"
-      }
+{
+  "profiles": {
+    "UserInterface (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "UserInterface (Unpackaged)": {
+      "commandName": "Project"
+    },
+    "UserInterface - Packaged": {
+      "commandName": "Executable"
     }
+  }
 }

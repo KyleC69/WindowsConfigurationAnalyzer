@@ -10,6 +10,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -23,7 +24,6 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Etw;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 using Microsoft.Extensions.DependencyInjection;
-
 
 
 

@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<UseWinUI>true</UseWinUI>
+		<TargetFramework>net9.0-windows</TargetFramework>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<EnableMsixTooling>true</EnableMsixTooling>
-		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<SupportedOSPlatform>windows</SupportedOSPlatform>
 		<!-- Disable WindowsAppSDK self-contained mode to avoid mt.exe manifest merge during build -->
 		<WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
-		<TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<UseWinUI>true</UseWinUI>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
 		<RootNamespace>KC.WindowsConfigurationAnalyzer.$(MSBuildProjectName)</RootNamespace>
-		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+		
 		<Authors>Kyle Crowder</Authors>
 		<!-- Do not invoke MSIX packaging / PRI generation during normal build -->
 		<GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
@@ -19,12 +19,12 @@
 		<Copyright>2025</Copyright>
 		<AssemblyName>KC.WindowsConfigurationAnalyzer</AssemblyName>
 		<WindowsPackageType>MSIX</WindowsPackageType>
-		<PlatformTarget>AnyCPU</PlatformTarget>
+		<Platforms>AnyCPU;x64</Platforms>
 		<SignAssembly>True</SignAssembly>
 		<Title>Windows Configuration Analyzer</Title>
 		<PackageCertificateThumbprint>372A8416A304336FDF3099CE982CA060AF3C1A30</PackageCertificateThumbprint>
 		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-		<Platforms>AnyCPU;x64</Platforms>
+
 	</PropertyGroup>
 
 
@@ -38,6 +38,15 @@
 			<_Parameter2>$(MyProjectDir)</_Parameter2>
 		</AssemblyAttribute>
 	</ItemGroup>
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.Versioning.UnsupportedOSPlatformAttribute">
+			<_Parameter1>osx</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.Versioning.UnsupportedOSPlatformAttribute">
+			<_Parameter1>linux</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250402" />
@@ -53,10 +62,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Analyzer\DataProbe.csproj" />
+		<ProjectReference Include="..\DataProbe\DataProbe.csproj" />
 		<ProjectReference Include="..\Contracts\Contracts.csproj" />
-		<ProjectReference Include="..\RuleAnalyzer\RuleAnalyzer.csproj" />
+		<ProjectReference Include="..\DataProbe\DataProbe.csproj" />
 		<ProjectReference Include="..\UserInterface.Core\UserInterface.Core.csproj" />
+		<Compile Include="..\GlobalAssemblyInfo.cs" />
 	</ItemGroup>
 
 
@@ -107,6 +117,11 @@
 
 	<ItemGroup>
 		<AdditionalFiles Include="Package.appxmanifest" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Folder Include="Properties\PublishProfiles\" />
 	</ItemGroup>
 
 

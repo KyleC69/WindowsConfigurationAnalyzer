@@ -12,6 +12,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Reflection;
+using System.Runtime.Versioning;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.DependencyInjection;
@@ -57,7 +58,7 @@ public partial class App : Application
         InitializeComponent();
 
 
-        //<SaveManifestToFile(out var message);
+        SaveManifestToFile(out var message);
 
         WCAEventSource.Log.SessionStart(Guid.NewGuid().ToString(), Environment.MachineName, "1.09.0.0", Guid.NewGuid().ToString());
 

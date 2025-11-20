@@ -19,6 +19,7 @@
 - All projects will be WinUI 3 and target .Net 9 There is a directory.build.props at the root to maintain uniformity in the projects AI DO NOT ALTER THIS FILE 
 - Follow best practices for any new code you write, including SOLID principles, design patterns, and coding standards.
 - User interface projects (UserInterface and UserInterface.Core) were created with TemplateStudio and must follow its conventions. Do not break existing patterns established by TemplateStudio.
+- When creating new methods, make them asynchronous and ensure best practices are followed for async programming.
 - DO NOT remove or alter any existing documentation files unless directed to do so.
 - DO NOT remove or alter any exiting comments or XML documentation in the codebase unless directed to do so. 
 - Do not apply any formatting or style changes  It will be done automatically.

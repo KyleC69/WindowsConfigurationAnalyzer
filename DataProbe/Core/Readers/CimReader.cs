@@ -38,7 +38,7 @@ public sealed class CimReader : ICimReader
     public async Task<IReadOnlyList<IDictionary<string, object?>>> QueryAsync(string wql, string? scope = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "", [CallerFilePath] string callerPage = "")
     {
         var ns = string.IsNullOrWhiteSpace(scope) ? "root/cimv2" : NormalizeNamespace(scope!);
-        _logger.Log("INF", $"Executing WQL query: {wql} in Namespace: {ns}", $"QueryAsync - Caller: {callerName}, Page: {callerPage}");
+        _logger?.Log("INF", $"Executing WQL query: {wql} in Namespace: {ns}", $"QueryAsync - Caller: {callerName}, Page: {callerPage}");
         return await ExecuteMiAsync(ns, wql, cancellationToken, callerName).ConfigureAwait(false);
     }
 
@@ -64,7 +64,7 @@ public sealed class CimReader : ICimReader
     private static async Task<IReadOnlyList<IDictionary<string, object?>>> ExecuteMiAsync(string ns, string wql, CancellationToken cancellationToken, [CallerMemberName] string callerName = "")
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _logger.Log("INF", $"Executing MI query in namespace '{ns}': {wql}", $"ExecuteMiAsync - Caller: {callerName}");
+        _logger?.Log("INF", $"Executing MI query in namespace '{ns}': {wql}", $"ExecuteMiAsync - Caller: {callerName}");
         List<IDictionary<string, object?>> results = new();
         var current = wql;
         var attemptedFallbackQuery = false;
@@ -98,7 +98,7 @@ public sealed class CimReader : ICimReader
             }
             catch (CimException cex) when (!attemptedProtocolFallback && IsNamespaceUnavailable(cex))
             {
-                _logger.Log("ERR", $"Namespace '{ns}' unavailable via WSMan; retrying with DCOM.", "ExecuteMiAsync");
+                _logger?.Log("ERR", $"Namespace '{ns}' unavailable via WSMan; retrying with DCOM.", "ExecuteMiAsync");
                 // Retry using DCOM for namespaces not exposed via WSMan (e.g., RSOP).
                 attemptedProtocolFallback = true;
                 useDcom = true;
@@ -106,7 +106,7 @@ public sealed class CimReader : ICimReader
             }
             catch (CimException cex) when (!attemptedFallbackQuery && IsInvalidQuery(cex))
             {
-                _logger.Log("ERR", $"Invalid WQL query: {current}", "ExecuteMiAsync");
+                _logger?.Log("ERR", $"Invalid WQL query: {current}", "ExecuteMiAsync");
                 var fb = BuildFallbackQuery(current);
                 if (fb == null || fb.Equals(current, StringComparison.OrdinalIgnoreCase))
                 {
@@ -144,7 +144,7 @@ public sealed class CimReader : ICimReader
             return null;
         }
 
-        _logger.Log("WRN", $"Building fallback query for: {original}", "BuildFallbackQuery");
+        _logger?.Log("WRN", $"Building fallback query for: {original}", "BuildFallbackQuery");
 
 
         if (Regex.IsMatch(original, "^\\s*SELECT\\s+\\*\\s+FROM\\s+", RegexOptions.IgnoreCase))

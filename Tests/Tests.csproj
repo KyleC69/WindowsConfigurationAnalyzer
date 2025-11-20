@@ -1,14 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
-	 <TargetFramework>net9.0</TargetFramework>
-	 <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-	 <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
-	 <TargetPlatformVersion>10.0.19041</TargetPlatformVersion>
+	
 	 <IsPackable>false</IsPackable>
 	 <Nullable>enable</Nullable>
 	 <ImplicitUsings>enable</ImplicitUsings>
 	 <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-	 <Platforms>x64</Platforms>
+	
 	 <ApplicationManifest>app.manifest</ApplicationManifest>
 	 <ParallelBuild>false</ParallelBuild>
 	 <TestParallelization>None</TestParallelization>

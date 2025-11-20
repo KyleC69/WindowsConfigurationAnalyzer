@@ -8,9 +8,10 @@
 		<OutputType>Library</OutputType>
 		<RootNamespace>KC.WindowsConfigurationAnalyzer.$(MSBuildProjectName)</RootNamespace>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<Platforms>AnyCPU;x64</Platforms>
+		<TargetFramework>net9.0-windows</TargetFramework>
 		<AssemblyName>KC.WindowsConfigurationAnalyzer.$(MSBuildProjectName)</AssemblyName>
 		<AssemblyVersion>1.0.2.0</AssemblyVersion>
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 
 
@@ -40,14 +41,6 @@
 		<PackageReference Include="System.Management" Version="10.0.0" />
 		<PackageReference Include="System.Diagnostics.EventLog" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
-	</ItemGroup>
-
-
-
-
-	<ItemGroup>
-	  <Folder Include="Core\Context\" />
-	  <Folder Include="Core\Contracts\" />
 	</ItemGroup>
 
 
