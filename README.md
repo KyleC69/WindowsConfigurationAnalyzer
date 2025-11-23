@@ -1,5 +1,5 @@
-![](https://img.shields.io/github/last-commit/Sleepw4lker/TameMyCerts/main.svg)
-![](https://github.com/Sleepw4lker/TameMyCerts/actions/workflows/main.yml/badge.svg?branch=main&event=push)
+![](https://img.shields.io/github/last-commit/kylec69/windowsconfigurationanalyzer/main.svg)
+![](https://github.com/kylec69/windowsConfigurationAnalyzer/actions/workflows/main.yml/badge.svg?branch=main&event=push)
 ![](https://github.com/Sleepw4lker/TameMyCerts/actions/workflows/xunit.yml/badge.svg?branch=main&event=push)
 ![](https://img.shields.io/github/issues/Sleepw4lker/TameMyCerts.svg)
 ![](https://img.shields.io/github/downloads/Sleepw4lker/TameMyCerts/total.svg?label=Downloads&maxAge=999)
