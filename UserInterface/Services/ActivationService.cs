@@ -1,13 +1,19 @@
-﻿// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  ActivationService.cs
+﻿//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   ActivationService.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
@@ -15,6 +21,8 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+
+#endregion
 
 
 
@@ -67,15 +75,9 @@ public class ActivationService(
     {
         IActivationHandler? activationHandler = activationHandlers.FirstOrDefault(h => h.CanHandle(activationArgs));
 
-        if (activationHandler != null)
-        {
-            await activationHandler.HandleAsync(activationArgs);
-        }
+        if (activationHandler != null) await activationHandler.HandleAsync(activationArgs);
 
-        if (defaultHandler.CanHandle(activationArgs))
-        {
-            await defaultHandler.HandleAsync(activationArgs);
-        }
+        if (defaultHandler.CanHandle(activationArgs)) await defaultHandler.HandleAsync(activationArgs);
     }
 
 

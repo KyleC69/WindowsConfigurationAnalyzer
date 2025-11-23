@@ -1,18 +1,23 @@
-﻿// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  App.xaml.cs
+﻿//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   App.xaml.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Reflection;
-using System.Runtime.Versioning;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.DependencyInjection;
@@ -35,6 +40,8 @@ using WinUIEx;
 
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 
+#endregion
+
 
 
 
@@ -49,7 +56,7 @@ public partial class App : Application
 
     public static PerformanceCounter? LogCounter;
 
-    public static string? ProjectDir => Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "ProjectDirectory")?.Value;
+
 
 
 
@@ -58,7 +65,7 @@ public partial class App : Application
         InitializeComponent();
 
 
-        SaveManifestToFile(out var message);
+        SaveManifestToFile(out string? message);
 
         WCAEventSource.Log.SessionStart(Guid.NewGuid().ToString(), Environment.MachineName, "1.09.0.0", Guid.NewGuid().ToString());
 
@@ -79,7 +86,6 @@ public partial class App : Application
         Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory)
             .ConfigureServices((context, services) =>
             {
-
                 // Default Activation Handler
                 ActivityLogger.Log("INF", "Loading Default Activation Handler", "App.xaml.cs");
                 services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
@@ -216,16 +222,7 @@ public partial class App : Application
 
 
 
-    private void SaveManifestToFile(out string? message)
-    {
-        message = null!;
-
-        var manifest =  EventSource.GenerateManifest(typeof(WCAEventSource),"WCA-ProviderResources.dll", EventManifestOptions.Strict);
-        var manpath = Path.Combine(ProjectDir!, "WCA-Provider-Ops.man");
-        File.WriteAllText(manpath, manifest);
-        message = $"Manifest saved to {manpath}";
-
-    }
+    public static string? ProjectDir => Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "ProjectDirectory")?.Value;
 
 
 
@@ -246,9 +243,23 @@ public partial class App : Application
 
 
 
+
+    private void SaveManifestToFile(out string? message)
+    {
+        message = null!;
+
+        string? manifest = EventSource.GenerateManifest(typeof(WCAEventSource), "WCA-ProviderResources.dll", EventManifestOptions.Strict);
+        string manpath = Path.Combine(ProjectDir!, "WCA-Provider-Ops.man");
+        File.WriteAllText(manpath, manifest);
+        message = $"Manifest saved to {manpath}";
+    }
+
+
+
+
+
     public static T GetService<T>() where T : class
     {
-
         return (Current as App)!.Host!.Services.GetService(typeof(T)) is not T service
             ? throw new ArgumentException(
                 $"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.")
@@ -300,10 +311,10 @@ public partial class App : Application
     {
         if (!PerformanceCounterCategory.Exists("LoggingCountersCategory"))
         {
-            var counterDataCollection = new CounterCreationDataCollection
-            {
+            CounterCreationDataCollection counterDataCollection =
+            [
                 new CounterCreationData("LogEntries", "Number of log entries", PerformanceCounterType.NumberOfItems32)
-            };
+            ];
 
 
             PerformanceCounterCategory.Create("LoggingCountersCategory", "Logging performance counters",

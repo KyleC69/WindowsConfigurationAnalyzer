@@ -1,21 +1,34 @@
-// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  OSAnalyzer.cs
+//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   OSAnalyzer.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
 
-using System.Reflection; // for assembly name
+#region
+
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
-using KC.WindowsConfigurationAnalyzer.Contracts; // for caller info
-
+using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
+
+
+
+// for assembly name
+// for caller info
+
+#endregion
+
 
 
 
@@ -40,31 +53,31 @@ public sealed class OSAnalyzer : IAnalyzerModule
     public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger;
-        var area = Area;
+        string area = Area;
         _logger.Log("INF", "Start: Collecting OS and system information", Ctx(area));
-        List<string> warnings = new();
-        List<string> errors = new();
+        List<string> warnings = [];
+        List<string> errors = [];
 
-        Dictionary<string, object?> system = new();
-        Dictionary<string, object?> os = new();
-        Dictionary<string, object?> bios = new();
-        Dictionary<string, object?> install = new();
-        Dictionary<string, object?> pendingReboot = new();
-        Dictionary<string, object?> services = new();
-        List<object> servicesAutoIssues = new();
-        List<object> updates = new();
-        Dictionary<string, object?> timeInfo = new();
-        List<object> pagefile = new();
-        Dictionary<string, object?> power = new();
-        Dictionary<string, object?> locale = new();
+        Dictionary<string, object?> system = [];
+        Dictionary<string, object?> os = [];
+        Dictionary<string, object?> bios = [];
+        Dictionary<string, object?> install = [];
+        Dictionary<string, object?> pendingReboot = [];
+        Dictionary<string, object?> services = [];
+        List<object> servicesAutoIssues = [];
+        List<object> updates = [];
+        Dictionary<string, object?> timeInfo = [];
+        List<object> pagefile = [];
+        Dictionary<string, object?> power = [];
+        Dictionary<string, object?> locale = [];
 
         try
         {
             _logger.Log("INF", "ComputerSystem: Start", Ctx(area));
-            var csRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> csRows = await context.Cim.QueryAsync(
                 "SELECT Manufacturer, Model, Domain, PartOfDomain, TotalPhysicalMemory, NumberOfProcessors, NumberOfLogicalProcessors, SystemType FROM Win32_ComputerSystem",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var cs in csRows)
+            foreach (IDictionary<string, object?> cs in csRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 system["Manufacturer"] = cs.GetOrDefault("Manufacturer");
@@ -75,11 +88,16 @@ public sealed class OSAnalyzer : IAnalyzerModule
                 system["NumberOfProcessors"] = cs.GetOrDefault("NumberOfProcessors");
                 system["NumberOfLogicalProcessors"] = cs.GetOrDefault("NumberOfLogicalProcessors");
                 system["SystemType"] = cs.GetOrDefault("SystemType");
+
                 break;
             }
+
             _logger.Log("INF", "ComputerSystem: Complete", Ctx(area));
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"ComputerSystem query failed: {ex.Message}");
@@ -90,10 +108,10 @@ public sealed class OSAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "OperatingSystem: Start", Ctx(area));
-            var osRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> osRows = await context.Cim.QueryAsync(
                 "SELECT Caption, Version, BuildNumber, CSDVersion, OSArchitecture, InstallDate, LastBootUpTime, SystemDirectory, WindowsDirectory, Locale, OSLanguage FROM Win32_OperatingSystem",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var o in osRows)
+            foreach (IDictionary<string, object?> o in osRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 os["Caption"] = o.GetOrDefault("Caption");
@@ -119,9 +137,13 @@ public sealed class OSAnalyzer : IAnalyzerModule
 
                 break;
             }
+
             _logger.Log("INF", "OperatingSystem: Complete", Ctx(area));
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"OperatingSystem query failed: {ex.Message}");
@@ -132,21 +154,26 @@ public sealed class OSAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "BIOS: Start", Ctx(area));
-            var biosRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> biosRows = await context.Cim.QueryAsync(
                 "SELECT Manufacturer, SMBIOSBIOSVersion, SerialNumber, ReleaseDate FROM Win32_BIOS",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var b in biosRows)
+            foreach (IDictionary<string, object?> b in biosRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 bios["Manufacturer"] = b.GetOrDefault("Manufacturer");
                 bios["SMBIOSBIOSVersion"] = b.GetOrDefault("SMBIOSBIOSVersion");
                 bios["SerialNumber"] = b.GetOrDefault("SerialNumber");
                 bios["ReleaseDateRaw"] = b.GetOrDefault("ReleaseDate");
+
                 break;
             }
+
             _logger.Log("INF", "BIOS: Complete", Ctx(area));
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"BIOS query failed: {ex.Message}");
@@ -159,7 +186,14 @@ public sealed class OSAnalyzer : IAnalyzerModule
             _logger.Log("INF", "PendingReboot: Start", Ctx(area));
             pendingReboot["CBS_RebootPending"] = KeyExists(context, "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing", "RebootPending");
             pendingReboot["WU_RebootRequired"] = KeyExists(context, "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update", "RebootRequired");
-            try { pendingReboot["PendingFileRenameOperations"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager", "PendingFileRenameOperations") is not null; } catch { }
+            try
+            {
+                pendingReboot["PendingFileRenameOperations"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager", "PendingFileRenameOperations") is not null;
+            }
+            catch
+            {
+            }
+
             _logger.Log("INF", "PendingReboot: Complete", Ctx(area));
         }
         catch (Exception ex)
@@ -173,14 +207,14 @@ public sealed class OSAnalyzer : IAnalyzerModule
         {
             _logger.Log("INF", "Services: Start", Ctx(area));
             int running = 0, stopped = 0, paused = 0;
-            var svcRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> svcRows = await context.Cim.QueryAsync(
                 "SELECT Name, DisplayName, StartMode, State, PathName FROM Win32_Service",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var s in svcRows)
+            foreach (IDictionary<string, object?> s in svcRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var state = s.GetOrDefault("State")?.ToString();
-                var start = s.GetOrDefault("StartMode")?.ToString();
+                string? state = s.GetOrDefault("State")?.ToString();
+                string? start = s.GetOrDefault("StartMode")?.ToString();
                 if (string.Equals(state, "Running", StringComparison.OrdinalIgnoreCase))
                 {
                     running++;
@@ -206,13 +240,17 @@ public sealed class OSAnalyzer : IAnalyzerModule
                     });
                 }
             }
+
             services["Running"] = running;
             services["Stopped"] = stopped;
             services["Paused"] = paused;
             services["AutoStartNotRunning"] = servicesAutoIssues;
             _logger.Log("INF", $"Services: Complete: running={running}, stopped={stopped}, paused={paused}, autoIssues={servicesAutoIssues.Count}", Ctx(area));
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Service enumeration failed: {ex.Message}");
@@ -223,10 +261,10 @@ public sealed class OSAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "Updates: Start", Ctx(area));
-            var updRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> updRows = await context.Cim.QueryAsync(
                 "SELECT HotFixID, Description, InstalledOn FROM Win32_QuickFixEngineering",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var q in updRows)
+            foreach (IDictionary<string, object?> q in updRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 updates.Add(new
@@ -236,9 +274,13 @@ public sealed class OSAnalyzer : IAnalyzerModule
                     InstalledOn = q.GetOrDefault("InstalledOn")
                 });
             }
+
             _logger.Log("INF", $"Updates: Complete: count={updates.Count}", Ctx(area));
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Updates (QFE) query failed: {ex.Message}");
@@ -249,10 +291,10 @@ public sealed class OSAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "Time: Start", Ctx(area));
-            var tzRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> tzRows = await context.Cim.QueryAsync(
                 "SELECT Bias, Caption, DaylightBias, DaylightName, StandardName FROM Win32_TimeZone",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var tz in tzRows)
+            foreach (IDictionary<string, object?> tz in tzRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 timeInfo["TimeZone"] = new
@@ -261,22 +303,42 @@ public sealed class OSAnalyzer : IAnalyzerModule
                     StandardName = tz.GetOrDefault("StandardName"),
                     DaylightName = tz.GetOrDefault("DaylightName")
                 };
+
                 break;
             }
-            var w32Rows = await context.Cim.QueryAsync(
+
+            IReadOnlyList<IDictionary<string, object?>> w32Rows = await context.Cim.QueryAsync(
                 "SELECT Name, State, StartMode FROM Win32_Service WHERE Name='W32Time'",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var s in w32Rows)
+            foreach (IDictionary<string, object?> s in w32Rows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 timeInfo["W32Time_State"] = s.GetOrDefault("State");
                 timeInfo["W32Time_StartMode"] = s.GetOrDefault("StartMode");
             }
-            try { timeInfo["NtpServer"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\Parameters", "NtpServer"); } catch { }
-            try { timeInfo["Type"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\Parameters", "Type"); } catch { }
+
+            try
+            {
+                timeInfo["NtpServer"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\Parameters", "NtpServer");
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                timeInfo["Type"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\Parameters", "Type");
+            }
+            catch
+            {
+            }
+
             _logger.Log("INF", "Time: Complete", Ctx(area));
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Time/W32Time query failed: {ex.Message}");
@@ -287,10 +349,10 @@ public sealed class OSAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "PageFile: Start", Ctx(area));
-            var pfRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> pfRows = await context.Cim.QueryAsync(
                 "SELECT Name, AllocatedBaseSize, CurrentUsage, PeakUsage FROM Win32_PageFileUsage",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var pf in pfRows)
+            foreach (IDictionary<string, object?> pf in pfRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 pagefile.Add(new
@@ -301,9 +363,13 @@ public sealed class OSAnalyzer : IAnalyzerModule
                     PeakUsage = pf.GetOrDefault("PeakUsage")
                 });
             }
+
             _logger.Log("INF", $"PageFile: Complete: entries={pagefile.Count}", Ctx(area));
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"PageFile query failed: {ex.Message}");
@@ -314,7 +380,14 @@ public sealed class OSAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "Power: Start", Ctx(area));
-            try { power["ActiveScheme"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power\\User\\PowerSchemes", "ActivePowerScheme"); } catch { }
+            try
+            {
+                power["ActiveScheme"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power\\User\\PowerSchemes", "ActivePowerScheme");
+            }
+            catch
+            {
+            }
+
             _logger.Log("INF", "Power: Complete", Ctx(area));
         }
         catch (Exception ex)
@@ -327,10 +400,17 @@ public sealed class OSAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "Locale: Start", Ctx(area));
-            foreach (var name in new[] { "Locale", "LocaleName", "sShortDate", "sTimeFormat" })
+            foreach (string? name in new[] { "Locale", "LocaleName", "sShortDate", "sTimeFormat" })
             {
-                try { locale[name] = context.Registry.GetValue("HKCU\\Control Panel\\International", name) ?? string.Empty; } catch { }
+                try
+                {
+                    locale[name] = context.Registry.GetValue("HKCU\\Control Panel\\International", name) ?? string.Empty;
+                }
+                catch
+                {
+                }
             }
+
             _logger.Log("INF", "Locale: Complete", Ctx(area));
         }
         catch (Exception ex)
@@ -364,8 +444,10 @@ public sealed class OSAnalyzer : IAnalyzerModule
         };
         AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
         _logger.Log("INF", "Complete: OS and system information collected", Ctx(area));
+
         return result;
     }
+
 
 
 
@@ -380,18 +462,23 @@ public sealed class OSAnalyzer : IAnalyzerModule
                 return false;
             }
 
-            var year = int.Parse(dmtf.Substring(0, 4));
-            var month = int.Parse(dmtf.Substring(4, 2));
-            var day = int.Parse(dmtf.Substring(6, 2));
-            var hour = int.Parse(dmtf.Substring(8, 2));
-            var minute = int.Parse(dmtf.Substring(10, 2));
-            var second = int.Parse(dmtf.Substring(12, 2));
+            int year = int.Parse(dmtf.Substring(0, 4));
+            int month = int.Parse(dmtf.Substring(4, 2));
+            int day = int.Parse(dmtf.Substring(6, 2));
+            int hour = int.Parse(dmtf.Substring(8, 2));
+            int minute = int.Parse(dmtf.Substring(10, 2));
+            int second = int.Parse(dmtf.Substring(12, 2));
             DateTime dt = new(year, month, day, hour, minute, second, DateTimeKind.Local);
             utc = new DateTimeOffset(dt).ToUniversalTime();
+
             return true;
         }
-        catch { return false; }
+        catch
+        {
+            return false;
+        }
     }
+
 
 
 
@@ -400,24 +487,33 @@ public sealed class OSAnalyzer : IAnalyzerModule
     {
         try
         {
-            foreach (var name in context.Registry.EnumerateSubKeys(key))
+            foreach (string name in context.Registry.EnumerateSubKeys(key))
             {
                 if (string.Equals(name, subKeyName, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
             }
+
             return false;
         }
-        catch { return false; }
+        catch
+        {
+            return false;
+        }
     }
+
+
+
 
 
     private static string Ctx(string module, [CallerMemberName] string member = "", [CallerFilePath] string file = "")
     {
-        var asm = Assembly.GetExecutingAssembly().GetName().Name ?? "Analyzer";
-        var f = Path.GetFileName(file);
+        string asm = Assembly.GetExecutingAssembly().GetName().Name ?? "Analyzer";
+        string f = Path.GetFileName(file);
+
         return $"{asm} - {module} - {member} - {f}";
     }
+
 
 }

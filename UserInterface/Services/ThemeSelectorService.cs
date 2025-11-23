@@ -1,18 +1,26 @@
-﻿// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  ThemeSelectorService.cs
+﻿//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   ThemeSelectorService.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 using Microsoft.UI.Xaml;
+
+#endregion
 
 
 
@@ -74,7 +82,7 @@ public class ThemeSelectorService(ILocalSettingsService localSettingsService) : 
 
     private async Task<ElementTheme> LoadThemeFromSettingsAsync()
     {
-        var themeName = await localSettingsService.ReadApplicationSettingAsync<string>(SettingsKey);
+        string? themeName = await localSettingsService.ReadApplicationSettingAsync<string>(SettingsKey);
 
         return Enum.TryParse(themeName, out ElementTheme cacheTheme) ? cacheTheme : ElementTheme.Default;
     }

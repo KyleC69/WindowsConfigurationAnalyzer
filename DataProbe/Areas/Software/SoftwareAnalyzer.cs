@@ -1,13 +1,19 @@
-// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  SoftwareAnalyzer.cs
+//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   SoftwareAnalyzer.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -16,6 +22,8 @@ using System.Text;
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
+
+#endregion
 
 
 
@@ -41,20 +49,21 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
     public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        var area = Area;
+        string area = Area;
         _logger.Log("INF", "Start: Collecting software inventory", area);
-        List<string> warnings = new();
-        List<string> errors = new();
+        List<string> warnings = [];
+        List<string> errors = [];
 
-        List<object> installed = new();
+        List<object> installed = [];
         try
         {
             _logger.Log("INF", "Installed: Start", area);
-            foreach (var relPath in new[] { "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall", "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall" })
+            foreach (string? relPath in new[] { "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall", "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall" })
             {
                 ReadUninstallKey(context, installed, $"HKLM\\{relPath}");
                 ReadUninstallKey(context, installed, $"HKCU\\{relPath}");
             }
+
             _logger.Log("INF", $"Installed: Complete: count={installed.Count}", area);
         }
         catch (Exception ex)
@@ -64,7 +73,7 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
             _logger.Log("ERR", $"Installed: Registry enumeration failed ({ex.Message})", area);
         }
 
-        List<object> processes = new();
+        List<object> processes = [];
         try
         {
             _logger.Log("INF", "Processes: Start", area);
@@ -76,19 +85,41 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
                 {
                     // Capture PID first and skip special system PIDs.
                     int pid;
-                    try { pid = p.Id; }
-                    catch { continue; }
+                    try
+                    {
+                        pid = p.Id;
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
                     if (pid is 0 or 4)
                     {
                         continue; // skip Idle/System
                     }
 
-                    var name = string.Empty;
+                    string name = string.Empty;
                     string? path = null;
 
                     // These property accesses can fail for protected processes; ignore per-item failures.
-                    try { name = p.ProcessName; } catch { /* ignore */ }
-                    try { path = Native.TryGetImagePath(pid); } catch { /* ignore */ }
+                    try
+                    {
+                        name = p.ProcessName;
+                    }
+                    catch
+                    {
+                        /* ignore */
+                    }
+
+                    try
+                    {
+                        path = Native.TryGetImagePath(pid);
+                    }
+                    catch
+                    {
+                        /* ignore */
+                    }
 
                     processes.Add(new { Name = name, Path = path, Id = pid });
                 }
@@ -98,12 +129,23 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
                 }
                 finally
                 {
-                    try { p.Dispose(); } catch { /* best effort */ }
+                    try
+                    {
+                        p.Dispose();
+                    }
+                    catch
+                    {
+                        /* best effort */
+                    }
                 }
             }
+
             _logger.Log("INF", $"Processes: Complete: count={processes.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Process enumeration failed: {ex.Message}");
@@ -111,20 +153,24 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
             _logger.Log("ERR", $"Processes: Process enumeration failed ({ex.Message})", area);
         }
 
-        List<object> optionalFeatures = new();
+        List<object> optionalFeatures = [];
         try
         {
             _logger.Log("INF", "OptionalFeatures: Start", area);
-            var optRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> optRows = await context.Cim.QueryAsync(
                 "SELECT Name, InstallState, Caption FROM Win32_OptionalFeature", null, cancellationToken).ConfigureAwait(false);
-            foreach (var f in optRows)
+            foreach (IDictionary<string, object?> f in optRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 optionalFeatures.Add(new { Name = f.GetOrDefault("Name"), State = f.GetOrDefault("InstallState"), Caption = f.GetOrDefault("Caption") });
             }
+
             _logger.Log("INF", $"OptionalFeatures: Complete: count={optionalFeatures.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Optional features query failed: {ex.Message}");
@@ -132,40 +178,48 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
             _logger.Log("ERR", $"OptionalFeatures: Optional features query failed ({ex.Message})", area);
         }
 
-        List<object> serverFeatures = new();
+        List<object> serverFeatures = [];
         try
         {
             _logger.Log("INF", "ServerFeatures: Start", area);
-            var sfRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> sfRows = await context.Cim.QueryAsync(
                 "SELECT ID, Name, InstallState FROM Win32_ServerFeature", null, cancellationToken).ConfigureAwait(false);
-            foreach (var sf in sfRows)
+            foreach (IDictionary<string, object?> sf in sfRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 serverFeatures.Add(new { Id = sf.GetOrDefault("ID"), Name = sf.GetOrDefault("Name"), State = sf.GetOrDefault("InstallState") });
             }
+
             _logger.Log("INF", $"ServerFeatures: Complete: count={serverFeatures.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Server features query failed or not supported: {ex.Message}");
             _logger.Log("WRN", $"ServerFeatures: Server features query failed or not supported ({ex.Message})", area);
         }
 
-        List<object> storeApps = new();
+        List<object> storeApps = [];
         try
         {
             _logger.Log("INF", "StoreApps: Start", area);
-            var storeRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> storeRows = await context.Cim.QueryAsync(
                 "SELECT Name, Version, InstallLocation, Publisher FROM Win32_InstalledStoreProgram", null, cancellationToken).ConfigureAwait(false);
-            foreach (var a in storeRows)
+            foreach (IDictionary<string, object?> a in storeRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 storeApps.Add(new { Name = a.GetOrDefault("Name"), Version = a.GetOrDefault("Version"), InstallLocation = a.GetOrDefault("InstallLocation"), Publisher = a.GetOrDefault("Publisher") });
             }
+
             _logger.Log("INF", $"StoreApps: Complete: count={storeApps.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Store apps query failed: {ex.Message}");
@@ -173,23 +227,27 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
             _logger.Log("ERR", $"StoreApps: Store apps query failed ({ex.Message})", area);
         }
 
-        List<object> provisionedAppx = new();
+        List<object> provisionedAppx = [];
         try
         {
             _logger.Log("INF", "ProvisionedAppx: Start", area);
-            var root = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Appx\\AppxAllUserStore\\Applications";
-            foreach (var app in context.Registry.EnumerateSubKeys(root))
+            string root = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Appx\\AppxAllUserStore\\Applications";
+            foreach (string app in context.Registry.EnumerateSubKeys(root))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var baseKey = $"{root}\\{app}";
-                var fullName = context.Registry.GetValue(baseKey, "PackageFullName")?.ToString();
-                var moniker = context.Registry.GetValue(baseKey, "PackageMoniker")?.ToString();
-                var idName = context.Registry.GetValue(baseKey, "PackageIdName")?.ToString();
+                string baseKey = $"{root}\\{app}";
+                string? fullName = context.Registry.GetValue(baseKey, "PackageFullName")?.ToString();
+                string? moniker = context.Registry.GetValue(baseKey, "PackageMoniker")?.ToString();
+                string? idName = context.Registry.GetValue(baseKey, "PackageIdName")?.ToString();
                 provisionedAppx.Add(new { Key = app, PackageFullName = fullName, PackageMoniker = moniker, PackageIdName = idName });
             }
+
             _logger.Log("INF", $"ProvisionedAppx: Complete: count={provisionedAppx.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Provisioned Appx read failed: {ex.Message}");
@@ -197,11 +255,11 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
             _logger.Log("ERR", $"ProvisionedAppx: Provisioned Appx read failed ({ex.Message})", area);
         }
 
-        List<object> provisioningPkgs = new();
+        List<object> provisioningPkgs = [];
         try
         {
             _logger.Log("INF", "ProvisioningPkgs: Start", area);
-            foreach (var dir in new[]
+            foreach (string? dir in new[]
                      {
                          Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Recovery", "Customizations"),
                          Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Provisioning", "Packages")
@@ -210,16 +268,20 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
                 cancellationToken.ThrowIfCancellationRequested();
                 if (Directory.Exists(dir))
                 {
-                    foreach (var ppkg in Directory.EnumerateFiles(dir, "*.ppkg", SearchOption.AllDirectories))
+                    foreach (string ppkg in Directory.EnumerateFiles(dir, "*.ppkg", SearchOption.AllDirectories))
                     {
                         FileInfo fi = new(ppkg);
                         provisioningPkgs.Add(new { Path = ppkg, Size = fi.Length, LastWriteUtc = fi.LastWriteTimeUtc });
                     }
                 }
             }
+
             _logger.Log("INF", $"ProvisioningPkgs: Complete: count={provisioningPkgs.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Provisioning packages scan failed: {ex.Message}");
@@ -228,9 +290,19 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
         }
 
         var summary = new { InstalledCount = installed.Count, RunningProcesses = processes.Count, OptionalFeatures = optionalFeatures.Count, StoreApps = storeApps.Count };
-        var details = new { Installed = installed, RunningProcesses = processes, OptionalFeatures = optionalFeatures, ServerFeatures = serverFeatures, StoreApps = storeApps, ProvisionedAppx = provisionedAppx, ProvisioningPackages = provisioningPkgs };
+        var details = new
+        {
+            Installed = installed,
+            RunningProcesses = processes,
+            OptionalFeatures = optionalFeatures,
+            ServerFeatures = serverFeatures,
+            StoreApps = storeApps,
+            ProvisionedAppx = provisionedAppx,
+            ProvisioningPackages = provisioningPkgs
+        };
         AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
         _logger.Log("INF", "Complete: Software inventory collected", area);
+
         return result;
     }
 
@@ -240,18 +312,19 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
 
     private static void ReadUninstallKey(IAnalyzerContext context, List<object> target, string hiveAndPath)
     {
-        foreach (var sub in context.Registry.EnumerateSubKeys(hiveAndPath))
+        foreach (string sub in context.Registry.EnumerateSubKeys(hiveAndPath))
         {
-            var basePath = $"{hiveAndPath}\\{sub}";
-            var name = context.Registry.GetValue(basePath, "DisplayName")?.ToString();
+            string basePath = $"{hiveAndPath}\\{sub}";
+            string? name = context.Registry.GetValue(basePath, "DisplayName")?.ToString();
+
             if (string.IsNullOrWhiteSpace(name))
             {
                 continue;
             }
 
-            var ver = context.Registry.GetValue(basePath, "DisplayVersion")?.ToString();
-            var pub = context.Registry.GetValue(basePath, "Publisher")?.ToString();
-            var installDate = context.Registry.GetValue(basePath, "InstallDate")?.ToString();
+            string? ver = context.Registry.GetValue(basePath, "DisplayVersion")?.ToString();
+            string? pub = context.Registry.GetValue(basePath, "Publisher")?.ToString();
+            string? installDate = context.Registry.GetValue(basePath, "InstallDate")?.ToString();
             target.Add(new { Name = name, Version = ver, Publisher = pub, InstallDate = installDate, Key = basePath });
         }
     }
@@ -259,23 +332,44 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
 
 }
 
+
+
 // Add once
 internal static class Native
 {
+
+
     private const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+
+
+
+
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern bool QueryFullProcessImageName(IntPtr hProcess, int flags, StringBuilder text, ref int size);
 
+
+
+
+
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr OpenProcess(uint access, bool inherit, int processId);
+
+
+
+
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool CloseHandle(IntPtr hObject);
 
+
+
+
+
     public static string? TryGetImagePath(int pid)
     {
-        var h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
+        nint h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
+
         if (h == IntPtr.Zero)
         {
             return null;
@@ -283,10 +377,16 @@ internal static class Native
 
         try
         {
-            var sb = new StringBuilder(1024);
-            var len = sb.Capacity;
+            StringBuilder sb = new(1024);
+            int len = sb.Capacity;
+
             return QueryFullProcessImageName(h, 0, sb, ref len) ? sb.ToString(0, len) : null;
         }
-        finally { CloseHandle(h); }
+        finally
+        {
+            CloseHandle(h);
+        }
     }
+
+
 }

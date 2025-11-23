@@ -1,15 +1,22 @@
-﻿// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  SettingsViewModel.cs
+﻿//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   SettingsViewModel.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -22,6 +29,8 @@ using Microsoft.UI.Xaml;
 
 using Windows.ApplicationModel;
 
+#endregion
+
 
 
 
@@ -29,6 +38,7 @@ using Windows.ApplicationModel;
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 
+[SupportedOSPlatform("windows10.0.22601.0")]
 public partial class SettingsViewModel : ObservableRecipient
 {
 
@@ -98,10 +108,7 @@ public partial class SettingsViewModel : ObservableRecipient
 
         set
         {
-            if (SetProperty(ref _exportPathTemplate, value))
-            {
-                _ = _localSettings.SaveApplicationSettingAsync("ExportPathTemplate", value ?? string.Empty);
-            }
+            if (SetProperty(ref _exportPathTemplate, value)) _ = _localSettings.SaveApplicationSettingAsync("ExportPathTemplate", value ?? string.Empty);
         }
     }
 
@@ -112,10 +119,7 @@ public partial class SettingsViewModel : ObservableRecipient
 
         set
         {
-            if (SetProperty(ref _logPathTemplate, value))
-            {
-                _ = _localSettings.SaveApplicationSettingAsync("LogPathTemplate", value ?? string.Empty);
-            }
+            if (SetProperty(ref _logPathTemplate, value)) _ = _localSettings.SaveApplicationSettingAsync("LogPathTemplate", value ?? string.Empty);
         }
     }
 
@@ -137,10 +141,8 @@ public partial class SettingsViewModel : ObservableRecipient
         set
         {
             if (SetProperty(ref _isActivityLogEnabled, value))
-            // Persist as JSON-friendly lowercase boolean literal to align with deserialization logic
-            {
+                // Persist as JSON-friendly lowercase boolean literal to align with deserialization logic
                 _ = _localSettings.SaveApplicationSettingAsync("IsActivityLoggingEnabled", value ? "true" : "false");
-            }
         }
     }
 
@@ -156,23 +158,17 @@ public partial class SettingsViewModel : ObservableRecipient
                            ?? "logs/{yyyyMMdd-HHmm}.txt";
 
         // Load Activity Logging setting (default to false if missing)
-        var raw = await _localSettings.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled");
-        var parsed = false;
+        string? raw = await _localSettings.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled");
+        bool parsed = false;
         if (!string.IsNullOrWhiteSpace(raw))
         {
             // Accept JSON booleans (true/false) or string representations
             if (raw.Equals("true", StringComparison.OrdinalIgnoreCase))
-            {
                 parsed = true;
-            }
             else if (raw.Equals("false", StringComparison.OrdinalIgnoreCase))
-            {
                 parsed = false;
-            }
             else
-            {
                 _ = bool.TryParse(raw, out parsed);
-            }
         }
 
         _isActivityLogEnabled = parsed;

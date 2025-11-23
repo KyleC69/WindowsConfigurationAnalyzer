@@ -13,6 +13,7 @@
 
 	<ItemGroup>
 		<Folder Include="Models\" />
+		<Compile Include="..\GlobalAssemblyInfo.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

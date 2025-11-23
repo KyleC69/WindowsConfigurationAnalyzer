@@ -1,17 +1,25 @@
-// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  SecurityAnalyzer.cs
+//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   SecurityAnalyzer.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
+
+#endregion
 
 
 
@@ -37,39 +45,39 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
     public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger;
-        var area = Area;
+        string area = Area;
         _logger.Log("INF", "Start: Collecting security configuration", area);
-        List<string> warnings = new();
-        List<string> errors = new();
+        List<string> warnings = [];
+        List<string> errors = [];
 
-        Dictionary<string, object?> secCenter = new();
-        Dictionary<string, object?> defender = new();
-        Dictionary<string, object?> deviceGuard = new();
-        Dictionary<string, object?> secureBoot = new();
-        List<object> bitlocker = new();
-        Dictionary<string, object?> rdp = new();
-        Dictionary<string, object?> smb = new();
-        Dictionary<string, object?> lsa = new();
-        Dictionary<string, object?> windowsUpdate = new();
+        Dictionary<string, object?> secCenter = [];
+        Dictionary<string, object?> defender = [];
+        Dictionary<string, object?> deviceGuard = [];
+        Dictionary<string, object?> secureBoot = [];
+        List<object> bitlocker = [];
+        Dictionary<string, object?> rdp = [];
+        Dictionary<string, object?> smb = [];
+        Dictionary<string, object?> lsa = [];
+        Dictionary<string, object?> windowsUpdate = [];
 
-        var avCount = 0;
+        int avCount = 0;
         bool? uacEnabled = null;
         bool? secureBootEnabled = null;
-        var bitlockerProtected = 0;
+        int bitlockerProtected = 0;
 
         // Windows Security Center (AV/AS/Firewall)
         try
         {
             _logger.Log("INF", "SecCenter: Start", area);
-            List<object> av = new();
-            List<object> fw = new();
-            List<object> asw = new();
+            List<object> av = [];
+            List<object> fw = [];
+            List<object> asw = [];
             try
             {
-                var avRows = await context.Cim.QueryAsync(
+                IReadOnlyList<IDictionary<string, object?>> avRows = await context.Cim.QueryAsync(
                     "SELECT displayName, pathToSignedProductExe, productState, timestamp FROM AntiVirusProduct",
                     "\\\\.\\root\\SecurityCenter2", cancellationToken).ConfigureAwait(false);
-                foreach (var mo in avRows)
+                foreach (IDictionary<string, object?> mo in avRows)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     av.Add(new Dictionary<string, object?>
@@ -81,7 +89,10 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
                     });
                 }
             }
-            catch (OperationCanceledException) { throw; }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 warnings.Add($"SecurityCenter2 AntiVirusProduct query failed: {ex.Message}");
@@ -91,10 +102,10 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
 
             try
             {
-                var fwRows = await context.Cim.QueryAsync(
+                IReadOnlyList<IDictionary<string, object?>> fwRows = await context.Cim.QueryAsync(
                     "SELECT displayName, pathToSignedProductExe, productState, timestamp FROM FirewallProduct",
                     "\\\\.\\root\\SecurityCenter2", cancellationToken).ConfigureAwait(false);
-                foreach (var mo in fwRows)
+                foreach (IDictionary<string, object?> mo in fwRows)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     fw.Add(new
@@ -106,7 +117,10 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
                     });
                 }
             }
-            catch (OperationCanceledException) { throw; }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 warnings.Add($"SecurityCenter2 FirewallProduct query failed: {ex.Message}");
@@ -116,10 +130,10 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
 
             try
             {
-                var asRows = await context.Cim.QueryAsync(
+                IReadOnlyList<IDictionary<string, object?>> asRows = await context.Cim.QueryAsync(
                     "SELECT displayName, pathToSignedProductExe, productState, timestamp FROM AntiSpywareProduct",
                     "\\\\.\\root\\SecurityCenter2", cancellationToken).ConfigureAwait(false);
-                foreach (var mo in asRows)
+                foreach (IDictionary<string, object?> mo in asRows)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     asw.Add(new
@@ -131,7 +145,10 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
                     });
                 }
             }
-            catch (OperationCanceledException) { throw; }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 warnings.Add($"SecurityCenter2 AntiSpywareProduct query failed: {ex.Message}");
@@ -145,13 +162,15 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
             avCount = av.Count;
             _logger.Log("INF", $"SecCenter: Complete: AV={av.Count}, FW={fw.Count}, AS={asw.Count}", area);
         }
-        catch { }
+        catch
+        {
+        }
 
         // UAC basic
         try
         {
             _logger.Log("INF", "UAC: Start", area);
-            var v = context.Registry.GetValue(
+            object? v = context.Registry.GetValue(
                 "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System", "EnableLUA");
             uacEnabled = v is int i && i != 0;
             lsa["UAC_EnableLUA"] = v;
@@ -168,11 +187,11 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "Defender: Start", area);
-            List<object> services = new();
-            var svcRows = await context.Cim.QueryAsync(
+            List<object> services = [];
+            IReadOnlyList<IDictionary<string, object?>> svcRows = await context.Cim.QueryAsync(
                 "SELECT Name, State, StartMode, PathName, DisplayName FROM Win32_Service WHERE Name='WinDefend' OR Name='Sense'",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var s in svcRows)
+            foreach (IDictionary<string, object?> s in svcRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 services.Add(new
@@ -184,25 +203,36 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
                     DisplayName = s.GetOrDefault("DisplayName")
                 });
             }
+
             defender["Services"] = services;
-            Dictionary<string, object?> sig = new();
-            foreach (var (k, n) in new (string key, string[] names)[]
+            Dictionary<string, object?> sig = [];
+            foreach ((string? k, string[]? n) in new (string key, string[] names)[]
                      {
                          ("HKLM\\SOFTWARE\\Microsoft\\Windows Defender",
                              ["EngineVersion", "SignatureVersion", "AVSignatureVersion", "ASSignatureVersion"]),
                          ("HKLM\\SOFTWARE\\Microsoft\\Windows Defender\\Signature Updates",
-                         ["EngineVersion", "AVSignatureVersion", "IASignatureVersion", "ASSignatureVersion", "LastUpdateTime"])
+                             ["EngineVersion", "AVSignatureVersion", "IASignatureVersion", "ASSignatureVersion", "LastUpdateTime"])
                      })
             {
-                foreach (var name in n)
+                foreach (string name in n)
                 {
-                    try { sig[$"{k}:{name}"] = context.Registry.GetValue(k, name); } catch { }
+                    try
+                    {
+                        sig[$"{k}:{name}"] = context.Registry.GetValue(k, name);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
+
             defender["Signatures"] = sig;
             _logger.Log("INF", "Defender: Complete", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Defender inspection failed: {ex.Message}");
@@ -214,21 +244,33 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "DeviceGuard: Start", area);
-            var dgRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> dgRows = await context.Cim.QueryAsync(
                 "SELECT * FROM Win32_DeviceGuard", "\\\\.\\root\\Microsoft\\Windows\\DeviceGuard", cancellationToken).ConfigureAwait(false);
-            foreach (var dg in dgRows)
+            foreach (IDictionary<string, object?> dg in dgRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 deviceGuard["SecurityServicesConfigured"] = dg.GetOrDefault("SecurityServicesConfigured");
                 deviceGuard["SecurityServicesRunning"] = dg.GetOrDefault("SecurityServicesRunning");
                 deviceGuard["VirtualizationBasedSecurityStatus"] = dg.GetOrDefault("VirtualizationBasedSecurityStatus");
                 deviceGuard["HVCIProtectionLevel"] = dg.GetOrDefault("HVCIProtectionLevel");
+
                 break;
             }
-            try { lsa["RunAsPPL"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa", "RunAsPPL"); } catch { }
+
+            try
+            {
+                lsa["RunAsPPL"] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa", "RunAsPPL");
+            }
+            catch
+            {
+            }
+
             _logger.Log("INF", "DeviceGuard: Complete", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"DeviceGuard query failed: {ex.Message}");
@@ -240,19 +282,24 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "SecureBoot: Start", area);
-            var sbRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> sbRows = await context.Cim.QueryAsync(
                 "SELECT SecureBootEnabled FROM MS_SecureBoot", "\\\\.\\root\\wmi", cancellationToken).ConfigureAwait(false);
-            foreach (var sb in sbRows)
+            foreach (IDictionary<string, object?> sb in sbRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var v = sb.GetOrDefault("SecureBootEnabled");
+                object? v = sb.GetOrDefault("SecureBootEnabled");
                 secureBootEnabled = v is uint ui ? ui != 0 : v is int ii && ii != 0;
                 secureBoot["SecureBootEnabled"] = v;
+
                 break;
             }
+
             _logger.Log("INF", $"SecureBoot: Complete: Enabled={secureBootEnabled?.ToString() ?? "null"} ", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Secure Boot query failed: {ex.Message}");
@@ -264,13 +311,13 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "BitLocker: Start", area);
-            var blRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> blRows = await context.Cim.QueryAsync(
                 "SELECT DeviceID, ProtectionStatus, EncryptionMethod FROM Win32_EncryptableVolume", "\\\\.\\root\\CIMV2\\Security\\MicrosoftVolumeEncryption", cancellationToken).ConfigureAwait(false);
-            foreach (var vol in blRows)
+            foreach (IDictionary<string, object?> vol in blRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var ps = vol.GetOrDefault("ProtectionStatus");
-                if (ps is uint u && u == 1)
+                object? ps = vol.GetOrDefault("ProtectionStatus");
+                if (ps is uint and 1)
                 {
                     bitlockerProtected++;
                 }
@@ -282,9 +329,13 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
                     EncryptionMethod = vol.GetOrDefault("EncryptionMethod")
                 });
             }
+
             _logger.Log("INF", $"BitLocker: Complete: protected={bitlockerProtected}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"BitLocker query failed: {ex.Message}");
@@ -327,10 +378,17 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "LSA: Start", area);
-            foreach (var name in new[] { "LmCompatibilityLevel", "RestrictAnonymous", "RestrictAnonymousSAM", "NoLMHash" })
+            foreach (string? name in new[] { "LmCompatibilityLevel", "RestrictAnonymous", "RestrictAnonymousSAM", "NoLMHash" })
             {
-                try { lsa[name] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa", name); } catch { }
+                try
+                {
+                    lsa[name] = context.Registry.GetValue("HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa", name);
+                }
+                catch
+                {
+                }
             }
+
             _logger.Log("INF", "LSA: Complete", area);
         }
         catch (Exception ex)
@@ -343,22 +401,39 @@ public sealed class SecurityAnalyzer : IAnalyzerModule
         // Windows Update
         try
         {
-
             _logger.Log("INF", "WU: Start", area);
-            var wuSvc = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> wuSvc = await context.Cim.QueryAsync(
                 "SELECT Name, State, StartMode FROM Win32_Service WHERE Name='wuauserv'",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var s in wuSvc)
+            foreach (IDictionary<string, object?> s in wuSvc)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 windowsUpdate["Service_State"] = s.GetOrDefault("State");
                 windowsUpdate["Service_StartMode"] = s.GetOrDefault("StartMode");
             }
-            try { windowsUpdate["AUOptions"] = context.Registry.GetValue("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update", "AUOptions"); } catch { }
-            try { windowsUpdate["LastSuccessTime"] = context.Registry.GetValue("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\Results\\Install", "LastSuccessTime"); } catch { }
+
+            try
+            {
+                windowsUpdate["AUOptions"] = context.Registry.GetValue("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update", "AUOptions");
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                windowsUpdate["LastSuccessTime"] = context.Registry.GetValue("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\Results\\Install", "LastSuccessTime");
+            }
+            catch
+            {
+            }
+
             _logger.Log("INF", "WU: Complete", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Windows Update inspection failed: {ex.Message}");

@@ -18,6 +18,7 @@
 			<_Parameter1>ProjectDirectory</_Parameter1>
 			<_Parameter2>$(MyProjectDir)</_Parameter2>
 		</AssemblyAttribute>
+		<Compile Include="..\GlobalAssemblyInfo.cs" />
 	</ItemGroup>
 
 
@@ -33,6 +34,12 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Contracts\Contracts.csproj" />
+	  <ProjectReference Include="..\DataProbe\DataProbe.csproj" />
 	</ItemGroup>
+
+
+
+
+	<ProjectExtensions><VisualStudio><UserProperties models_4samplerulem_1json__JsonSchema="http://json-schema.org/draft-07/schema" /></VisualStudio></ProjectExtensions>
   
 </Project>

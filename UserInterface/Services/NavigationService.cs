@@ -1,13 +1,19 @@
-﻿// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  NavigationService.cs
+﻿//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   NavigationService.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -18,6 +24,8 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+
+#endregion
 
 
 
@@ -72,12 +80,9 @@ public class NavigationService(IPageService pageService) : INavigationService
     {
         if (CanGoBack)
         {
-            var vmBeforeNavigation = _frame.GetPageViewModel();
+            object? vmBeforeNavigation = _frame.GetPageViewModel();
             _frame.GoBack();
-            if (vmBeforeNavigation is INavigationAware navigationAware)
-            {
-                navigationAware.OnNavigatedFrom();
-            }
+            if (vmBeforeNavigation is INavigationAware navigationAware) navigationAware.OnNavigatedFrom();
 
             return true;
         }
@@ -98,15 +103,12 @@ public class NavigationService(IPageService pageService) : INavigationService
                                (parameter != null && !parameter.Equals(_lastParameterUsed))))
         {
             _frame.Tag = clearNavigation;
-            var vmBeforeNavigation = _frame.GetPageViewModel();
-            var navigated = _frame.Navigate(pageType, parameter);
+            object? vmBeforeNavigation = _frame.GetPageViewModel();
+            bool navigated = _frame.Navigate(pageType, parameter);
             if (navigated)
             {
                 _lastParameterUsed = parameter;
-                if (vmBeforeNavigation is INavigationAware navigationAware)
-                {
-                    navigationAware.OnNavigatedFrom();
-                }
+                if (vmBeforeNavigation is INavigationAware navigationAware) navigationAware.OnNavigatedFrom();
             }
 
             return navigated;
@@ -121,10 +123,7 @@ public class NavigationService(IPageService pageService) : INavigationService
 
     private void RegisterFrameEvents()
     {
-        if (_frame != null)
-        {
-            _frame.Navigated += OnNavigated;
-        }
+        if (_frame != null) _frame.Navigated += OnNavigated;
     }
 
 
@@ -133,10 +132,7 @@ public class NavigationService(IPageService pageService) : INavigationService
 
     private void UnregisterFrameEvents()
     {
-        if (_frame != null)
-        {
-            _frame.Navigated -= OnNavigated;
-        }
+        if (_frame != null) _frame.Navigated -= OnNavigated;
     }
 
 
@@ -147,16 +143,10 @@ public class NavigationService(IPageService pageService) : INavigationService
     {
         if (sender is Frame frame)
         {
-            var clearNavigation = (bool)frame.Tag;
-            if (clearNavigation)
-            {
-                frame.BackStack.Clear();
-            }
+            bool clearNavigation = (bool)frame.Tag;
+            if (clearNavigation) frame.BackStack.Clear();
 
-            if (frame.GetPageViewModel() is INavigationAware navigationAware)
-            {
-                navigationAware.OnNavigatedTo(e.Parameter);
-            }
+            if (frame.GetPageViewModel() is INavigationAware navigationAware) navigationAware.OnNavigatedTo(e.Parameter);
 
             Navigated?.Invoke(sender, e);
         }

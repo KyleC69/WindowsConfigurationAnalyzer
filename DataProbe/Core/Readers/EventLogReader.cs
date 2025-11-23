@@ -1,18 +1,26 @@
-// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  EventLogReader.cs
+//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   EventLogReader.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Diagnostics;
 using System.Security;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
+
+#endregion
 
 
 
@@ -36,7 +44,7 @@ public sealed class EventLogReader : IEventLogReader
                 return new EventLogSummary(logName, 0, null);
             }
 
-            var lastIndex = ev.Entries.Count - 1;
+            int lastIndex = ev.Entries.Count - 1;
             EventLogEntry? last = ev.Entries[lastIndex];
             DateTime lastUtc = DateTime.SpecifyKind(last.TimeGenerated, DateTimeKind.Local).ToUniversalTime();
 

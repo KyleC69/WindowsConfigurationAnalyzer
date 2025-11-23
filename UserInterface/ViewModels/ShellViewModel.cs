@@ -1,13 +1,19 @@
-﻿// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  ShellViewModel.cs
+﻿//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   ShellViewModel.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -17,6 +23,8 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+
+#endregion
 
 
 
@@ -82,10 +90,7 @@ public partial class ShellViewModel : ObservableRecipient
         }
 
         NavigationViewItem? selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
-        if (selectedItem != null)
-        {
-            _selected = selectedItem;
-        }
+        if (selectedItem != null) _selected = selectedItem;
     }
 
 

@@ -1,13 +1,19 @@
-﻿// Created:  2025/11/09
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  ActivityLogger.cs
+﻿//  Created:  2025/11/09
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   ActivityLogger.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -15,6 +21,8 @@ using System.Text;
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Etw;
+
+#endregion
 
 
 
@@ -98,14 +106,11 @@ public static class ActivityLogger
     /// <param name="localSettingsService">The settings service used to read persisted flags. If null, no changes are made.</param>
     public static async Task InitializeAsync(ILocalSettingsService? localSettingsService)
     {
-        if (localSettingsService is null)
-        {
-            return; // nothing to do - keep default behaviour
-        }
+        if (localSettingsService is null) return; // nothing to do - keep default behaviour
 
         try
         {
-            var raw = await localSettingsService.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled")
+            string? raw = await localSettingsService.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled")
                 .ConfigureAwait(false);
             if (string.Equals(raw, "false", StringComparison.OrdinalIgnoreCase))
             {
@@ -138,10 +143,7 @@ public static class ActivityLogger
     {
         lock (_initLock)
         {
-            if (!_isEnabled)
-            {
-                return;
-            }
+            if (!_isEnabled) return;
 
             _isEnabled = false;
         }
@@ -152,7 +154,7 @@ public static class ActivityLogger
             _cts?.Cancel();
 
             // Drain remaining entries without throwing
-            while (_queue.TryDequeue(out var line))
+            while (_queue.TryDequeue(out string? line))
             {
                 try
                 {
@@ -208,19 +210,13 @@ public static class ActivityLogger
     {
         lock (_initLock)
         {
-            if (_initialized)
-            {
-                return;
-            }
+            if (_initialized) return;
 
             _initialized = true;
             _isEnabled = enabled;
         }
 
-        if (_isEnabled)
-        {
-            EnsureWriter();
-        }
+        if (_isEnabled) EnsureWriter();
     }
 
 
@@ -239,16 +235,13 @@ public static class ActivityLogger
         //   App.LogCounter.Increment();
 
         // Fast check
-        if (!_isEnabled || !_initialized)
-        {
-            return;
-        }
+        if (!_isEnabled || !_initialized) return;
 
         try
         {
             // Build CSV line with minimal allocations
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var line = $"{Escape(timestamp)},{Escape(level)},{Escape(message)},{Escape(context)}";
+            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            string line = $"{Escape(timestamp)},{Escape(level)},{Escape(message)},{Escape(context)}";
 
             // Bounded enqueue using atomic counter to avoid using Count on ConcurrentQueue
             if (Interlocked.Increment(ref _pendingCount) > MaxPending)
@@ -317,7 +310,7 @@ public static class ActivityLogger
         try
         {
             // Wait briefly for worker to drain
-            var sw = Stopwatch.StartNew();
+            Stopwatch sw = Stopwatch.StartNew();
             while (_pendingCount > 0 && sw.Elapsed < TimeSpan.FromSeconds(2))
             {
                 Thread.Sleep(50);
@@ -352,7 +345,6 @@ public static class ActivityLogger
             _cts?.Cancel();
 
             if (_worker != null)
-            {
                 try
                 {
                     _worker.Wait(2000);
@@ -361,9 +353,8 @@ public static class ActivityLogger
                 {
                     /* swallow */
                 }
-            }
 
-            while (_queue.TryDequeue(out var line))
+            while (_queue.TryDequeue(out string? line))
             {
                 try
                 {
@@ -415,30 +406,21 @@ public static class ActivityLogger
 
     private static void EnsureWriter()
     {
-        if (!_isEnabled)
-        {
-            return;
-        }
+        if (!_isEnabled) return;
 
-        if (_writer != null)
-        {
-            return;
-        }
+        if (_writer != null) return;
 
         lock (_initLock)
         {
-            if (_writer != null)
-            {
-                return;
-            }
+            if (_writer != null) return;
 
             try
             {
                 Directory.CreateDirectory(LogDirectory);
-                var fileName = $"ActivityLog_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-                var logFilePath = Path.Combine(LogDirectory, fileName);
+                string fileName = $"ActivityLog_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                string logFilePath = Path.Combine(LogDirectory, fileName);
 
-                var fs = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                FileStream fs = new(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
                 _writer = new StreamWriter(fs, Encoding.UTF8) { AutoFlush = false };
                 _writer.WriteLine("Timestamp,Level,Message,Context");
             }
@@ -462,22 +444,16 @@ public static class ActivityLogger
             while (!ct.IsCancellationRequested)
             {
                 // Attempt to create writer if absent and logging is enabled
-                if (_isEnabled)
-                {
-                    EnsureWriter();
-                }
+                if (_isEnabled) EnsureWriter();
 
                 // Dequeue and write as many as available
-                while (_queue.TryDequeue(out var line))
+                while (_queue.TryDequeue(out string? line))
                 {
                     Interlocked.Decrement(ref _pendingCount);
 
                     try
                     {
-                        if (_writer != null)
-                        {
-                            await _writer.WriteLineAsync(line);
-                        }
+                        if (_writer != null) await _writer.WriteLineAsync(line);
                     }
                     catch (Exception ex)
                     {

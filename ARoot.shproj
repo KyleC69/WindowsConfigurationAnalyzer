@@ -10,7 +10,6 @@
   <PropertyGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\CodeSharing\Microsoft.CodeSharing.CSharp.targets" />
   <ItemGroup>
-    <None Include=".editorconfig" />
     <None Include=".gitattributes" />
     <None Include=".github\Workflows\main.yml" />
     <None Include=".github\Workflows\release.yml" />
@@ -42,7 +41,6 @@
     <None Include="WindowsConfigurationAnalyzer.slnx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include=".editorconfig.txt" />
     <Content Include="docs\AnalyzerArchitecture.txt" />
     <Content Include="EventSourceProviderIntegrityCheck.schema.json" />
     <Content Include="Microsoft.WindowsAppRuntime.pri.xml" />

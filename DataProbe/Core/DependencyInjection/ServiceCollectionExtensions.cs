@@ -1,13 +1,19 @@
-// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  ServiceCollectionExtensions.cs
+//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   ServiceCollectionExtensions.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Areas.Drivers;
@@ -20,9 +26,10 @@ using KC.WindowsConfigurationAnalyzer.DataProbe.Areas.Policy;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Areas.Security;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Areas.Software;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Areas.Startup;
-using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Readers;
 
 using Microsoft.Extensions.DependencyInjection;
+
+#endregion
 
 
 
@@ -38,11 +45,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddWcaCore(this IServiceCollection services)
     {
         // Readers
-        services.AddSingleton<IEnvReader, EnvironmentReader>();
-        services.AddSingleton<IRegistryReader, RegistryReader>();
-        services.AddSingleton<ICimReader, CimReader>();
-        services.AddSingleton<IEventLogReader, EventLogReader>();
-        services.AddSingleton<IFirewallReader, FirewallReader>();
+
 
 
         // Default module registrations (host can add/override as needed)

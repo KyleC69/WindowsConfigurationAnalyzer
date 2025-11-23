@@ -24,6 +24,7 @@
 			<_Parameter1>ProjectDirectory</_Parameter1>
 			<_Parameter2>$(MyProjectDir)</_Parameter2>
 		</AssemblyAttribute>
+		<Compile Include="..\GlobalAssemblyInfo.cs" />
 	</ItemGroup>
 
 
@@ -41,6 +42,7 @@
 		<PackageReference Include="System.Management" Version="10.0.0" />
 		<PackageReference Include="System.Diagnostics.EventLog" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
+		<PackageReference Include="System.Security.AccessControl" Version="6.0.1" />
 	</ItemGroup>
 
 
@@ -48,6 +50,13 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Contracts\Contracts.csproj" />
+	</ItemGroup>
+
+
+
+
+	<ItemGroup>
+	  <Folder Include="Models\" />
 	</ItemGroup>
 
 

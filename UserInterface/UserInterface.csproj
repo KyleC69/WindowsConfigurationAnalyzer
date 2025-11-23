@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net9.0-windows</TargetFramework>
+		<TargetFramework>net9.0-windows10.0.22601.0</TargetFramework>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<SupportedOSPlatform>windows</SupportedOSPlatform>
+		<SupportedOSPlatform>windows10.0.22601.0</SupportedOSPlatform>
 		<!-- Disable WindowsAppSDK self-contained mode to avoid mt.exe manifest merge during build -->
 		<WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -38,15 +38,6 @@
 			<_Parameter2>$(MyProjectDir)</_Parameter2>
 		</AssemblyAttribute>
 	</ItemGroup>
-	<ItemGroup>
-		<AssemblyAttribute Include="System.Runtime.Versioning.UnsupportedOSPlatformAttribute">
-			<_Parameter1>osx</_Parameter1>
-		</AssemblyAttribute>
-		<AssemblyAttribute Include="System.Runtime.Versioning.UnsupportedOSPlatformAttribute">
-			<_Parameter1>linux</_Parameter1>
-		</AssemblyAttribute>
-	</ItemGroup>
-
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250402" />
@@ -65,6 +56,7 @@
 		<ProjectReference Include="..\DataProbe\DataProbe.csproj" />
 		<ProjectReference Include="..\Contracts\Contracts.csproj" />
 		<ProjectReference Include="..\DataProbe\DataProbe.csproj" />
+		<ProjectReference Include="..\RuleAnalyzer\RuleAnalyzer.csproj" />
 		<ProjectReference Include="..\UserInterface.Core\UserInterface.Core.csproj" />
 		<Compile Include="..\GlobalAssemblyInfo.cs" />
 	</ItemGroup>
@@ -102,9 +94,7 @@
 		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<Compile Remove="F:\NuGetPackages\microsoft.windowsappsdk.foundation\1.8.250906002\buildTransitive\..\include\MddBootstrapAutoInitializer.cs" />
-	</ItemGroup>
+
 
 	<ItemGroup>
 		<Content Remove="Assets\BadgeLogo.scale-100.png" />

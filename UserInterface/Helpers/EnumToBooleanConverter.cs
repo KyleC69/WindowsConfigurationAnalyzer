@@ -1,16 +1,24 @@
-﻿// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  EnumToBooleanConverter.cs
+﻿//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   EnumToBooleanConverter.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
+
+#endregion
 
 
 
@@ -27,12 +35,9 @@ public class EnumToBooleanConverter : IValueConverter
     {
         if (parameter is string enumString)
         {
-            if (!Enum.IsDefined(typeof(ElementTheme), value))
-            {
-                throw new ArgumentException("ExceptionEnumToBooleanConverterValueMustBeAnEnum");
-            }
+            if (!Enum.IsDefined(typeof(ElementTheme), value)) throw new ArgumentException("ExceptionEnumToBooleanConverterValueMustBeAnEnum");
 
-            var enumValue = Enum.Parse(typeof(ElementTheme), enumString);
+            object enumValue = Enum.Parse(typeof(ElementTheme), enumString);
 
             return enumValue.Equals(value);
         }

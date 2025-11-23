@@ -1,0 +1,70 @@
+
+{
+  "$schema": "https://yourproject.org/schemas/workflow.schema.json",
+  "WorkflowName": "WindowsSecurityBaseline",
+  "SchemaVersion": "1.0",
+  "Author": "Test Suite",
+  "Constraints": {
+    "RunSequentially": true,
+    "StopOnFailure": false,
+    "Timeout": "00:10:00"
+  },
+  "ConfigSets": [
+    {
+      "ConfigSetName": "RegistryChecks",
+      "Rules": [
+        {
+          "RuleName": "SmartScreenEnabled",
+          "Provider": "Registry",
+          "Parameters": {
+            "KeyPath": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+            "ValueName": "EnableSmartScreen"
+          },
+          "Condition": { "Operator": "Equals", "Expected": 1 },
+          "Severity": 5,
+          "Message": "SmartScreen must be enabled"
+        },
+        {
+          "RuleName": "UACEnabled",
+          "Provider": "Registry",
+          "Parameters": {
+            "KeyPath": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+            "ValueName": "EnableLUA"
+          },
+          "Condition": { "Operator": "Equals", "Expected": 1 },
+          "Severity": 7,
+          "Message": "User Account Control must be enabled"
+        }
+      ]
+    },
+    {
+      "ConfigSetName": "ServiceChecks",
+      "Rules": [
+        {
+          "RuleName": "FirewallServiceRunning",
+          "Provider": "WMI",
+          "Parameters": {
+            "Class": "Win32_Service",
+            "Property": "Started",
+            "Filter": "Name='MpsSvc'"
+          },
+          "Condition": { "Operator": "Equals", "Expected": true },
+          "Severity": 8,
+          "Message": "Windows Firewall service must be running"
+        },
+        {
+          "RuleName": "DefenderServiceRunning",
+          "Provider": "WMI",
+          "Parameters": {
+            "Class": "Win32_Service",
+            "Property": "Started",
+            "Filter": "Name='WinDefend'"
+          },
+          "Condition": { "Operator": "Equals", "Expected": true },
+          "Severity": 9,
+          "Message": "Windows Defender service must be running"
+        }
+      ]
+    }
+  ]
+}

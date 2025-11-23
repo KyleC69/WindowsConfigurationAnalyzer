@@ -1,13 +1,19 @@
-﻿// Created:  2025/11/04
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  EventingViewModel.cs
+﻿//  Created:  2025/11/04
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   EventingViewModel.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Collections;
 using System.Collections.Concurrent;
@@ -28,6 +34,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 using WinUIEx;
+
+#endregion
 
 
 
@@ -66,7 +74,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
 
 
-    public ObservableCollection<string> LogNames { get; } = new();
+    public ObservableCollection<string> LogNames { get; } = [];
 
 
     public string? SelectedLogName
@@ -75,15 +83,12 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
         set
         {
-            if (SetProperty(ref _selectedLogName, value))
-            {
-                _ = LoadEventsForSelectedLogAsync();
-            }
+            if (SetProperty(ref _selectedLogName, value)) _ = LoadEventsForSelectedLogAsync();
         }
     }
 
 
-    public ObservableCollection<EventLogRecordClone> LogEvents { get; } = new();
+    public ObservableCollection<EventLogRecordClone> LogEvents { get; } = [];
 
 
     [DebuggerDisplay("{SelectedLogEvent}")]
@@ -94,15 +99,12 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
         set
         {
             //Search for correlated events based on selectected event's ActivityId
-            if (SetProperty(ref _selectedLogEvent, value))
-            {
-                UpdateSelectedLogEventProperties();
-            }
+            if (SetProperty(ref _selectedLogEvent, value)) UpdateSelectedLogEventProperties();
         }
     }
 
 
-    public ObservableCollection<PropertyItem> SelectedLogEventProperties { get; } = new();
+    public ObservableCollection<PropertyItem> SelectedLogEventProperties { get; } = [];
 
 
     public int HoursBack
@@ -118,10 +120,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
         set
         {
-            if (int.TryParse(value, out var result))
-            {
-                HoursBack = result;
-            }
+            if (int.TryParse(value, out int result)) HoursBack = result;
         }
     }
 
@@ -132,10 +131,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
         set
         {
-            if (SetProperty(ref _overrideLimit, value))
-            {
-                _ = LoadEventsForSelectedLogAsync();
-            }
+            if (SetProperty(ref _overrideLimit, value)) _ = LoadEventsForSelectedLogAsync();
         }
     }
 
@@ -221,29 +217,23 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
     /// </exception>
     public Task LoadEnabledLogNamesAsync()
     {
-        List<string> names = new();
+        List<string> names = [];
         EventLogSession session = new();
-        List<string> activeLogs = new();
-        var timeWindowMs = TimeSpan.FromHours(HoursBack).TotalMilliseconds;
+        List<string> activeLogs = [];
+        double timeWindowMs = TimeSpan.FromHours(HoursBack).TotalMilliseconds;
 
         try
         {
-            foreach (var logName in session.GetLogNames())
+            foreach (string? logName in session.GetLogNames())
             {
                 try
                 {
                     EventLogConfiguration config = new(logName);
 
                     // Skip disabled logs and Analytical logs
-                    if (!config.IsEnabled)
-                    {
-                        continue;
-                    }
+                    if (!config.IsEnabled) continue;
 
-                    if (config.LogType == EventLogType.Analytical)
-                    {
-                        continue;
-                    }
+                    if (config.LogType == EventLogType.Analytical) continue;
 
 
                     if (OverrideLimit)
@@ -252,22 +242,16 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                         EventLogQuery q = new(logName, PathType.LogName);
 
                         using EventLogReader reader2 = new(q);
-                        if (reader2.ReadEvent() != null)
-                        {
-                            activeLogs.Add(logName);
-                        }
+                        if (reader2.ReadEvent() != null) activeLogs.Add(logName);
                     }
                     else
                     {
                         // Check if the log has at least one event in the time window
-                        var query = "*[System[TimeCreated[timediff(@SystemTime) <= " + timeWindowMs + "]]]";
+                        string query = "*[System[TimeCreated[timediff(@SystemTime) <= " + timeWindowMs + "]]]";
                         EventLogQuery logQuery = new(logName, PathType.LogName, query);
 
                         using EventLogReader reader = new(logQuery);
-                        if (reader.ReadEvent() != null)
-                        {
-                            activeLogs.Add(logName);
-                        }
+                        if (reader.ReadEvent() != null) activeLogs.Add(logName);
                     }
                 }
                 catch (Exception)
@@ -316,7 +300,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                 {
                     ReverseDirection = true
                 };
-                Dictionary<string, string> eventProperties = new();
+                Dictionary<string, string> eventProperties = [];
 
                 using EventLogReader logReader = new(query);
                 //while ((data = (EventLogRecord)logReader.ReadEvent()) != null) LogEvents.Add(data);
@@ -352,20 +336,15 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
     private EventLogQuery BuildEventLogQuery(string logName, bool overrideAll)
     {
         if (overrideAll)
-        // No time filter, but still newest-first via ReverseDirection later
-        {
+            // No time filter, but still newest-first via ReverseDirection later
             return new EventLogQuery(logName, PathType.LogName);
-        }
 
         // Convert hours to milliseconds safely using 64-bit arithmetic
-        var milliseconds = HoursBack * 60L * 60L * 1000L;
+        long milliseconds = HoursBack * 60L * 60L * 1000L;
         // If zero hours, produce a query that yields no results; fallback later will show all
-        if (milliseconds <= 0)
-        {
-            milliseconds = 0;
-        }
+        if (milliseconds <= 0) milliseconds = 0;
 
-        var xPath = BuildTimediffQueryMilliseconds(milliseconds);
+        string xPath = BuildTimediffQueryMilliseconds(milliseconds);
 
         return new EventLogQuery(logName, PathType.LogName, xPath);
     }
@@ -391,16 +370,13 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
     {
         LogEvents.Clear();
 
-        if (string.IsNullOrWhiteSpace(SelectedLogName))
-        {
-            return;
-        }
+        if (string.IsNullOrWhiteSpace(SelectedLogName)) return;
 
-        var logName = SelectedLogName!;
-        var overrideAll = OverrideLimit;
+        string logName = SelectedLogName!;
+        bool overrideAll = OverrideLimit;
 
         // Collect results off the UI thread then batch add for fewer dispatcher hops.
-        List<EventLogRecordClone> collected = new();
+        List<EventLogRecordClone> collected = [];
 
         await Task.Run(() =>
         {
@@ -445,7 +421,6 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
             // Use current thread dispatcher if available; avoid touching App.MainWindow in test context.
             DispatcherQueue? dispatcher = DispatcherQueue.GetForCurrentThread();
             if (dispatcher is not null)
-            {
                 dispatcher.TryEnqueue(() =>
                 {
                     foreach (EventLogRecordClone item in collected)
@@ -453,14 +428,11 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                         LogEvents.Add(item);
                     }
                 });
-            }
             else
-            {
                 foreach (EventLogRecordClone item in collected)
                 {
                     LogEvents.Add(item);
                 }
-            }
         }
     }
 
@@ -483,12 +455,9 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
             // as EventListItem might not contain the full EventLogRecord object.
             EventLogRecord? fullEventRecord = await Task.Run(() =>
             {
-                if (string.IsNullOrWhiteSpace(SelectedLogName))
-                {
-                    return null;
-                }
+                if (string.IsNullOrWhiteSpace(SelectedLogName)) return null;
 
-                var timeWindowMs = (long)TimeSpan.FromHours(HoursBack).TotalMilliseconds;
+                long timeWindowMs = (long)TimeSpan.FromHours(HoursBack).TotalMilliseconds;
                 EventLogQuery query = BuildEventLogQuery(SelectedLogName, OverrideLimit);
                 query.ReverseDirection = true; // newest first
 
@@ -498,10 +467,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
                 while ((data = (EventLogRecord)logReader.ReadEvent()) != null)
                 {
-                    if (data.Id == selectedItem.EventId && data.TimeCreated == selectedItem.TimeCreated)
-                    {
-                        return data;
-                    }
+                    if (data.Id == selectedItem.EventId && data.TimeCreated == selectedItem.TimeCreated) return data;
                 }
 
                 return null;
@@ -511,13 +477,9 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
             // Load correlated events based on the ActivityId of the selected event
             if (SelectedLogEvent?.ActivityId != Guid.Empty)
-            {
                 await LoadCorrelatedEventsAsync();
-            }
             else
-            {
                 CorrelatedLogEvents?.Clear();
-            }
         }
         else
         {
@@ -539,24 +501,20 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
             {
                 List<EventLogRecord> related = EventLogSearcher.FindEventsWithGuid(parentEvent?.RelatedActivityId, LogNames);
                 if (related.Count > 0)
-                {
                     foreach (EventLogRecord r in related)
                     {
                         CorrelatedLogEvents?.Add(r);
                     }
-                }
             }
 
             if (parentEvent?.ActivityId != Guid.Empty)
             {
                 List<EventLogRecord> activities = EventLogSearcher.FindEventsWithGuid(parentEvent?.ActivityId, LogNames);
                 if (activities.Count > 0)
-                {
                     foreach (EventLogRecord a in activities)
                     {
                         CorrelatedLogEvents?.Add(a);
                     }
-                }
             }
         }
         catch (Exception)
@@ -588,20 +546,17 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
     {
         SelectedLogEventProperties.Clear();
 
-        if (SelectedLogEvent is null)
-        {
-            return;
-        }
+        if (SelectedLogEvent is null) return;
 
         try
         {
             foreach (PropertyInfo prop in SelectedLogEvent.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                var name = prop.Name;
+                string name = prop.Name;
                 string valueStr;
                 try
                 {
-                    var val = prop.GetValue(SelectedLogEvent);
+                    object? val = prop.GetValue(SelectedLogEvent);
                     valueStr = val?.ToString() ?? string.Empty;
                 }
                 catch
@@ -632,12 +587,9 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
     /// <returns>A <see cref="Task" /> representing the asynchronous operation.</returns>
     private async Task SearchAsync()
     {
-        var term = SearchText;
+        string? term = SearchText;
 
-        if (string.IsNullOrWhiteSpace(term))
-        {
-            return;
-        }
+        if (string.IsNullOrWhiteSpace(term)) return;
 
         // Clear current results
         LogEvents.Clear();
@@ -646,7 +598,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
         await Task.Run(() =>
         {
-            foreach (var log in logsToSearch)
+            foreach (string log in logsToSearch)
             {
                 try
                 {
@@ -660,24 +612,16 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                     {
                         using EventRecord? record = reader.ReadEvent();
 
-                        if (record is null)
-                        {
-                            break;
-                        }
+                        if (record is null) break;
 
-                        var match = false;
+                        bool match = false;
                         try
                         {
                             if (!match && record.ProviderName?.Contains(term, StringComparison.OrdinalIgnoreCase) ==
                                 true)
-                            {
                                 match = true;
-                            }
 
-                            if (!match && record.Id.ToString().Contains(term, StringComparison.OrdinalIgnoreCase))
-                            {
-                                match = true;
-                            }
+                            if (!match && record.Id.ToString().Contains(term, StringComparison.OrdinalIgnoreCase)) match = true;
 
                             string? levelDisplay = null;
                             try
@@ -690,9 +634,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
                             if (!match && !string.IsNullOrEmpty(levelDisplay) &&
                                 levelDisplay.Contains(term, StringComparison.OrdinalIgnoreCase))
-                            {
                                 match = true;
-                            }
 
                             string? desc = null;
                             try
@@ -705,9 +647,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
                             if (!match && !string.IsNullOrEmpty(desc) &&
                                 desc.Contains(term, StringComparison.OrdinalIgnoreCase))
-                            {
                                 match = true;
-                            }
 
                             if (!match)
                             {
@@ -722,9 +662,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
                                 if (!string.IsNullOrEmpty(xml) &&
                                     xml.Contains(term, StringComparison.OrdinalIgnoreCase))
-                                {
                                     match = true;
-                                }
                             }
                         }
                         catch
@@ -760,15 +698,12 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
     public async void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (e.AddedItems.Count == 0)
-        {
-            return;
-        }
+        if (e.AddedItems.Count == 0) return;
 
         try
         {
             // Handle the selection change event Expected type is EventLogRecordClone
-            var _selected = e.AddedItems[0] as EventLogRecordClone;
+            EventLogRecordClone? _selected = e.AddedItems[0] as EventLogRecordClone;
             await ShowEventAsAspxAsync(_selected);
         }
         catch (Exception ex)
@@ -792,20 +727,17 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
     {
         EventLogRecordClone? evt = record ?? SelectedLogEvent;
 
-        if (evt is null)
-        {
-            return;
-        }
+        if (evt is null) return;
 
         StackPanel content = BuildHtmlForEvent(evt);
 
-        var win = new WindowEx
+        WindowEx win = new()
         {
             Title = "Event Details",
             Width = 800,
             Height = 800
         };
-        var sv = new ScrollViewer { Content = content };
+        ScrollViewer sv = new() { Content = content };
         win.Content = sv;
 
 
@@ -822,21 +754,21 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
     /// </summary>
     private static StackPanel BuildHtmlForEvent(EventLogRecordClone evt)
     {
-        var root = new StackPanel { Orientation = Orientation.Vertical, Spacing = 4, Padding = new Thickness(12) };
+        StackPanel root = new() { Orientation = Orientation.Vertical, Spacing = 4, Padding = new Thickness(12) };
 
         // Header
         root.Children.Add(new TextBlock { Text = "Event Details", FontSize = 20, Margin = new Thickness(0, 0, 0, 8) });
 
         foreach (PropertyInfo prop in typeof(EventLogRecordClone).GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            var name = prop.Name;
+            string name = prop.Name;
             if (name == "Properties")
             {
                 // Handle Properties separately if needed
                 if (prop.GetValue(evt) is IList<EventProperty> properties)
                 {
-                    var propertiesPanel = new StackPanel { Orientation = Orientation.Vertical, Spacing = 4 };
-                    var index = 0;
+                    StackPanel propertiesPanel = new() { Orientation = Orientation.Vertical, Spacing = 4 };
+                    int index = 0;
                     foreach (EventProperty property in properties)
                     {
                         propertiesPanel.Children.Add(new TextBlock
@@ -850,10 +782,10 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                 continue;
             }
 
-            var valueStr = string.Empty;
+            string valueStr = string.Empty;
             try
             {
-                var value = prop.GetValue(evt);
+                object? value = prop.GetValue(evt);
                 valueStr = FormatValue(value);
             }
             catch
@@ -861,12 +793,12 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                 valueStr = string.Empty;
             }
 
-            var row = new Grid { Margin = new Thickness(0, 2, 0, 2) };
+            Grid row = new() { Margin = new Thickness(0, 2, 0, 2) };
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(220) });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            var nameBlock = new TextBlock { Text = name, TextWrapping = TextWrapping.Wrap };
-            var valueBlock = new TextBlock { Text = valueStr, TextWrapping = TextWrapping.Wrap };
+            TextBlock nameBlock = new() { Text = name, TextWrapping = TextWrapping.Wrap };
+            TextBlock valueBlock = new() { Text = valueStr, TextWrapping = TextWrapping.Wrap };
 
             Grid.SetColumn(nameBlock, 0);
             Grid.SetColumn(valueBlock, 1);
@@ -886,21 +818,15 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
     private static string FormatValue(object? value)
     {
-        if (value is null)
-        {
-            return string.Empty;
-        }
+        if (value is null) return string.Empty;
 
-        if (value is string s)
-        {
-            return s;
-        }
+        if (value is string s) return s;
 
         // Flatten common enumerable types for readability
         if (value is IEnumerable enumerable and not string)
         {
-            List<string> items = new();
-            foreach (var item in enumerable)
+            List<string> items = [];
+            foreach (object? item in enumerable)
             {
                 items.Add(item?.ToString() ?? string.Empty);
             }
@@ -922,21 +848,18 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
         public static List<EventLogRecord> FindEventsWithGuid(Guid? targetGuid, ICollection<string> logNames)
         {
             // Find all events in all logs that contain the target guid in the class properties or the EventProperties object.
-            ConcurrentBag<EventLogRecord> matchingEvents = new();
+            ConcurrentBag<EventLogRecord> matchingEvents = [];
             logNames.Clear();
 
             // If the target GUID is null or empty, we cannot search for it.
-            if (!targetGuid.HasValue || targetGuid == Guid.Empty)
-            {
-                return [];
-            }
+            if (!targetGuid.HasValue || targetGuid == Guid.Empty) return [];
 
             // Build an XPath query that attempts to pre-filter events that reference the GUID in common locations:
             // - ActivityID / RelatedActivityID
             // - EventData/Data elements
             // - UserData text
             // We still validate each candidate with EventContainsGuid to ensure accuracy.
-            var guidString = targetGuid.Value.ToString();
+            string guidString = targetGuid.Value.ToString();
 
             try
             {
@@ -944,7 +867,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                            throw new InvalidOperationException();
                 // Compose a broad but still selective XPath; multiple OR branches combined at root with union via "or".
                 // Note: Using contains(...) for string occurrences; exact matches first for efficiency.
-                var xPath =
+                string xPath =
                     $"*[(System[(ActivityID='{guidString}') or (RelatedActivityID='{guidString}')])]" +
                     $"|(*[EventData[Data='{guidString}' or Data[contains(.,'{guidString}')]]])" +
                     $"|(*[UserData[.='{guidString}' or contains(.,'{guidString}')]])";
@@ -966,10 +889,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                             EventRecord? eventRecord;
                             while ((eventRecord = reader.ReadEvent()) != null)
                             {
-                                if (eventRecord is EventLogRecord elr && EventContainsGuid(elr, targetGuid.Value))
-                                {
-                                    matchingEvents.Add(elr);
-                                }
+                                if (eventRecord is EventLogRecord elr && EventContainsGuid(elr, targetGuid.Value)) matchingEvents.Add(elr);
                             }
                         }
                         catch (Exception)
@@ -997,22 +917,13 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
         {
             try
             {
-                if (record.ActivityId == targetGuid || record.RelatedActivityId == targetGuid)
-                {
-                    return true;
-                }
+                if (record.ActivityId == targetGuid || record.RelatedActivityId == targetGuid) return true;
 
                 foreach (EventProperty? prop in record.Properties)
                 {
-                    if (prop?.Value is Guid guid && guid == targetGuid)
-                    {
-                        return true;
-                    }
+                    if (prop?.Value is Guid guid && guid == targetGuid) return true;
 
-                    if (prop?.Value is string str && Guid.TryParse(str, out Guid parsed) && parsed == targetGuid)
-                    {
-                        return true;
-                    }
+                    if (prop?.Value is string str && Guid.TryParse(str, out Guid parsed) && parsed == targetGuid) return true;
                 }
             }
             catch
@@ -1050,7 +961,7 @@ public class ListViewRecord
     // Description retained intentionally for potential future use, not shown in UI
     public string? Description { get; set; }
 
-    public IList<EventProperty> Properties { get; set; } = new List<EventProperty>();
+    public IList<EventProperty> Properties { get; set; } = [];
 
 
 }

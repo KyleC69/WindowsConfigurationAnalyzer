@@ -1,16 +1,24 @@
-// Created:  2025/10/30
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  AdmxValidator.cs
+//  Created:  2025/10/30
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   AdmxValidator.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Xml;
 using System.Xml.Schema;
+
+#endregion
 
 
 
@@ -25,14 +33,14 @@ internal static class AdmxValidator
 
     public static Result Validate(string admxPath, string? admlDirectory)
     {
-        var state = "OK";
+        string state = "OK";
         string? error = null;
         string? root = null;
-        var xmlValid = true;
+        bool xmlValid = true;
         try
         {
             using FileStream fs = File.OpenRead(admxPath);
-            using var xr = XmlReader.Create(fs, CreateSettingsIfSchemaPresent(admxPath));
+            using XmlReader xr = XmlReader.Create(fs, CreateSettingsIfSchemaPresent(admxPath));
             while (xr.Read())
             {
                 if (xr.NodeType == XmlNodeType.Element)
@@ -50,10 +58,10 @@ internal static class AdmxValidator
             error = ex.ToString();
         }
 
-        var admlPath = admlDirectory is null
+        string? admlPath = admlDirectory is null
             ? null
             : Path.Combine(admlDirectory, Path.GetFileNameWithoutExtension(admxPath) + ".adml");
-        var hasAdml = admlPath is not null && File.Exists(admlPath);
+        bool hasAdml = admlPath is not null && File.Exists(admlPath);
         if (!hasAdml)
         {
             state = state == "OK" ? "Missing ADML" : state + "; Missing ADML";
@@ -76,8 +84,8 @@ internal static class AdmxValidator
         try
         {
             // If a local schema exists next to the ADMX or in PolicyDefinitions folder, attach it for validation
-            var folder = Path.GetDirectoryName(admxPath)!;
-            var schema = Path.Combine(folder, "PolicyDefinitions.xsd");
+            string folder = Path.GetDirectoryName(admxPath)!;
+            string schema = Path.Combine(folder, "PolicyDefinitions.xsd");
             if (File.Exists(schema))
             {
                 settings.Schemas = new XmlSchemaSet();

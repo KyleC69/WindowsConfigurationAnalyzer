@@ -1,13 +1,19 @@
-// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  HtmlReportBuilder.cs
+//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   HtmlReportBuilder.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Net;
 using System.Text;
@@ -15,6 +21,8 @@ using System.Text.Json;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.Contracts.Models;
+
+#endregion
 
 
 
@@ -29,14 +37,14 @@ public sealed class HtmlReportBuilder : IExporter
 
     public async Task ExportAsync(AnalyzerResult result, string targetPath, CancellationToken cancellationToken)
     {
-        var dir = Path.GetDirectoryName(targetPath);
+        string? dir = Path.GetDirectoryName(targetPath);
         if (!string.IsNullOrEmpty(dir))
         {
             Directory.CreateDirectory(dir);
         }
 
-        var html = BuildHtml(result);
-        var tmp = targetPath + ".tmp";
+        string html = BuildHtml(result);
+        string tmp = targetPath + ".tmp";
         await File.WriteAllTextAsync(tmp, html, Encoding.UTF8, cancellationToken);
         if (File.Exists(targetPath))
         {
@@ -61,8 +69,8 @@ public sealed class HtmlReportBuilder : IExporter
         sb.Append("<h2>System: ").Append(E(r.ComputerName)).Append(" | Exported: ")
             .Append(E(r.ExportTimestampUtc.ToString("u"))).Append("</h2>");
 
-        var crit = r.GlobalFindings.Count(f => f.Severity.Equals("Critical", StringComparison.OrdinalIgnoreCase));
-        var warn = r.GlobalFindings.Count(f => f.Severity.Equals("Warning", StringComparison.OrdinalIgnoreCase));
+        int crit = r.GlobalFindings.Count(f => f.Severity.Equals("Critical", StringComparison.OrdinalIgnoreCase));
+        int warn = r.GlobalFindings.Count(f => f.Severity.Equals("Warning", StringComparison.OrdinalIgnoreCase));
         sb.Append("<section id='summary'><h3>Summary</h3><ul>");
         sb.Append("<li>Critical Findings: <span class='critical'>").Append(crit).Append("</span></li>");
         sb.Append("<li>Warnings: <span class='warning'>").Append(warn).Append("</span></li>");
@@ -87,7 +95,7 @@ public sealed class HtmlReportBuilder : IExporter
                 sb.Append("<ul>");
                 foreach (Finding f in a.Anomalies)
                 {
-                    var cls = CssFor(f.Severity);
+                    string cls = CssFor(f.Severity);
                     sb.Append("<li class='").Append(cls).Append("'>").Append(E(f.Severity)).Append(": ")
                         .Append(E(f.Message)).Append("</li>");
                 }
@@ -99,7 +107,7 @@ public sealed class HtmlReportBuilder : IExporter
             if (a.Details is not null)
             {
                 sb.Append("<details><summary>Details</summary><pre>");
-                var json = JsonSerializer.Serialize(a.Details, new JsonSerializerOptions { WriteIndented = true });
+                string json = JsonSerializer.Serialize(a.Details, new JsonSerializerOptions { WriteIndented = true });
                 sb.Append(E(json));
                 sb.Append("</pre></details>");
             }

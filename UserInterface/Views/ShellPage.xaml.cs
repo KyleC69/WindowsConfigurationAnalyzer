@@ -1,13 +1,21 @@
-﻿// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  ShellPage.xaml.cs
+﻿//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   ShellPage.xaml.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
+
+using System.Runtime.Versioning;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
@@ -19,6 +27,8 @@ using Microsoft.UI.Xaml.Input;
 
 using Windows.System;
 
+#endregion
+
 
 
 
@@ -27,6 +37,7 @@ namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 
 // TODO: Update NavigationViewItem titles and icons in ShellPage.xaml.
+[SupportedOSPlatform("windows")]
 public sealed partial class ShellPage : Page
 {
 
@@ -62,8 +73,10 @@ public sealed partial class ShellPage : Page
     {
         TitleBarHelper.UpdateTitleBar(RequestedTheme);
 
+#pragma warning disable CA1416
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu));
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.GoBack));
+#pragma warning restore CA1416
     }
 
 
@@ -95,14 +108,12 @@ public sealed partial class ShellPage : Page
 
 
 
+    [SupportedOSPlatform("windows")]
     private static KeyboardAccelerator BuildKeyboardAccelerator(VirtualKey key, VirtualKeyModifiers? modifiers = null)
     {
         KeyboardAccelerator keyboardAccelerator = new() { Key = key };
 
-        if (modifiers.HasValue)
-        {
-            keyboardAccelerator.Modifiers = modifiers.Value;
-        }
+        if (modifiers.HasValue) keyboardAccelerator.Modifiers = modifiers.Value;
 
         keyboardAccelerator.Invoked += OnKeyboardAcceleratorInvoked;
 
@@ -116,9 +127,9 @@ public sealed partial class ShellPage : Page
     private static void OnKeyboardAcceleratorInvoked(KeyboardAccelerator sender,
         KeyboardAcceleratorInvokedEventArgs args)
     {
-        var navigationService = App.GetService<INavigationService>();
+        INavigationService navigationService = App.GetService<INavigationService>();
 
-        var result = navigationService.GoBack();
+        bool result = navigationService.GoBack();
 
         args.Handled = result;
     }

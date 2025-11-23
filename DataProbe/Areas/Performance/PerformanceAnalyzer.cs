@@ -1,17 +1,25 @@
-// Created:  2025/10/30
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  PerformanceAnalyzer.cs
+//  Created:  2025/10/30
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   PerformanceAnalyzer.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
+
+#endregion
 
 
 
@@ -32,52 +40,60 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
 
 
 
+
+
     public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger;
-        var area = Area;
+        string area = Area;
         _logger.Log("INF", "Start: Collecting performance metrics", area);
-        List<string> warnings = new();
-        List<string> errors = new();
+        List<string> warnings = [];
+        List<string> errors = [];
 
         double cpuPct = -1;
         double memPct = -1;
         TimeSpan? uptime = null;
 
-        List<Dictionary<string, object?>> cpuAll = new();
-        Dictionary<string, object?> memCounters = new();
-        Dictionary<string, object?> systemCounters = new();
-        List<Dictionary<string, object?>> disks = new();
-        List<Dictionary<string, object?>> pagingFiles = new();
-        List<Dictionary<string, object?>> topProcCpu = new();
-        List<Dictionary<string, object?>> topProcMem = new();
+        List<Dictionary<string, object?>> cpuAll = [];
+        Dictionary<string, object?> memCounters = [];
+        Dictionary<string, object?> systemCounters = [];
+        List<Dictionary<string, object?>> disks = [];
+        List<Dictionary<string, object?>> pagingFiles = [];
+        List<Dictionary<string, object?>> topProcCpu = [];
+        List<Dictionary<string, object?>> topProcMem = [];
 
         try
         {
             _logger.Log("INF", "Uptime: Start", area);
-            var osRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> osRows = await context.Cim.QueryAsync(
                 "SELECT LastBootUpTime, TotalVisibleMemorySize, FreePhysicalMemory FROM Win32_OperatingSystem",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var os in osRows)
+            foreach (IDictionary<string, object?> os in osRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var lastBoot = os.GetOrDefault("LastBootUpTime");
+                object? lastBoot = os.GetOrDefault("LastBootUpTime");
                 if (lastBoot is string lb && TryParseDmtfDate(lb, out DateTimeOffset bootUtc))
                 {
                     uptime = DateTimeOffset.UtcNow - bootUtc;
                 }
-                var total = ToDouble(os.GetOrDefault("TotalVisibleMemorySize"));
-                var free = ToDouble(os.GetOrDefault("FreePhysicalMemory"));
+
+                double total = ToDouble(os.GetOrDefault("TotalVisibleMemorySize"));
+                double free = ToDouble(os.GetOrDefault("FreePhysicalMemory"));
                 if (total > 0)
                 {
-                    var used = total - free;
+                    double used = total - free;
                     memPct = Math.Round(used / total * 100.0, 2);
                 }
+
                 break;
             }
+
             _logger.Log("INF", $"Uptime: Complete: uptime={uptime?.ToString() ?? "n/a"}, mem%={memPct}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"OS performance query failed: {ex.Message}");
@@ -88,18 +104,18 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "CPU: Start", area);
-            var cpuRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> cpuRows = await context.Cim.QueryAsync(
                 "SELECT Name, PercentProcessorTime, PercentPrivilegedTime, PercentUserTime, InterruptsPerSec, DPCsQueuedPerSec FROM Win32_PerfFormattedData_PerfOS_Processor",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var row in cpuRows)
+            foreach (IDictionary<string, object?> row in cpuRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var name = row.GetOrDefault("Name")?.ToString() ?? string.Empty;
-                var total = ToDouble(row.GetOrDefault("PercentProcessorTime"));
-                var kernel = ToDouble(row.GetOrDefault("PercentPrivilegedTime"));
-                var user = ToDouble(row.GetOrDefault("PercentUserTime"));
-                var interrupts = ToDouble(row.GetOrDefault("InterruptsPerSec"));
-                var dpcs = ToDouble(row.GetOrDefault("DPCsQueuedPerSec"));
+                string name = row.GetOrDefault("Name")?.ToString() ?? string.Empty;
+                double total = ToDouble(row.GetOrDefault("PercentProcessorTime"));
+                double kernel = ToDouble(row.GetOrDefault("PercentPrivilegedTime"));
+                double user = ToDouble(row.GetOrDefault("PercentUserTime"));
+                double interrupts = ToDouble(row.GetOrDefault("InterruptsPerSec"));
+                double dpcs = ToDouble(row.GetOrDefault("DPCsQueuedPerSec"));
                 Dictionary<string, object?> item = new()
                 {
                     ["Name"] = name,
@@ -116,9 +132,13 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
 
                 cpuAll.Add(item);
             }
+
             _logger.Log("INF", $"CPU: Complete: cpu%={cpuPct}, cores={cpuAll.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"CPU counter query failed: {ex.Message}");
@@ -129,10 +149,10 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "Memory: Start", area);
-            var memRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> memRows = await context.Cim.QueryAsync(
                 "SELECT AvailableMBytes, CacheBytes, CommittedBytes, PoolPagedBytes, PoolNonpagedBytes, PagesPerSec FROM Win32_PerfFormattedData_PerfOS_Memory",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var row in memRows)
+            foreach (IDictionary<string, object?> row in memRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 memCounters["AvailableMBytes"] = ToDouble(row.GetOrDefault("AvailableMBytes"));
@@ -141,11 +161,16 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
                 memCounters["PoolPagedBytes"] = ToDouble(row.GetOrDefault("PoolPagedBytes"));
                 memCounters["PoolNonpagedBytes"] = ToDouble(row.GetOrDefault("PoolNonpagedBytes"));
                 memCounters["PagesPerSec"] = ToDouble(row.GetOrDefault("PagesPerSec"));
+
                 break;
             }
+
             _logger.Log("INF", "Memory: Complete", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Memory counter query failed: {ex.Message}");
@@ -156,21 +181,26 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "System: Start", area);
-            var sysRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> sysRows = await context.Cim.QueryAsync(
                 "SELECT Processes, Threads, ContextSwitchesPerSec, ProcessorQueueLength FROM Win32_PerfFormattedData_PerfOS_System",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var row in sysRows)
+            foreach (IDictionary<string, object?> row in sysRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 systemCounters["Processes"] = ToDouble(row.GetOrDefault("Processes"));
                 systemCounters["Threads"] = ToDouble(row.GetOrDefault("Threads"));
                 systemCounters["ContextSwitchesPerSec"] = ToDouble(row.GetOrDefault("ContextSwitchesPerSec"));
                 systemCounters["ProcessorQueueLength"] = ToDouble(row.GetOrDefault("ProcessorQueueLength"));
+
                 break;
             }
+
             _logger.Log("INF", "System: Complete", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"System counter query failed: {ex.Message}");
@@ -181,10 +211,10 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "Disk: Start", area);
-            var diskRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> diskRows = await context.Cim.QueryAsync(
                 "SELECT Name, DiskReadsPerSec, DiskWritesPerSec, AvgDiskQueueLength, CurrentDiskQueueLength, PercentDiskTime, AvgDisksecPerRead, AvgDisksecPerWrite FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var row in diskRows)
+            foreach (IDictionary<string, object?> row in diskRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 disks.Add(new Dictionary<string, object?>
@@ -199,9 +229,13 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
                     ["AvgDisksecPerWrite"] = ToDouble(row.GetOrDefault("AvgDisksecPerWrite"))
                 });
             }
+
             _logger.Log("INF", $"Disk: Complete: disks={disks.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Disk counter query failed: {ex.Message}");
@@ -212,10 +246,10 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "PagingFile: Start", area);
-            var pfRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> pfRows = await context.Cim.QueryAsync(
                 "SELECT Name, PercentUsage FROM Win32_PerfFormattedData_PerfOS_PagingFile",
                 null, cancellationToken).ConfigureAwait(false);
-            foreach (var row in pfRows)
+            foreach (IDictionary<string, object?> row in pfRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 pagingFiles.Add(new Dictionary<string, object?>
@@ -224,9 +258,13 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
                     ["PercentUsage"] = ToDouble(row.GetOrDefault("PercentUsage"))
                 });
             }
+
             _logger.Log("INF", "PagingFile: Complete", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Paging file query failed: {ex.Message}");
@@ -237,14 +275,15 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "TopProcesses: Start", area);
-            var procRows = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> procRows = await context.Cim.QueryAsync(
                 "SELECT IDProcess, Name, PercentProcessorTime, WorkingSetPrivate, ElapsedTime FROM Win32_PerfFormattedData_PerfProc_Process",
                 null, cancellationToken).ConfigureAwait(false);
-            List<Dictionary<string, object?>> proc = new();
-            foreach (var row in procRows)
+            List<Dictionary<string, object?>> proc = [];
+            foreach (IDictionary<string, object?> row in procRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var name = row.GetOrDefault("Name")?.ToString();
+                string? name = row.GetOrDefault("Name")?.ToString();
+
                 if (string.Equals(name, "_Total", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
@@ -259,11 +298,15 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
                     ["ElapsedTimeSec"] = ToDouble(row.GetOrDefault("ElapsedTime"))
                 });
             }
+
             topProcCpu = proc.OrderByDescending(p => ToDouble(p.GetValueOrDefault("PercentProcessorTime"))).Take(10).ToList();
             topProcMem = proc.OrderByDescending(p => ToDouble(p.GetValueOrDefault("WorkingSetPrivate"))).Take(10).ToList();
             _logger.Log("INF", $"TopProcesses: Complete: topCpu={topProcCpu.Count}, topMem={topProcMem.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Process counters query failed: {ex.Message}");
@@ -306,18 +349,24 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
                 return false;
             }
 
-            var year = int.Parse(dmtf.Substring(0, 4));
-            var month = int.Parse(dmtf.Substring(4, 2));
-            var day = int.Parse(dmtf.Substring(6, 2));
-            var hour = int.Parse(dmtf.Substring(8, 2));
-            var minute = int.Parse(dmtf.Substring(10, 2));
-            var second = int.Parse(dmtf.Substring(12, 2));
+            int year = int.Parse(dmtf.Substring(0, 4));
+            int month = int.Parse(dmtf.Substring(4, 2));
+            int day = int.Parse(dmtf.Substring(6, 2));
+            int hour = int.Parse(dmtf.Substring(8, 2));
+            int minute = int.Parse(dmtf.Substring(10, 2));
+            int second = int.Parse(dmtf.Substring(12, 2));
             DateTime dt = new(year, month, day, hour, minute, second, DateTimeKind.Local);
             utc = new DateTimeOffset(dt).ToUniversalTime();
+
             return true;
         }
-        catch { return false; }
+        catch
+        {
+            return false;
+        }
     }
+
+
 
 
 
@@ -328,8 +377,17 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
             return 0d;
         }
 
-        try { return Convert.ToDouble(v); } catch { return double.TryParse(v.ToString(), out var d) ? d : 0d; }
+        try
+        {
+            return Convert.ToDouble(v);
+        }
+        catch
+        {
+            return double.TryParse(v.ToString(), out double d) ? d : 0d;
+        }
     }
+
+
 
 
 
@@ -340,7 +398,14 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
             return 0;
         }
 
-        try { return Convert.ToInt32(v); } catch { return int.TryParse(v.ToString(), out var i) ? i : 0; }
+        try
+        {
+            return Convert.ToInt32(v);
+        }
+        catch
+        {
+            return int.TryParse(v.ToString(), out int i) ? i : 0;
+        }
     }
 
 

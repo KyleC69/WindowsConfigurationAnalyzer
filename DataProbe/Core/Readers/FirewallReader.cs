@@ -1,18 +1,26 @@
-// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  FirewallReader.cs
+//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   FirewallReader.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Collections;
 using System.Reflection;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
+
+#endregion
 
 
 
@@ -29,7 +37,7 @@ public sealed class FirewallReader : IFirewallReader
     {
         try
         {
-            var policy = CreatePolicy2();
+            object? policy = CreatePolicy2();
 
             if (policy is null)
             {
@@ -37,10 +45,10 @@ public sealed class FirewallReader : IFirewallReader
             }
 
             Type policyType = policy.GetType();
-            var typesObj =
+            object? typesObj =
                 policyType.InvokeMember("CurrentProfileTypes", BindingFlags.GetProperty, null, policy, null);
-            var types = typesObj is int i ? i : 0;
-            List<string> list = new();
+            int types = typesObj is int i ? i : 0;
+            List<string> list = [];
             if ((types & 0x1) != 0)
             {
                 list.Add("Domain");
@@ -72,7 +80,7 @@ public sealed class FirewallReader : IFirewallReader
     {
         try
         {
-            var policy = CreatePolicy2();
+            object? policy = CreatePolicy2();
 
             if (policy is null)
             {
@@ -80,15 +88,15 @@ public sealed class FirewallReader : IFirewallReader
             }
 
             Type policyType = policy.GetType();
-            var rulesObj = policyType.InvokeMember("Rules", BindingFlags.GetProperty, null, policy, null);
+            object? rulesObj = policyType.InvokeMember("Rules", BindingFlags.GetProperty, null, policy, null);
 
             if (rulesObj is not IEnumerable rules)
             {
                 return new List<object>().AsReadOnly();
             }
 
-            List<object> list = new();
-            foreach (var r in rules)
+            List<object> list = [];
+            foreach (object? r in rules)
             {
                 Type t = r!.GetType();
 
@@ -137,7 +145,7 @@ public sealed class FirewallReader : IFirewallReader
     {
         try
         {
-            var t = Type.GetTypeFromProgID("HNetCfg.FwPolicy2");
+            Type? t = Type.GetTypeFromProgID("HNetCfg.FwPolicy2");
 
             return t is null ? null : Activator.CreateInstance(t);
         }

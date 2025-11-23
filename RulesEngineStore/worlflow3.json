@@ -1,0 +1,64 @@
+{
+  "$schema": "https://yourproject.org/schemas/workflow.schema.json",
+  "WorkflowName": "EventLogAndMixedChecks",
+  "SchemaVersion": "1.0",
+  "Author": "Test Suite",
+  "Constraints": {
+    "RunSequentially": false,
+    "StopOnFailure": true,
+    "Timeout": "00:15:00"
+  },
+  "ConfigSets": [
+    {
+      "ConfigSetName": "EventLogChecks",
+      "Rules": [
+        {
+          "RuleName": "SystemLogExists",
+          "Provider": "EventLog",
+          "Parameters": { "LogName": "System" },
+          "Condition": { "Operator": "Exists" },
+          "Severity": 3,
+          "Message": "System log must exist"
+        },
+        {
+          "RuleName": "SecurityLogExists",
+          "Provider": "EventLog",
+          "Parameters": { "LogName": "Security" },
+          "Condition": { "Operator": "Exists" },
+          "Severity": 10,
+          "Message": "Security log must exist"
+        }
+      ]
+    },
+    {
+      "ConfigSetName": "MixedDependencies",
+      "Rules": [
+        {
+          "RuleName": "FirewallServiceRunning",
+          "Provider": "WMI",
+          "Parameters": {
+            "Class": "Win32_Service",
+            "Property": "Started",
+            "Filter": "Name='MpsSvc'"
+          },
+          "Condition": { "Operator": "Equals", "Expected": true },
+          "Severity": 8,
+          "Message": "Firewall service must be running",
+          "Execution": { "DependsOn": ["SecurityLogExists"] }
+        },
+        {
+          "RuleName": "RegistryAuditPolicy",
+          "Provider": "Registry",
+          "Parameters": {
+            "KeyPath": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa",
+            "ValueName": "AuditBaseObjects"
+          },
+          "Condition": { "Operator": "Equals", "Expected": 1 },
+          "Severity": 7,
+          "Message": "Audit policy must be enabled",
+          "Execution": { "DependsOn": ["SystemLogExists"] }
+        }
+      ]
+    }
+  ]
+}

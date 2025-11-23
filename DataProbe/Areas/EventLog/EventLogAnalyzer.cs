@@ -1,18 +1,27 @@
-// Created:  2025/10/30
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  EventLogAnalyzer.cs
+//  Created:  2025/10/30
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   EventLogAnalyzer.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Diagnostics.Eventing.Reader;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.Contracts.Models;
+
+#endregion
+
 
 
 
@@ -24,9 +33,12 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
 {
 
 
+    public IActivityLogger? _logger;
+
+
     public string Name => "Event Log Analyzer";
     public string Area => "EventLog";
-    public IActivityLogger? _logger;
+
 
 
 
@@ -34,19 +46,19 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
     public Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger;
-        var area = Area;
+        string area = Area;
         _logger.Log(area, "Start", "Collecting event log inventory and summaries");
-        List<string> warnings = new();
-        List<string> errors = new();
+        List<string> warnings = [];
+        List<string> errors = [];
 
-        List<object> logs = new();
-        var scanned = 0;
+        List<object> logs = [];
+        int scanned = 0;
         try
         {
             _logger.Log(area, "EnumerateLogs", "Start");
             using EventLogSession session = new();
             IEnumerable<string>? names = session.GetLogNames();
-            foreach (var name in names)
+            foreach (string name in names)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Dictionary<string, object?> entry = new()
@@ -105,11 +117,11 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
                 {
                     EventLogQuery query = new(name, PathType.LogName) { ReverseDirection = true };
                     using EventLogReader reader = new(query);
-                    List<Dictionary<string, object?>> recent = new();
-                    var maxToScan = 1000; // cap to limit cost
+                    List<Dictionary<string, object?>> recent = [];
+                    int maxToScan = 1000; // cap to limit cost
                     int countCritical = 0, countError = 0, countWarning = 0, countInfo = 0;
                     DateTime? newest = null, oldest = null;
-                    for (var i = 0; i < maxToScan; i++)
+                    for (int i = 0; i < maxToScan; i++)
                     {
                         using EventRecord? rec = reader.ReadEvent();
 
@@ -124,7 +136,7 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
                         }
 
                         oldest = rec.TimeCreated;
-                        var lvl = rec.Level; //1=Critical,2=Error,3=Warning,4=Info,5=Verbose
+                        byte? lvl = rec.Level; //1=Critical,2=Error,3=Warning,4=Info,5=Verbose
                         if (lvl == 1)
                         {
                             countCritical++;
@@ -193,7 +205,7 @@ public sealed class EventLogAnalyzer : IAnalyzerModule
         }
 
         // Add quick spotlight for classic core logs in case they were missing
-        foreach (var core in new[] { "System", "Application", "Security" })
+        foreach (string? core in new[] { "System", "Application", "Security" })
         {
             if (!logs.Any(l => string.Equals((l as Dictionary<string, object?>)?["LogName"]?.ToString(), core,
                     StringComparison.OrdinalIgnoreCase)))

@@ -371,3 +371,4 @@ FodyWeavers.xsd
 /.gitattributes
 /.gitignore
 /.gitignore
+/RuleAnalyzer/Engine/WorkflowConcurrentExecutor.cs.keep

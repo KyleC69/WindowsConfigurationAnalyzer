@@ -1,15 +1,23 @@
-// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  ObjectRead.cs
+//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   ObjectRead.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Reflection;
+
+#endregion
 
 
 
@@ -56,7 +64,7 @@ public static class ObjectRead
 
     public static T? GetPropertyAs<T>(object? obj, string name)
     {
-        if (TryGetProperty(obj, name, out var v) && v is T t)
+        if (TryGetProperty(obj, name, out object? v) && v is T t)
         {
             return t;
         }
@@ -64,7 +72,7 @@ public static class ObjectRead
         try
         {
             // Handle numeric conversions where possible
-            if (TryGetProperty(obj, name, out var v2) && v2 is not null)
+            if (TryGetProperty(obj, name, out object? v2) && v2 is not null)
             {
                 return (T)Convert.ChangeType(v2, typeof(T));
             }

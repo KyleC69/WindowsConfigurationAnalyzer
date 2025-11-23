@@ -1,17 +1,25 @@
-// Created:  2025/10/30
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  StartupAnalyzer.cs
+//  Created:  2025/10/30
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   StartupAnalyzer.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
+
+#endregion
 
 
 
@@ -37,36 +45,36 @@ public sealed class StartupAnalyzer : IAnalyzerModule
     public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        var area = Area;
+        string area = Area;
         _logger.Log("INF", "Start: Collecting startup and persistence entries", area);
-        List<string> warnings = new();
-        List<string> errors = new();
+        List<string> warnings = [];
+        List<string> errors = [];
 
-        List<object> runEntries = new();
-        List<object> approvedEntries = new();
-        List<object> startupFolderEntries = new();
-        List<object> scheduledTasks = new();
-        List<object> servicesAutoStart = new();
-        Dictionary<string, object?> winlogon = new();
-        Dictionary<string, object?> appInitDlls = new();
-        List<object> browserHelperObjects = new();
-        List<object> shellExecuteHooks = new();
-        List<object> shellServiceObjects = new();
-        List<object> shellExtensionsApproved = new();
-        List<object> lsaPackages = new();
-        List<object> policyRun = new();
-        List<object> ifeoDebuggers = new();
-        List<object> ifeoOthers = new();
-        List<object> wmiSubscriptions = new();
-        List<object> wmiConsumers = new();
-        List<object> activeSetup = new();
+        List<object> runEntries = [];
+        List<object> approvedEntries = [];
+        List<object> startupFolderEntries = [];
+        List<object> scheduledTasks = [];
+        List<object> servicesAutoStart = [];
+        Dictionary<string, object?> winlogon = [];
+        Dictionary<string, object?> appInitDlls = [];
+        List<object> browserHelperObjects = [];
+        List<object> shellExecuteHooks = [];
+        List<object> shellServiceObjects = [];
+        List<object> shellExtensionsApproved = [];
+        List<object> lsaPackages = [];
+        List<object> policyRun = [];
+        List<object> ifeoDebuggers = [];
+        List<object> ifeoOthers = [];
+        List<object> wmiSubscriptions = [];
+        List<object> wmiConsumers = [];
+        List<object> activeSetup = [];
 
         try
         {
             _logger.Log("INF", "RunKeys: Start", area);
-            foreach (var root in new[] { "HKLM", "HKCU" })
+            foreach (string? root in new[] { "HKLM", "HKCU" })
             {
-                foreach (var sub in new[]
+                foreach (string? sub in new[]
                          {
                              "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
                              "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
@@ -78,17 +86,21 @@ public sealed class StartupAnalyzer : IAnalyzerModule
                          })
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var basePath = $"{root}\\{sub}";
-                    foreach (var name in context.Registry.EnumerateValueNames(basePath))
+                    string basePath = $"{root}\\{sub}";
+                    foreach (string name in context.Registry.EnumerateValueNames(basePath))
                     {
-                        var val = context.Registry.GetValue(basePath, name)?.ToString();
+                        string? val = context.Registry.GetValue(basePath, name)?.ToString();
                         runEntries.Add(new { HivePath = basePath, Name = name, Command = val });
                     }
                 }
             }
+
             _logger.Log("INF", $"RunKeys: Complete: count={runEntries.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Startup registry enumeration failed: {ex.Message}");
@@ -99,9 +111,9 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "StartupApproved: Start", area);
-            foreach (var root in new[] { "HKLM", "HKCU" })
+            foreach (string? root in new[] { "HKLM", "HKCU" })
             {
-                foreach (var sub in new[]
+                foreach (string? sub in new[]
                          {
                              "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run",
                              "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run32",
@@ -109,10 +121,10 @@ public sealed class StartupAnalyzer : IAnalyzerModule
                          })
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var basePath = $"{root}\\{sub}";
-                    foreach (var name in context.Registry.EnumerateValueNames(basePath))
+                    string basePath = $"{root}\\{sub}";
+                    foreach (string name in context.Registry.EnumerateValueNames(basePath))
                     {
-                        var v = context.Registry.GetValue(basePath, name);
+                        object? v = context.Registry.GetValue(basePath, name);
                         approvedEntries.Add(new
                         {
                             HivePath = basePath,
@@ -122,9 +134,13 @@ public sealed class StartupAnalyzer : IAnalyzerModule
                     }
                 }
             }
+
             _logger.Log("INF", $"StartupApproved: Complete: count={approvedEntries.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"StartupApproved enumeration failed: {ex.Message}");
@@ -135,19 +151,23 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "PolicyRun: Start", area);
-            foreach (var root in new[] { "HKLM", "HKCU" })
+            foreach (string? root in new[] { "HKLM", "HKCU" })
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var basePath = $"{root}\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run";
-                foreach (var name in context.Registry.EnumerateValueNames(basePath))
+                string basePath = $"{root}\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run";
+                foreach (string name in context.Registry.EnumerateValueNames(basePath))
                 {
-                    var val = context.Registry.GetValue(basePath, name)?.ToString();
+                    string? val = context.Registry.GetValue(basePath, name)?.ToString();
                     policyRun.Add(new { HivePath = basePath, Name = name, Command = val });
                 }
             }
+
             _logger.Log("INF", $"PolicyRun: Complete: count={policyRun.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Policies\\Explorer\\Run enumeration failed: {ex.Message}");
@@ -161,18 +181,22 @@ public sealed class StartupAnalyzer : IAnalyzerModule
             foreach (Environment.SpecialFolder sp in new[] { Environment.SpecialFolder.Startup, Environment.SpecialFolder.CommonStartup })
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var path = Environment.GetFolderPath(sp);
+                string path = Environment.GetFolderPath(sp);
                 if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
                 {
-                    foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly))
+                    foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly))
                     {
                         startupFolderEntries.Add(new { Folder = path, File = Path.GetFileName(file) });
                     }
                 }
             }
+
             _logger.Log("INF", $"StartupFolders: Complete: count={startupFolderEntries.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Startup folder enumeration failed: {ex.Message}");
@@ -183,20 +207,24 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "ScheduledTasks: Start", area);
-            var tasksRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32", "Tasks");
+            string tasksRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32", "Tasks");
             if (Directory.Exists(tasksRoot))
             {
-                foreach (var file in Directory.EnumerateFiles(tasksRoot, "*", SearchOption.AllDirectories))
+                foreach (string file in Directory.EnumerateFiles(tasksRoot, "*", SearchOption.AllDirectories))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var rel = file.Substring(tasksRoot.Length).TrimStart(Path.DirectorySeparatorChar);
+                    string rel = file.Substring(tasksRoot.Length).TrimStart(Path.DirectorySeparatorChar);
                     FileInfo info = new(file);
                     scheduledTasks.Add(new { Task = rel, Size = info.Length, LastWriteUtc = info.LastWriteTimeUtc });
                 }
             }
+
             _logger.Log("INF", $"ScheduledTasks: Complete: count={scheduledTasks.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Scheduled tasks enumeration failed: {ex.Message}");
@@ -207,25 +235,29 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "Services: Start", area);
-            var servicesKey = "HKLM\\SYSTEM\\CurrentControlSet\\Services";
-            foreach (var svc in context.Registry.EnumerateSubKeys(servicesKey))
+            string servicesKey = "HKLM\\SYSTEM\\CurrentControlSet\\Services";
+            foreach (string svc in context.Registry.EnumerateSubKeys(servicesKey))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var basePath = $"{servicesKey}\\{svc}";
-                var start = context.Registry.GetValue(basePath, "Start");
-                if (start is int i && i == 2)
+                string basePath = $"{servicesKey}\\{svc}";
+                object? start = context.Registry.GetValue(basePath, "Start");
+                if (start is int i and 2)
                 {
-                    var image = context.Registry.GetValue(basePath, "ImagePath")?.ToString();
-                    var delayed = context.Registry.GetValue(basePath, "DelayedAutoStart");
-                    var objName = context.Registry.GetValue(basePath, "ObjectName")?.ToString();
-                    var desc = context.Registry.GetValue(basePath, "Description")?.ToString();
-                    var svcDll = context.Registry.GetValue(basePath + "\\Parameters", "ServiceDll")?.ToString();
+                    string? image = context.Registry.GetValue(basePath, "ImagePath")?.ToString();
+                    object? delayed = context.Registry.GetValue(basePath, "DelayedAutoStart");
+                    string? objName = context.Registry.GetValue(basePath, "ObjectName")?.ToString();
+                    string? desc = context.Registry.GetValue(basePath, "Description")?.ToString();
+                    string? svcDll = context.Registry.GetValue(basePath + "\\Parameters", "ServiceDll")?.ToString();
                     servicesAutoStart.Add(new { Name = svc, Start = i, ImagePath = image, DelayedAutoStart = delayed, ObjectName = objName, Description = desc, ServiceDll = svcDll });
                 }
             }
+
             _logger.Log("INF", $"Services: Complete: count={servicesAutoStart.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Services enumeration failed: {ex.Message}");
@@ -236,19 +268,21 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "Winlogon: Start", area);
-            var key = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon";
-            foreach (var name in new[] { "Shell", "Userinit" })
+            string key = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon";
+            foreach (string? name in new[] { "Shell", "Userinit" })
             {
-                var v = context.Registry.GetValue(key, name)?.ToString();
+                string? v = context.Registry.GetValue(key, name)?.ToString();
                 if (v is not null)
                 {
                     winlogon[name] = v;
                 }
             }
-            foreach (var sub in context.Registry.EnumerateSubKeys($"{key}\\Notify"))
+
+            foreach (string sub in context.Registry.EnumerateSubKeys($"{key}\\Notify"))
             {
                 winlogon[$"Notify:{sub}"] = context.Registry.GetValue($"{key}\\Notify\\{sub}", "DLLName")?.ToString();
             }
+
             _logger.Log("INF", "Winlogon: Complete", area);
         }
         catch (Exception ex)
@@ -261,15 +295,16 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "AppInit: Start", area);
-            var key = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Windows";
-            foreach (var name in new[] { "AppInit_DLLs", "LoadAppInit_DLLs" })
+            string key = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Windows";
+            foreach (string? name in new[] { "AppInit_DLLs", "LoadAppInit_DLLs" })
             {
-                var v = context.Registry.GetValue(key, name);
+                object? v = context.Registry.GetValue(key, name);
                 if (v is not null)
                 {
                     appInitDlls[name] = v;
                 }
             }
+
             _logger.Log("INF", "AppInit: Complete", area);
         }
         catch (Exception ex)
@@ -282,7 +317,7 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "BHO: Start", area);
-            foreach (var path in new[]
+            foreach (string? path in new[]
                      {
                          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects",
                          "HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects",
@@ -290,16 +325,27 @@ public sealed class StartupAnalyzer : IAnalyzerModule
                      })
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                foreach (var clsid in context.Registry.EnumerateSubKeys(path))
+                foreach (string clsid in context.Registry.EnumerateSubKeys(path))
                 {
                     string? dll = null;
-                    try { dll = context.Registry.GetValue($"HKCR\\CLSID\\{clsid}\\InprocServer32", "")?.ToString(); } catch { }
+                    try
+                    {
+                        dll = context.Registry.GetValue($"HKCR\\CLSID\\{clsid}\\InprocServer32", "")?.ToString();
+                    }
+                    catch
+                    {
+                    }
+
                     browserHelperObjects.Add(new { Path = path, Clsid = clsid, Dll = dll });
                 }
             }
+
             _logger.Log("INF", $"BHO: Complete: count={browserHelperObjects.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"BHO enumeration failed: {ex.Message}");
@@ -310,22 +356,26 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "ShellExecuteHooks: Start", area);
-            foreach (var path in new[]
+            foreach (string? path in new[]
                      {
                          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellExecuteHooks",
                          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellExecuteHooks"
                      })
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                foreach (var name in context.Registry.EnumerateValueNames(path))
+                foreach (string name in context.Registry.EnumerateValueNames(path))
                 {
-                    var v = context.Registry.GetValue(path, name)?.ToString();
+                    string? v = context.Registry.GetValue(path, name)?.ToString();
                     shellExecuteHooks.Add(new { Path = path, Name = name, Value = v });
                 }
             }
+
             _logger.Log("INF", $"ShellExecuteHooks: Complete: count={shellExecuteHooks.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"ShellExecuteHooks enumeration failed: {ex.Message}");
@@ -336,22 +386,26 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "ShellServiceObjectDelayLoad: Start", area);
-            foreach (var path in new[]
+            foreach (string? path in new[]
                      {
                          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ShellServiceObjectDelayLoad",
                          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ShellServiceObjectDelayLoad"
                      })
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                foreach (var name in context.Registry.EnumerateValueNames(path))
+                foreach (string name in context.Registry.EnumerateValueNames(path))
                 {
-                    var v = context.Registry.GetValue(path, name)?.ToString();
+                    string? v = context.Registry.GetValue(path, name)?.ToString();
                     shellServiceObjects.Add(new { Path = path, Name = name, Value = v });
                 }
             }
+
             _logger.Log("INF", $"ShellServiceObjectDelayLoad: Complete: count={shellServiceObjects.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"ShellServiceObjectDelayLoad enumeration failed: {ex.Message}");
@@ -362,22 +416,26 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "ShellExtensionsApproved: Start", area);
-            foreach (var path in new[]
+            foreach (string? path in new[]
                      {
                          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
                          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved"
                      })
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                foreach (var name in context.Registry.EnumerateValueNames(path))
+                foreach (string name in context.Registry.EnumerateValueNames(path))
                 {
-                    var v = context.Registry.GetValue(path, name)?.ToString();
+                    string? v = context.Registry.GetValue(path, name)?.ToString();
                     shellExtensionsApproved.Add(new { Path = path, Name = name, Value = v });
                 }
             }
+
             _logger.Log("INF", $"ShellExtensionsApproved: Complete: count={shellExtensionsApproved.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Shell Extensions Approved enumeration failed: {ex.Message}");
@@ -388,22 +446,23 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "LSA: Start", area);
-            var path = "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa";
-            foreach (var name in new[] { "Authentication Packages", "Notification Packages" })
+            string path = "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa";
+            foreach (string? name in new[] { "Authentication Packages", "Notification Packages" })
             {
-                var v = context.Registry.GetValue(path, name);
+                object? v = context.Registry.GetValue(path, name);
                 if (v is string s)
                 {
                     lsaPackages.Add(new { Name = name, Value = s });
                 }
                 else if (v is string[] arr)
                 {
-                    foreach (var item in arr)
+                    foreach (string item in arr)
                     {
                         lsaPackages.Add(new { Name = name, Value = item });
                     }
                 }
             }
+
             _logger.Log("INF", $"LSA: Complete: count={lsaPackages.Count}", area);
         }
         catch (Exception ex)
@@ -416,14 +475,14 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "IFEO: Start", area);
-            var baseKey = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options";
-            foreach (var exe in context.Registry.EnumerateSubKeys(baseKey))
+            string baseKey = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options";
+            foreach (string exe in context.Registry.EnumerateSubKeys(baseKey))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var key = $"{baseKey}\\{exe}";
-                var dbg = context.Registry.GetValue(key, "Debugger")?.ToString();
-                var gflag = context.Registry.GetValue(key, "GlobalFlag")?.ToString();
-                var useFilter = context.Registry.GetValue(key, "UseFilter")?.ToString();
+                string key = $"{baseKey}\\{exe}";
+                string? dbg = context.Registry.GetValue(key, "Debugger")?.ToString();
+                string? gflag = context.Registry.GetValue(key, "GlobalFlag")?.ToString();
+                string? useFilter = context.Registry.GetValue(key, "UseFilter")?.ToString();
                 if (!string.IsNullOrWhiteSpace(dbg))
                 {
                     ifeoDebuggers.Add(new { Executable = exe, Debugger = dbg });
@@ -434,9 +493,13 @@ public sealed class StartupAnalyzer : IAnalyzerModule
                     ifeoOthers.Add(new { Executable = exe, GlobalFlag = gflag, UseFilter = useFilter });
                 }
             }
+
             _logger.Log("INF", $"IFEO: Complete: debuggers={ifeoDebuggers.Count}, other={ifeoOthers.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"IFEO enumeration failed: {ex.Message}");
@@ -447,20 +510,22 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "WMI: Start", area);
-            var filters = await context.Cim.QueryAsync(
+            IReadOnlyList<IDictionary<string, object?>> filters = await context.Cim.QueryAsync(
                 "SELECT Name, Query, EventNamespace FROM __EventFilter", "\\\\.\\root\\subscription", cancellationToken).ConfigureAwait(false);
-            foreach (var f in filters)
+            foreach (IDictionary<string, object?> f in filters)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 wmiSubscriptions.Add(new { Type = "Filter", Name = f.GetOrDefault("Name")?.ToString(), Query = f.GetOrDefault("Query")?.ToString(), Namespace = f.GetOrDefault("EventNamespace")?.ToString() });
             }
-            var binds = await context.Cim.QueryAsync("SELECT * FROM __FilterToConsumerBinding", "\\\\.\\root\\subscription", cancellationToken).ConfigureAwait(false);
-            foreach (var b in binds)
+
+            IReadOnlyList<IDictionary<string, object?>> binds = await context.Cim.QueryAsync("SELECT * FROM __FilterToConsumerBinding", "\\\\.\\root\\subscription", cancellationToken).ConfigureAwait(false);
+            foreach (IDictionary<string, object?> b in binds)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 wmiSubscriptions.Add(new { Type = "Binding", Filter = b.GetOrDefault("Filter")?.ToString(), Consumer = b.GetOrDefault("Consumer")?.ToString() });
             }
-            foreach (var (query, type, props) in new (string q, string type, string[] props)[]
+
+            foreach ((string? query, string? type, string[]? props) in new (string q, string type, string[] props)[]
                      {
                          ("SELECT Name, CommandLineTemplate FROM CommandLineEventConsumer", "CommandLineEventConsumer", ["Name", "CommandLineTemplate"]),
                          ("SELECT Name, ScriptText FROM ActiveScriptEventConsumer", "ActiveScriptEventConsumer", ["Name", "ScriptText"]),
@@ -469,12 +534,12 @@ public sealed class StartupAnalyzer : IAnalyzerModule
                          ("SELECT Name, Filename FROM LogFileEventConsumer", "LogFileEventConsumer", ["Name", "Filename"])
                      })
             {
-                var rows = await context.Cim.QueryAsync(query, "\\\\.\\root\\subscription", cancellationToken).ConfigureAwait(false);
-                foreach (var c in rows)
+                IReadOnlyList<IDictionary<string, object?>> rows = await context.Cim.QueryAsync(query, "\\\\.\\root\\subscription", cancellationToken).ConfigureAwait(false);
+                foreach (IDictionary<string, object?> c in rows)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var dict = new Dictionary<string, object?> { ["Type"] = type };
-                    foreach (var p in props)
+                    Dictionary<string, object?> dict = new() { ["Type"] = type };
+                    foreach (string p in props)
                     {
                         dict[p] = c.GetOrDefault(p);
                     }
@@ -482,9 +547,13 @@ public sealed class StartupAnalyzer : IAnalyzerModule
                     wmiConsumers.Add(dict);
                 }
             }
+
             _logger.Log("INF", $"WMI: Complete: filters+bindings={wmiSubscriptions.Count}, consumers={wmiConsumers.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"WMI subscription/consumer enumeration failed: {ex.Message}");
@@ -495,22 +564,26 @@ public sealed class StartupAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "ActiveSetup: Start", area);
-            foreach (var root in new[] { "HKLM", "HKCU" })
+            foreach (string? root in new[] { "HKLM", "HKCU" })
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var baseKey = $"{root}\\SOFTWARE\\Microsoft\\Active Setup\\Installed Components";
-                foreach (var sub in context.Registry.EnumerateSubKeys(baseKey))
+                string baseKey = $"{root}\\SOFTWARE\\Microsoft\\Active Setup\\Installed Components";
+                foreach (string sub in context.Registry.EnumerateSubKeys(baseKey))
                 {
-                    var k = $"{baseKey}\\{sub}";
-                    var disp = context.Registry.GetValue(k, "DisplayName")?.ToString();
-                    var ver = context.Registry.GetValue(k, "Version")?.ToString();
-                    var stub = context.Registry.GetValue(k, "StubPath")?.ToString();
+                    string k = $"{baseKey}\\{sub}";
+                    string? disp = context.Registry.GetValue(k, "DisplayName")?.ToString();
+                    string? ver = context.Registry.GetValue(k, "Version")?.ToString();
+                    string? stub = context.Registry.GetValue(k, "StubPath")?.ToString();
                     activeSetup.Add(new { HivePath = k, DisplayName = disp, Version = ver, StubPath = stub });
                 }
             }
+
             _logger.Log("INF", $"ActiveSetup: Complete: count={activeSetup.Count}", area);
         }
-        catch (OperationCanceledException) { throw; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             warnings.Add($"Active Setup enumeration failed: {ex.Message}");
@@ -558,6 +631,7 @@ public sealed class StartupAnalyzer : IAnalyzerModule
 
         AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
         _logger.Log("INF", "Complete: Startup and persistence entries collected", area);
+
         return result;
     }
 

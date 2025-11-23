@@ -1,17 +1,25 @@
-// Created:  2025/11/04
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  EventLevelToBrushConverter.cs
+//  Created:  2025/11/04
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   EventLevelToBrushConverter.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
+
+#endregion
 
 
 
@@ -30,29 +38,16 @@ public sealed class EventLevelToBrushConverter : IValueConverter
         try
         {
             if (value is byte b)
-            {
                 level = b;
-            }
             else if (value is sbyte sb)
-            {
                 level = (byte)sb;
-            }
             else if (value is short s)
-            {
                 level = (byte)s;
-            }
             else if (value is int i)
-            {
                 level = (byte)i;
-            }
             else if (value is long l)
-            {
                 level = (byte)l;
-            }
-            else if (value is string str && byte.TryParse(str, out var parsed))
-            {
-                level = parsed;
-            }
+            else if (value is string str && byte.TryParse(str, out byte parsed)) level = parsed;
         }
         catch
         {

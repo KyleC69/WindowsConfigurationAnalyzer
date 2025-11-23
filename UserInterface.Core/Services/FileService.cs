@@ -1,19 +1,27 @@
-﻿// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface.Core
-// File:  FileService.cs
+﻿//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface.Core
+//        File:   FileService.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Text;
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
 
 using Newtonsoft.Json;
+
+#endregion
 
 
 
@@ -28,14 +36,14 @@ public class FileService : IFileService
 
     public T? Read<T>(string folderPath, string fileName)
     {
-        var path = Path.Combine(folderPath, fileName);
+        string path = Path.Combine(folderPath, fileName);
 
         if (!File.Exists(path))
         {
             return default;
         }
 
-        var json = File.ReadAllText(path);
+        string json = File.ReadAllText(path);
 
         return JsonConvert.DeserializeObject<T>(json);
     }
@@ -51,7 +59,7 @@ public class FileService : IFileService
             Directory.CreateDirectory(folderPath);
         }
 
-        var fileContent = JsonConvert.SerializeObject(content);
+        string fileContent = JsonConvert.SerializeObject(content);
         File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
     }
 

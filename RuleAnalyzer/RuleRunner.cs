@@ -1,11 +1,25 @@
+//  Created:  2025/11/16
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  RuleAnalyzer
+//        File:   RuleRunner.cs
+//  Author:    Kyle Crowder
+// 
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
+
+
+
+
+#region
+
 using System.Reflection;
-using System.Text.Json;
-
-
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.RuleAnalyzer.Engine;
-using KC.WindowsConfigurationAnalyzer.RuleAnalyzer.Models;
+
+#endregion
 
 
 
@@ -14,65 +28,65 @@ using KC.WindowsConfigurationAnalyzer.RuleAnalyzer.Models;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
+
+
+
+
 namespace KC.WindowsConfigurationAnalyzer.RuleAnalyzer;
 
 
 //Class will serve as the main entry point for running rules
-public partial class RuleRunner
+public class RuleRunner
 {
 
 
     private readonly IActivityLogger _logger;
-    public static string? ProjectDir => Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "ProjectDirectory")?.Value;
+
+
 
 
 
     public RuleRunner(IActivityLogger logger)
     {
-                _logger = logger;
+        _logger = logger;
     }
+
+
+
+
+
+    public static string? ProjectDir => Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "ProjectDirectory")?.Value;
+
+
+
+
 
     public async Task RunRulesAsync()
     {
-        var SolutionDir = Directory.GetParent(ProjectDir!)?.Parent?.Parent?.FullName;
-        var RuleStore = Path.Combine(SolutionDir!, "RulesEngineStore");
-        var rulesFiles= Directory.GetFiles(RuleStore, "*.json", SearchOption.AllDirectories);
+        string? SolutionDir = Directory.GetParent(ProjectDir!)?.Parent?.Parent?.FullName;
+        string RuleStore = Path.Combine(SolutionDir!, "RulesEngineStore");
+        string[] rulesFiles = Directory.GetFiles(RuleStore, "*.json", SearchOption.AllDirectories);
 
         if (rulesFiles.Length == 0)
         {
-            
             return;
         }
 
         string[] rulesJson = [];
-        
-   foreach (var i in rulesFiles)
+
+        foreach (string i in rulesFiles)
         {
-            var json = await File.ReadAllTextAsync(i);
+            string json = await File.ReadAllTextAsync(i);
             //rule = JsonSerializer.Deserialize<ProbeFacts>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new ProbeFacts();
-          //  jsonFacts = Directory.GetFiles(Path.GetDirectoryName(rulesFiles[i])!, "*.facts.json", SearchOption.TopDirectoryOnly);
+            //  jsonFacts = Directory.GetFiles(Path.GetDirectoryName(rulesFiles[i])!, "*.facts.json", SearchOption.TopDirectoryOnly);
         }
-
-   
-
-
-        //var engine = new RulesEngineWrapper(rulesJson);
-
-        // workflow name must match the workflow inside ruleset.json
-        var workflowName = "EventSourceProviderManifestRegistration";
         //var artifact = await engine.ExecuteAsync(workflowName, facts, operatorIdentity: Environment.UserName);
 
         // persist artifact for audit
-        var outPath = $"rule-result-{DateTime.UtcNow:yyyyMMddTHHmmssZ}.json";
+        string outPath = $"rule-result-{DateTime.UtcNow:yyyyMMddTHHmmssZ}.json";
         //await File.WriteAllTextAsync(outPath, JsonSerializer.Serialize(artifact, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine($"Rule execution completed. Artifact written to {outPath}");
     }
 
+
 }
-
-
-
-
-
-
-

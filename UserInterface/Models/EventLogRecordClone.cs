@@ -1,18 +1,26 @@
-﻿// Created:  2025/11/11
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  EventLogRecordClone.cs
+﻿//  Created:  2025/11/11
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   EventLogRecordClone.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Diagnostics.Eventing.Reader;
 using System.Security.Principal;
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
+
+#endregion
 
 
 
@@ -36,10 +44,7 @@ public class EventLogRecordClone
     // Clone constructor
     public EventLogRecordClone(EventLogRecord record)
     {
-        if (record == null)
-        {
-            ActivityLogger.Log("Err", "EventLogRecord cannot be null.", "EventLogRecordClone");
-        }
+        if (record == null) ActivityLogger.Log("Err", "EventLogRecord cannot be null.", "EventLogRecordClone");
 
         Id = record!.Id;
 
@@ -47,7 +52,7 @@ public class EventLogRecordClone
         ProviderName = record.ProviderName ?? string.Empty;
         Message = record.FormatDescription() ?? string.Empty;
         TimeCreated = record.TimeCreated;
-        Properties = record.Properties ?? new List<EventProperty>();
+        Properties = record.Properties ?? [];
         ActivityId = record.ActivityId;
         RelatedActivityId = record.RelatedActivityId;
         LogName = record.LogName ?? string.Empty;
@@ -81,7 +86,6 @@ public class EventLogRecordClone
         {
             MatchedQueryIds = Array.Empty<int>();
         }
-
     }
 
 
@@ -99,7 +103,7 @@ public class EventLogRecordClone
 
     public DateTime? TimeCreated { get; set; }
 
-    public IList<EventProperty> Properties { get; set; } = new List<EventProperty>();
+    public IList<EventProperty> Properties { get; set; } = [];
 
     public Guid? ActivityId { get; set; }
 

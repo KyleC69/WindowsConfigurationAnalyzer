@@ -1,18 +1,26 @@
-// Created:  2025/11/09
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  LocalSettingsService.cs
+//  Created:  2025/11/09
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   LocalSettingsService.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Helpers;
 
 using Microsoft.Win32;
+
+#endregion
 
 
 
@@ -47,13 +55,10 @@ public class LocalSettingsService : ILocalSettingsService
 
     public async Task SaveDataAsync<T>(string fileName, T data)
     {
-        if (data is null)
-        {
-            throw new ArgumentNullException(nameof(data));
-        }
+        if (data is null) throw new ArgumentNullException(nameof(data));
 
-        var fullPath = Path.Combine(_localFolderPath, fileName + ".json");
-        var json = await Json.StringifyAsync(data);
+        string fullPath = Path.Combine(_localFolderPath, fileName + ".json");
+        string json = await Json.StringifyAsync(data);
         await File.WriteAllTextAsync(fullPath, json);
     }
 
@@ -63,14 +68,11 @@ public class LocalSettingsService : ILocalSettingsService
 
     public async Task<T?> ReadDataAsync<T>(string filename)
     {
-        var fullPath = Path.Combine(_localFolderPath, filename + ".json");
+        string fullPath = Path.Combine(_localFolderPath, filename + ".json");
 
-        if (!File.Exists(fullPath))
-        {
-            return default;
-        }
+        if (!File.Exists(fullPath)) return default;
 
-        var json = await File.ReadAllTextAsync(fullPath);
+        string json = await File.ReadAllTextAsync(fullPath);
 
         return await Json.ToObjectAsync<T>(json);
     }
@@ -90,15 +92,9 @@ public class LocalSettingsService : ILocalSettingsService
 
     public Task SaveApplicationSettingAsync(string key, string value)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        if (key is null) throw new ArgumentNullException(nameof(key));
 
-        if (value is null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        if (value is null) throw new ArgumentNullException(nameof(value));
 
         using RegistryKey? k = OpenRegistryKey(true);
         k?.SetValue(key, value, RegistryValueKind.String);
@@ -112,18 +108,12 @@ public class LocalSettingsService : ILocalSettingsService
 
     public async Task<T?> ReadApplicationSettingAsync<T>(string key)
     {
-        if (string.IsNullOrEmpty(key))
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
         using RegistryKey? k = OpenRegistryKey(false);
-        var raw = k?.GetValue(key) as string;
+        string? raw = k?.GetValue(key) as string;
 
-        if (string.IsNullOrEmpty(raw))
-        {
-            return default;
-        }
+        if (string.IsNullOrEmpty(raw)) return default;
 
         try
         {
@@ -141,17 +131,11 @@ public class LocalSettingsService : ILocalSettingsService
 
     public async Task<StorageFile> SaveBinaryFileAsync(string fileName, byte[] data)
     {
-        if (data is null)
-        {
-            throw new ArgumentNullException(nameof(data));
-        }
+        if (data is null) throw new ArgumentNullException(nameof(data));
 
-        if (string.IsNullOrWhiteSpace(fileName))
-        {
-            throw new ArgumentException("Invalid file name", nameof(fileName));
-        }
+        if (string.IsNullOrWhiteSpace(fileName)) throw new ArgumentException("Invalid file name", nameof(fileName));
 
-        var fullPath = Path.Combine(_localFolderPath, fileName);
+        string fullPath = Path.Combine(_localFolderPath, fileName);
         Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
         await File.WriteAllBytesAsync(fullPath, data);
 
@@ -164,12 +148,9 @@ public class LocalSettingsService : ILocalSettingsService
 
     public async Task<byte[]?> ReadBinaryFileAsync(string fileName)
     {
-        if (string.IsNullOrWhiteSpace(fileName))
-        {
-            throw new ArgumentNullException(nameof(fileName));
-        }
+        if (string.IsNullOrWhiteSpace(fileName)) throw new ArgumentNullException(nameof(fileName));
 
-        var fullPath = Path.Combine(_localFolderPath, fileName);
+        string fullPath = Path.Combine(_localFolderPath, fileName);
 
         return !File.Exists(fullPath) ? null : await File.ReadAllBytesAsync(fullPath);
     }
@@ -189,10 +170,7 @@ public class LocalSettingsService : ILocalSettingsService
 
     private async Task InitializeAsync()
     {
-        if (_isInitialized)
-        {
-            return;
-        }
+        if (_isInitialized) return;
 
         _isInitialized = true;
         await Task.CompletedTask;
@@ -213,7 +191,7 @@ public class LocalSettingsService : ILocalSettingsService
 
     private RegistryKey? OpenRegistryKey(bool writable)
     {
-        var subKey = $"Software\\{RegistryCompany}\\{RegistryProduct}";
+        string subKey = $"Software\\{RegistryCompany}\\{RegistryProduct}";
 
         return writable
             ? Registry.CurrentUser.CreateSubKey(subKey, true)

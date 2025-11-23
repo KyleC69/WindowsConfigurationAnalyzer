@@ -1,13 +1,19 @@
-﻿// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  NavigationViewService.cs
+﻿//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   NavigationViewService.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -17,6 +23,8 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
+
+#endregion
 
 
 
@@ -95,12 +103,9 @@ public class NavigationViewService(INavigationService navigationService, IPageSe
         }
         else
         {
-            var selectedItem = args.InvokedItemContainer as NavigationViewItem;
+            NavigationViewItem? selectedItem = args.InvokedItemContainer as NavigationViewItem;
 
-            if (selectedItem?.GetValue(NavigationHelper.NavigateToProperty) is string pageKey)
-            {
-                navigationService.NavigateTo(pageKey);
-            }
+            if (selectedItem?.GetValue(NavigationHelper.NavigateToProperty) is string pageKey) navigationService.NavigateTo(pageKey);
         }
     }
 
@@ -112,17 +117,11 @@ public class NavigationViewService(INavigationService navigationService, IPageSe
     {
         foreach (NavigationViewItem item in menuItems.OfType<NavigationViewItem>())
         {
-            if (IsMenuItemForPageType(item, pageType))
-            {
-                return item;
-            }
+            if (IsMenuItemForPageType(item, pageType)) return item;
 
             NavigationViewItem? selectedChild = GetSelectedItem(item.MenuItems, pageType);
 
-            if (selectedChild != null)
-            {
-                return selectedChild;
-            }
+            if (selectedChild != null) return selectedChild;
         }
 
         return null;

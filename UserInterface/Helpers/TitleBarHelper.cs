@@ -1,13 +1,19 @@
-﻿// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  UserInterface
-// File:  TitleBarHelper.cs
+﻿//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  UserInterface
+//        File:   TitleBarHelper.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Runtime.InteropServices;
 
@@ -18,6 +24,8 @@ using Windows.UI;
 using Windows.UI.ViewManagement;
 
 using WinRT.Interop;
+
+#endregion
 
 
 
@@ -68,11 +76,9 @@ internal class TitleBarHelper
             }
 
             if (theme == ElementTheme.Default)
-            {
                 theme = Application.Current.RequestedTheme == ApplicationTheme.Light
                     ? ElementTheme.Light
                     : ElementTheme.Dark;
-            }
 
             App.MainWindow.AppWindow.TitleBar.ButtonForegroundColor = theme switch
             {
@@ -108,7 +114,7 @@ internal class TitleBarHelper
 
             App.MainWindow.AppWindow.TitleBar.BackgroundColor = Colors.Transparent;
 
-            var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+            nint hwnd = WindowNative.GetWindowHandle(App.MainWindow);
             if (hwnd == GetActiveWindow())
             {
                 SendMessage(hwnd, Wmactivate, Wainactive, IntPtr.Zero);
@@ -128,11 +134,8 @@ internal class TitleBarHelper
 
     public static void ApplySystemThemeToCaptionButtons()
     {
-        var frame = App.AppTitlebar as FrameworkElement;
-        if (frame != null)
-        {
-            UpdateTitleBar(frame.ActualTheme);
-        }
+        FrameworkElement? frame = App.AppTitlebar as FrameworkElement;
+        if (frame != null) UpdateTitleBar(frame.ActualTheme);
     }
 
 

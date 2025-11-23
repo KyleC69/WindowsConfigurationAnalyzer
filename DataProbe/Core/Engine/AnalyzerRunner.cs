@@ -1,19 +1,26 @@
-// Created:  2025/10/29
-// Solution: WindowsConfigurationAnalyzer
-// Project:  Analyzer
-// File:  AnalyzerRunner.cs
+//  Created:  2025/10/29
+// Solution:  WindowsConfigurationAnalyzer
+//   Project:  DataProbe
+//        File:   AnalyzerRunner.cs
+//  Author:    Kyle Crowder
 // 
-// All Rights Reserved 2025
-// Kyle L Crowder
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 
 
 
+
+#region
 
 using System.Reflection;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.Contracts.Models;
-using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Readers;
+
+#endregion
 
 
 
@@ -21,12 +28,16 @@ using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Readers;
 
 namespace KC.WindowsConfigurationAnalyzer.DataProbe.Core.Engine;
 
+
 public sealed class AnalyzerRunner
 {
 
-    public static string? ProjectDir => Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "ProjectDirectory")?.Value;
 
     private readonly List<IAnalyzerModule> _modules;
+
+
+
+
 
     // Constructor injection: modules are required.
     public AnalyzerRunner(IEnumerable<IAnalyzerModule> modules)
@@ -37,6 +48,7 @@ public sealed class AnalyzerRunner
         }
 
         _modules = modules.Where(m => m is not null).ToList();
+
         if (_modules.Count == 0)
         {
             throw new ArgumentException("At least one analyzer module must be registered.", nameof(modules));
@@ -46,16 +58,23 @@ public sealed class AnalyzerRunner
 
 
 
+
+    public static string? ProjectDir => Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "ProjectDirectory")?.Value;
+
+
+
+
+
     public async Task<AnalyzerResult> RunAllAsync(string correlationId, IActivityLogger logger,
         CancellationToken cancellationToken = default)
     {
-        List<AreaResult> areaResults = new();
-        List<Finding> globalFindings = new();
+        List<AreaResult> areaResults = [];
+        List<Finding> globalFindings = [];
 
 
         // Emit ETW session start per taxonomy1001
-        var sessionId = Guid.NewGuid().ToString("N");
-        var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
+        string sessionId = Guid.NewGuid().ToString("N");
+        string version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
 
         logger.Log("INF", $" Starting ETW session {sessionId}", "ETW");
         try
@@ -69,6 +88,7 @@ public sealed class AnalyzerRunner
         if (_modules.Count == 0)
         {
             logger.Log("WRN", " No analyzer modules registered.", "AnalyzerRunner");
+
             return new AnalyzerResult(
                 Environment.MachineName,
                 DateTimeOffset.UtcNow,
@@ -76,14 +96,14 @@ public sealed class AnalyzerRunner
                 globalFindings);
         }
 
-        IAnalyzerContext context = new AnalyzerContext(logger, new RegistryReader(), new CimReader(logger), new EventLogReader(), new FirewallReader(), new EnvironmentReader());
+        IAnalyzerContext context = null!; // = new AnalyzerContext(logger, new RegistryReader(), new CimReader(logger), new EventLogReader(), new FirewallReader(), new EnvironmentReader());
 
         IEnumerable<Task<AreaResult>> tasks = _modules.Select(async m =>
         {
             try
             {
                 logger.Log("INF", $" Starting analyzer {m.Name}", $"{m.Area}");
-                AreaResult result = await m.AnalyzeAsync(logger,context, cancellationToken).ConfigureAwait(false);
+                AreaResult result = await m.AnalyzeAsync(logger, context, cancellationToken).ConfigureAwait(false);
                 logger.Log("INF", $" Completed analyzer {m.Name}", $"{m.Area}");
 
                 return result;
