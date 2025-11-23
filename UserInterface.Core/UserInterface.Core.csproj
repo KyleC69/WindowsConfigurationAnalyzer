@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Nullable>enable</Nullable>
+		<TargetFramework>net9.0-windows</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWinUi>true</UseWinUi>
+		<RootNamespace>KC.WindowsConfigurationAnalyzer.$(MSBuildProjectName)</RootNamespace>
+		<OutputType>Library</OutputType>
+		<EnableMsixTooling>true</EnableMsixTooling>
+		<Platforms>AnyCPU;x64</Platforms>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Folder Include="Models\" />
+		<Compile Include="..\GlobalAssemblyInfo.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+		<PackageReference Include="System.Diagnostics.EventLog" Version="10.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Contracts\Contracts.csproj" />
+	</ItemGroup>
+</Project>

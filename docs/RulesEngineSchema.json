@@ -1,0 +1,455 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "WorkflowName": {
+      "type": "string"
+    },
+    "Rules": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "RuleName": {
+              "type": "string"
+            },
+            "Expression": {
+              "type": "object",
+              "properties": {
+                "ExpressionType": {
+                  "type": "string"
+                },
+                "ExpressionText": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ExpressionType",
+                "ExpressionText"
+              ]
+            },
+            "SuccessMessage": {
+              "type": "string"
+            },
+            "FailureMessage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "RuleName",
+            "Expression",
+            "SuccessMessage",
+            "FailureMessage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "RuleName": {
+              "type": "string"
+            },
+            "Expression": {
+              "type": "object",
+              "properties": {
+                "ExpressionType": {
+                  "type": "string"
+                },
+                "ExpressionText": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ExpressionType",
+                "ExpressionText"
+              ]
+            },
+            "SuccessMessage": {
+              "type": "string"
+            },
+            "FailureMessage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "RuleName",
+            "Expression",
+            "SuccessMessage",
+            "FailureMessage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "RuleName": {
+              "type": "string"
+            },
+            "Expression": {
+              "type": "object",
+              "properties": {
+                "ExpressionType": {
+                  "type": "string"
+                },
+                "ExpressionText": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ExpressionType",
+                "ExpressionText"
+              ]
+            },
+            "SuccessMessage": {
+              "type": "string"
+            },
+            "FailureMessage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "RuleName",
+            "Expression",
+            "SuccessMessage",
+            "FailureMessage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "RuleName": {
+              "type": "string"
+            },
+            "Expression": {
+              "type": "object",
+              "properties": {
+                "ExpressionType": {
+                  "type": "string"
+                },
+                "ExpressionText": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ExpressionType",
+                "ExpressionText"
+              ]
+            },
+            "SuccessMessage": {
+              "type": "string"
+            },
+            "FailureMessage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "RuleName",
+            "Expression",
+            "SuccessMessage",
+            "FailureMessage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "RuleName": {
+              "type": "string"
+            },
+            "Expression": {
+              "type": "object",
+              "properties": {
+                "ExpressionType": {
+                  "type": "string"
+                },
+                "ExpressionText": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ExpressionType",
+                "ExpressionText"
+              ]
+            },
+            "SuccessMessage": {
+              "type": "string"
+            },
+            "FailureMessage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "RuleName",
+            "Expression",
+            "SuccessMessage",
+            "FailureMessage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "RuleName": {
+              "type": "string"
+            },
+            "Expression": {
+              "type": "object",
+              "properties": {
+                "ExpressionType": {
+                  "type": "string"
+                },
+                "ExpressionText": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ExpressionType",
+                "ExpressionText"
+              ]
+            },
+            "SuccessMessage": {
+              "type": "string"
+            },
+            "FailureMessage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "RuleName",
+            "Expression",
+            "SuccessMessage",
+            "FailureMessage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "RuleName": {
+              "type": "string"
+            },
+            "Expression": {
+              "type": "object",
+              "properties": {
+                "ExpressionType": {
+                  "type": "string"
+                },
+                "ExpressionText": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ExpressionType",
+                "ExpressionText"
+              ]
+            },
+            "SuccessMessage": {
+              "type": "string"
+            },
+            "FailureMessage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "RuleName",
+            "Expression",
+            "SuccessMessage",
+            "FailureMessage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "RuleName": {
+              "type": "string"
+            },
+            "Expression": {
+              "type": "object",
+              "properties": {
+                "ExpressionType": {
+                  "type": "string"
+                },
+                "ExpressionText": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ExpressionType",
+                "ExpressionText"
+              ]
+            },
+            "SuccessMessage": {
+              "type": "string"
+            },
+            "FailureMessage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "RuleName",
+            "Expression",
+            "SuccessMessage",
+            "FailureMessage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "RuleName": {
+              "type": "string"
+            },
+            "Expression": {
+              "type": "object",
+              "properties": {
+                "ExpressionType": {
+                  "type": "string"
+                },
+                "ExpressionText": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ExpressionType",
+                "ExpressionText"
+              ]
+            },
+            "SuccessMessage": {
+              "type": "string"
+            },
+            "FailureMessage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "RuleName",
+            "Expression",
+            "SuccessMessage",
+            "FailureMessage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "RuleName": {
+              "type": "string"
+            },
+            "Expression": {
+              "type": "object",
+              "properties": {
+                "ExpressionType": {
+                  "type": "string"
+                },
+                "ExpressionText": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ExpressionType",
+                "ExpressionText"
+              ]
+            },
+            "SuccessMessage": {
+              "type": "string"
+            },
+            "FailureMessage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "RuleName",
+            "Expression",
+            "SuccessMessage",
+            "FailureMessage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "RuleName": {
+              "type": "string"
+            },
+            "Expression": {
+              "type": "object",
+              "properties": {
+                "ExpressionType": {
+                  "type": "string"
+                },
+                "ExpressionText": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ExpressionType",
+                "ExpressionText"
+              ]
+            },
+            "SuccessMessage": {
+              "type": "string"
+            },
+            "FailureMessage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "RuleName",
+            "Expression",
+            "SuccessMessage",
+            "FailureMessage"
+          ]
+        }
+      ]
+    },
+    "WorkflowParameters": {
+      "type": "object",
+      "properties": {
+        "ProviderName": {
+          "type": "string"
+        },
+        "ManifestPath": {
+          "type": "string"
+        },
+        "ManifestContent": {
+          "type": "null"
+        },
+        "RegistryKeys": {
+          "type": "null"
+        },
+        "RegisteredProviders": {
+          "type": "null"
+        },
+        "ChannelNamesFromManifest": {
+          "type": "null"
+        },
+        "ChannelNamesFromRegistry": {
+          "type": "null"
+        },
+        "FileAcl": {
+          "type": "null"
+        },
+        "RegistryAcls": {
+          "type": "null"
+        },
+        "WevtutilQuery": {
+          "type": "string"
+        },
+        "ProbeTimestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ProviderName",
+        "ManifestPath",
+        "ManifestContent",
+        "RegistryKeys",
+        "RegisteredProviders",
+        "ChannelNamesFromManifest",
+        "ChannelNamesFromRegistry",
+        "FileAcl",
+        "RegistryAcls",
+        "WevtutilQuery",
+        "ProbeTimestamp"
+      ]
+    }
+  },
+  "required": [
+    "WorkflowName",
+    "Rules",
+    "WorkflowParameters"
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://yourproject.org/schemas/workflow.schema.json",
+  "WorkflowName": "KitchenSinkProbeValidation",
+  "SchemaVersion": "1.0",
+  "Author": "Test Suite",
+  "Constraints": {
+    "RunSequentially": false,
+    "StopOnFailure": false,
+    "Timeout": "00:20:00"
+  },
+  "ConfigSets": [
+    {
+      "ConfigSetName": "AllProbesValidation",
+      "Rules": [
+        {
+          "RuleName": "RegistrySmartScreen",
+          "Provider": "Registry",
+          "Parameters": {
+            "KeyPath": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+            "ValueName": "EnableSmartScreen"
+          },
+          "Condition": { "Operator": "Equals", "Expected": 1 },
+          "Severity": 5,
+          "Message": "SmartScreen must be enabled"
+        },
+        {
+          "RuleName": "WMIFirewallService",
+          "Provider": "WMI",
+          "Parameters": {
+            "Class": "Win32_Service",
+            "Property": "Started",
+            "Filter": "Name='MpsSvc'"
+          },
+          "Condition": { "Operator": "Equals", "Expected": true },
+          "Severity": 8,
+          "Message": "Firewall service must be running"
+        },
+        {
+          "RuleName": "FileSystemHostsFile",
+          "Provider": "FileSystem",
+          "Parameters": { "Path": "C:\\Windows\\System32\\drivers\\etc\\hosts" },
+          "Condition": { "Operator": "Exists" },
+          "Severity": 4,
+          "Message": "Hosts file must exist"
+        },
+        {
+          "RuleName": "ACLHostsFileRestricted",
+          "Provider": "ACL",
+          "Parameters": { "Path": "C:\\Windows\\System32\\drivers\\etc\\hosts" },
+          "Condition": { "Operator": "Contains", "Expected": "Administrators" },
+          "Severity": 9,
+          "Message": "Hosts file must be restricted to Administrators"
+        },
+        {
+          "RuleName": "EventLogSecurityExists",
+          "Provider": "EventLog",
+          "Parameters": { "LogName": "Security" },
+          "Condition": { "Operator": "Exists" },
+          "Severity": 10,
+          "Message": "Security event log must exist"
+        },
+        {
+          "RuleName": "RegistryAuditPolicy",
+          "Provider": "Registry",
+          "Parameters": {
+            "KeyPath": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa",
+            "ValueName": "AuditBaseObjects"
+          },
+          "Condition": { "Operator": "Equals", "Expected": 1 },
+          "Severity": 7,
+          "Message": "Audit policy must be enabled",
+          "Execution": { "DependsOn": ["EventLogSecurityExists"] }
+        },
+        {
+          "RuleName": "WMIWindowsDefender",
+          "Provider": "WMI",
+          "Parameters": {
+            "Class": "Win32_Service",
+            "Property": "Started",
+            "Filter": "Name='WinDefend'"
+          },
+          "Condition": { "Operator": "Equals", "Expected": true },
+          "Severity": 9,
+          "Message": "Windows Defender service must be running",
+          "Execution": { "DependsOn": ["RegistrySmartScreen"] }
+        }
+      ]
+    }
+  ]
+}

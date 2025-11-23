@@ -1,0 +1,70 @@
+{
+    "WorkflowName": "RegistryAndAclCoverage",
+    "SchemaVersion": "1.0",
+    "Author": "Kyle L Crowder",
+    "CreatedOn": "2025-11-22T06:31:00Z",
+    "GlobalParameters": {
+        "deterministicSeed": 2222,
+        "ProviderName": "ProviderACL",
+        "ManifestPath": "C:\\Windows\\System32\\ProviderACL.man",
+        "RegistryKeys": [
+            "HKEY_LOCAL_MACHINE\\SOFTWARE\\ProviderACL\\Settings",
+            "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WINEVT\\Publishers\\{FEDCBA98-7654-3210-FEDC-BA9876543210}"
+        ],
+        "RegisteredProviders": [
+            "ProviderACL"
+        ],
+        "ChannelNamesFromManifest": [
+            "AclChannel"
+        ],
+        "ChannelNamesFromRegistry": [
+            "AclChannel"
+        ],
+        "FileAcl": "D:(A;;FA;;;SY)",
+        "RegistryAcls": "HKLM:D:(A;;KA;;;SY)",
+        "WevtutilQuery": "",
+        "ProbeTimestamp": "2025-11-22T06:31:00Z"
+    },
+    "Rules": [
+        {
+            "RuleName": "RegistryKeyExists_Settings",
+            "ExecutorKey": "RegistryKeyExists",
+            "Parameters": {
+                "keyPath": "HKEY_LOCAL_MACHINE\\SOFTWARE\\ProviderACL\\Settings"
+            }
+        },
+        {
+            "RuleName": "RegistryValueMatch_ExpectedMode",
+            "ExecutorKey": "RegistryValueEquals",
+            "Parameters": {
+                "keyPath": "HKEY_LOCAL_MACHINE\\SOFTWARE\\ProviderACL\\Settings",
+                "valueName": "Mode",
+                "expectedValue": "Production"
+            }
+        },
+        {
+            "RuleName": "ManifestFileAclRestrictive",
+            "ExecutorKey": "FileAclContains",
+            "Parameters": {
+                "filePath": "C:\\Windows\\System32\\ProviderACL.man",
+                "expectedSddlFragment": "SY"
+            }
+        },
+        {
+            "RuleName": "RegistryKeyAclRestrictive",
+            "ExecutorKey": "RegistryKeyAclContains",
+            "Parameters": {
+                "keyPath": "HKEY_LOCAL_MACHINE\\SOFTWARE\\ProviderACL\\Settings",
+                "expectedSddlFragment": "SY"
+            }
+        }
+    ],
+    "ParentWorkflows": [],
+    "ChildWorkflows": [],
+    "Constraints": {
+        "RunSequentially": true,
+        "StopOnFailure": true,
+        "Timeout": "00:02:00"
+    },
+    "Results": []
+}
