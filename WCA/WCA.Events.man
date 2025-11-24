@@ -66,6 +66,7 @@
   <opcode name="ReadersCaptureOp" message="$(string.opcode_ReadersCaptureOp)" value="53"/>
   <opcode name="ReadersAnalyzeOp" message="$(string.opcode_ReadersAnalyzeOp)" value="54"/>
   <opcode name="SecurityWarn" message="$(string.opcode_SecurityWarn)" value="55"/>
+  <opcode name="RuleValidationError" message="$(string.opcode_RuleValidationError)" value="56"/>
  </opcodes>
  <keywords>
   <keyword name="Analyzer" message="$(string.keyword_Analyzer)" mask="0x1"/>
@@ -135,6 +136,7 @@
   <event value="3802" version="0" level="win:Informational" symbol="ReadersAnalysis" keywords="Readers" opcode="ReadersAnalyzeOp" task="Module" channel="Operational" template="ReadersAnalysisArgs"/>
   <event value="4001" version="0" level="win:Error" symbol="ActivityLoggerFallback" keywords="UI" opcode="ActivityLoggerFallbackOp" task="Error" channel="Operational" template="ActivityLoggerFallbackArgs"/>
   <event value="4300" version="0" level="win:Error" symbol="RulesEngineError" keywords="Analyzer" opcode="RulesEngineFailure" task="Error" channel="Operational" template="RulesEngineErrorArgs"/>
+  <event value="4305" version="0" level="win:Warning" symbol="RulesEngineWarning" opcode="RuleValidationError" task="RulesEngine" channel="Operational" template="RulesEngineWarningArgs"/>
   <event value="4215" version="0" level="win:Informational" symbol="ActionStartWithRelated" keywords="Analyzer" opcode="win:Start" task="ActionRelated" channel="Operational" template="ActionStartWithRelatedArgs"/>
   <event value="4220" version="0" level="win:Informational" symbol="ActionStop" keywords="Analyzer" opcode="win:Stop" task="Action" channel="Operational" template="ActionStopArgs"/>
   <event value="4210" version="0" level="win:Informational" symbol="ActionStart" keywords="Action" opcode="win:Start" task="Action" channel="Operational" template="ActionStartArgs"/>
@@ -425,6 +427,9 @@
   <template tid="RulesEngineErrorArgs">
    <data name="noResultsFromRuleExecution" inType="win:UnicodeString"/>
   </template>
+  <template tid="RulesEngineWarningArgs">
+   <data name="warningMessage" inType="win:UnicodeString"/>
+  </template>
   <template tid="ActionStartWithRelatedArgs">
    <data name="message" inType="win:UnicodeString"/>
   </template>
@@ -505,6 +510,7 @@
    <string id="opcode_RuleExecute" value="RuleExecute"/>
    <string id="opcode_RuleResult" value="RuleResult"/>
    <string id="opcode_RuleSummary" value="RuleSummary"/>
+   <string id="opcode_RuleValidationError" value="RuleValidationError"/>
    <string id="opcode_RulesEngineFailure" value="RulesEngineFailure"/>
    <string id="opcode_SecurityWarn" value="SecurityWarn"/>
    <string id="opcode_UINotify" value="UINotify"/>

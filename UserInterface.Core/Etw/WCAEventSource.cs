@@ -1,4 +1,4 @@
-//  Created:  2025/11/01
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  UserInterface.Core
 //        File:   WCAEventSource.cs
@@ -538,6 +538,19 @@ public sealed class WCAEventSource : EventSource
 
 
 
+    [Event(4305, Level = EventLevel.Warning, Task = Tasks.RulesEngine, Opcode = Opcodes.RuleValidationError, Channel = EventChannel.Operational)]
+    public void RulesEngineWarning(string warningMessage)
+    {
+        if (IsEnabled(EventLevel.Warning, Keywords.RulesEngine))
+        {
+            WriteEvent(4305, warningMessage);
+        }
+    }
+
+
+
+
+
     [Event(4215, Level = EventLevel.Informational, Task = Tasks.ActionRelated, Opcode = EventOpcode.Start, Keywords = Keywords.Analyzer, Channel = EventChannel.Operational)]
     public void ActionStartWithRelated(string message)
     {
@@ -701,6 +714,7 @@ public sealed class WCAEventSource : EventSource
         internal const EventOpcode ReadersCaptureOp = (EventOpcode)53;
         internal const EventOpcode ReadersAnalyzeOp = (EventOpcode)54;
         internal const EventOpcode SecurityWarn = (EventOpcode)55;
+        internal const EventOpcode RuleValidationError = (EventOpcode)56;
 
 
     }

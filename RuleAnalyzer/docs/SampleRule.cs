@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/17
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  RuleAnalyzer
 //        File:   SampleRule.cs
@@ -28,7 +28,7 @@ namespace KC.WindowsConfigurationAnalyzer.RuleAnalyzer.docs;
 
 public class SampleRule
 {
-
+    /*
 
     private RuleContract SampleRuleMethod()
     {
@@ -73,7 +73,8 @@ public class SampleRule
         };
 
         return registryRule;
-    }
+    */
+    
 
 
 }

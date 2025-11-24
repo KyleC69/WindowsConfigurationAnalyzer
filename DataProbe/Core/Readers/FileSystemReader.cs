@@ -70,7 +70,7 @@ public class FileSystemReader : IProbe
         {
             Provider = Provider,
             Timestamp = DateTime.UtcNow,
-            Metadata = new Dictionary<string, object>()
+            Metadata = []
         };
         result.Metadata["path"] = path ?? string.Empty;
 

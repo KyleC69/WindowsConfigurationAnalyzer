@@ -1,4 +1,4 @@
-﻿//  Created:  2025/10/29
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  UserInterface
 //        File:   DefaultActivationHandler.cs
@@ -46,7 +46,7 @@ public class DefaultActivationHandler(INavigationService navigationService)
 
     protected override Task HandleInternalAsync(LaunchActivatedEventArgs args)
     {
-        navigationService.NavigateTo(typeof(ReportViewModel).FullName!, args.Arguments);
+        navigationService.NavigateTo(typeof(WorkflowViewModel).FullName!, args.Arguments);
 
         return Task.CompletedTask;
     }

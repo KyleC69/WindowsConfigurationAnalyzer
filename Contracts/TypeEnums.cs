@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/17
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  Contracts
 //        File:   TypeEnums.cs
@@ -143,15 +143,3 @@ public enum ActionType
 }
 
 
-
-public class ExecutionConstraints
-{
-
-
-    public bool RunOncePerSession { get; set; } = false;
-    public bool RequireParentSuccess { get; set; } = false;
-    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
-    public int RetryCount { get; set; } = 0;
-
-
-}

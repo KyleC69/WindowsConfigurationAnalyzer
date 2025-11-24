@@ -1,4 +1,4 @@
-﻿//  Created:  2025/10/29
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  UserInterface
 //        File:   ShellPage.xaml.cs
@@ -108,7 +108,7 @@ public sealed partial class ShellPage : Page
 
 
 
-    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("windows10.0.10240.0")]
     private static KeyboardAccelerator BuildKeyboardAccelerator(VirtualKey key, VirtualKeyModifiers? modifiers = null)
     {
         KeyboardAccelerator keyboardAccelerator = new() { Key = key };

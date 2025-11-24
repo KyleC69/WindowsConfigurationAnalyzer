@@ -1,4 +1,4 @@
-﻿//  Created:  2025/10/29
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  UserInterface
 //        File:   App.xaml.cs
@@ -20,8 +20,6 @@ using System.Diagnostics.Tracing;
 using System.Reflection;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.DataProbe.Core.DependencyInjection;
-using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Engine;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
@@ -65,23 +63,15 @@ public partial class App : Application
         InitializeComponent();
 
 
-        SaveManifestToFile(out string? message);
 
         WCAEventSource.Log.SessionStart(Guid.NewGuid().ToString(), Environment.MachineName, "1.09.0.0", Guid.NewGuid().ToString());
-
-        /*
-        if (!string.IsNullOrEmpty(message))
-        {
-            WCAEventSource.Log.ActionFailed("Manifest registration has failed.", message);
-            ActivityLogger.Log("ERR", $"Manifest registration has failed. {message}", "App.xaml.cs");
-        }
-       */
         WCAEventSource.Log.ActionStart("App Initialization has started.");
-        // Initialize logging counters - Must be done before ActivityLogger.Initialize
-        // SetupCounters();
+
 
 
         ActivityLogger.Initialize(true);
+
+
 
         Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory)
             .ConfigureServices((context, services) =>
@@ -136,12 +126,12 @@ public partial class App : Application
 
 
                 ActivityLogger.Log("INF", "Analyzer Core Services Loading", "App.xaml.cs");
-                services.AddWcaCore();
+       //         services.AddWcaCore();
                 ActivityLogger.Log("INF", "Analyzer Services Loaded", "App.xaml.cs");
 
                 services.AddSingleton<IActivityLogger, ActivityLogAdapter>();
 
-                services.AddTransient<AnalyzerRunner>();
+     //           services.AddTransient<AnalyzerRunner>();
 
 
                 // Views and ViewModels
@@ -194,12 +184,12 @@ public partial class App : Application
                 services.AddTransient<ServicesPage>();
                 ActivityLogger.Log("INF", "ServicesPage Loaded", "App.xaml.cs");
 
-                ActivityLogger.Log("INF", "Loading ReportViewModel", "App.xaml.cs");
-                services.AddTransient<ReportViewModel>();
+                ActivityLogger.Log("INF", "Loading WorkflowViewModel", "App.xaml.cs");
+                services.AddTransient<WorkflowViewModel>();
                 ActivityLogger.Log("INF", "ReportViewModel Loaded", "App.xaml.cs");
-                ActivityLogger.Log("INF", "Loading ReportPage", "App.xaml.cs");
-                services.AddTransient<ReportPage>();
-                ActivityLogger.Log("INF", "ReportPage Loaded", "App.xaml.cs");
+                ActivityLogger.Log("INF", "Loading WorkflowPage", "App.xaml.cs");
+                services.AddTransient<WorkflowPage>();
+                ActivityLogger.Log("INF", "Workflow Page Loaded", "App.xaml.cs");
 
                 ActivityLogger.Log("INF", "Loading ShellPage", "App.xaml.cs");
                 services.AddTransient<ShellPage>();

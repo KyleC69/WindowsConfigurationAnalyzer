@@ -1,4 +1,4 @@
-//  Created:  2025/10/29
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  DataProbe
 //        File:   OSAnalyzer.cs
@@ -15,11 +15,11 @@
 
 #region
 
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
 
 

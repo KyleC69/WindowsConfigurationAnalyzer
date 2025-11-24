@@ -1,4 +1,4 @@
-//  Created:  2025/10/29
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  DataProbe
 //        File:   CimReader.cs
@@ -88,7 +88,7 @@ public sealed class CimReader : IProbe
         ProbeResult result = new() { Provider = Provider };
         _logger?.Log("INF", $"Executing WQL query: {wql} in Namespace: {ns}", $"QueryAsync - Caller: {callerName}, Page: {callerFilePath}");
 
-
+        await QueryAsync(wql, ns, token, callerName, callerFilePath);
 
         return await Task.FromResult<ProbeResult>(null);
     }

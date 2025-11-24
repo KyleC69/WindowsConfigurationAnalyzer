@@ -16,7 +16,6 @@
 #region
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 
 #endregion
 
@@ -25,6 +24,8 @@ using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 
 
 namespace KC.WindowsConfigurationAnalyzer.DataProbe.Core.Diagnostics;
+
+public class Finding { }
 
 
 public sealed class RuleEngine

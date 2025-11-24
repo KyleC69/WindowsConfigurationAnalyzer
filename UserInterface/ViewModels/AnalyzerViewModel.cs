@@ -1,4 +1,4 @@
-﻿//  Created:  2025/10/29
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  UserInterface
 //        File:   AnalyzerViewModel.cs
@@ -22,8 +22,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
-using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Engine;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Export;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Etw;
@@ -113,11 +111,11 @@ public partial class AnalyzerViewModel : ObservableRecipient
 
     public AnalyzerViewModel(IServiceProvider services)
     {
+        OpenFolderCommand = new RelayCommand(() => { /*OpenExportsFolder();*/ });
         _services = services;
         _localSettings = services.GetRequiredService<ILocalSettingsService>();
         _activityLogger = services.GetRequiredService<IActivityLogger>();
         RunAnalyzerCommand = new AsyncRelayCommand(RunAnalyzerAsync);
-        OpenFolderCommand = new RelayCommand(OpenExportsFolder);
         SelectAllCommand = new RelayCommand(SelectAllModules);
 
         // Populate module selections from DI
@@ -226,6 +224,11 @@ public partial class AnalyzerViewModel : ObservableRecipient
 
         string correlationIdString = Guid.NewGuid().ToString("N"); // Unique correlation ID per run
         IsRunning = true;
+
+    }  
+        
+        
+        /*
         try
         {
             // Run only selected modules
@@ -308,10 +311,11 @@ public partial class AnalyzerViewModel : ObservableRecipient
             //WCAEventSource.Log.SessionStop(SessionId: _sessionId.ToString("N"), Areas: merged.Areas, CorrelationId: correlationIdString); TODO: Fix params to pass necessary data
         }
     }
+            */
 
 
 
-
+        /*
 
     private void OpenExportsFolder()
     {
@@ -334,7 +338,6 @@ public partial class AnalyzerViewModel : ObservableRecipient
         {
             Log($"Open folder failed: {ex.Message}");
         }
+        */
     }
 
-
-}

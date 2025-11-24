@@ -3,11 +3,9 @@
     "UserInterface (Package)": {
       "commandName": "MsixPackage"
     },
-    "UserInterface (Unpackaged)": {
-      "commandName": "Project"
-    },
-    "UserInterface - Packaged": {
-      "commandName": "Executable"
+    "LaunchUI": {
+      "commandName": "Project",
+      "hotReloadEnabled": false
     }
   }
 }

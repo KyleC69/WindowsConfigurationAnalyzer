@@ -1,4 +1,4 @@
-//  Created:  2025/10/29
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  DataProbe
 //        File:   NetworkAnalyzer.cs
@@ -16,7 +16,6 @@
 #region
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
 
 #endregion
@@ -483,10 +482,10 @@ public sealed class NetworkAnalyzer : IAnalyzerModule
             WifiProfiles = wifiProfiles,
             Hosts = hostsMeta
         };
-        AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
+      //  AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
         _logger.Log("INF", "Complete", "Network configuration collected");
 
-        return result;
+        return default;
     }
 
 

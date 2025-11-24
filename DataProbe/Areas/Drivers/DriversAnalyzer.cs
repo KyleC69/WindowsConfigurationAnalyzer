@@ -1,4 +1,4 @@
-//  Created:  2025/10/30
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  DataProbe
 //        File:   DriversAnalyzer.cs
@@ -16,7 +16,6 @@
 #region
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
 
 #endregion
@@ -55,7 +54,7 @@ public sealed class DriversAnalyzer : IAnalyzerModule
     /// </returns>
     /// <exception cref="OperationCanceledException">Thrown if the operation is canceled.</exception>
     /// <exception cref="Exception">Thrown if an unexpected error occurs during the analysis.</exception>
-    public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
+    public async Task<AreaResult?> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger;
         string area = Area;
@@ -143,10 +142,8 @@ public sealed class DriversAnalyzer : IAnalyzerModule
 
         var summary = new { Drivers = drivers.Count, ServiceDrivers = serviceDrivers.Count, Problematic = problematic.Count };
         var details = new { PnPSignedDrivers = drivers, ServiceDrivers = serviceDrivers, Problematic = problematic };
-        AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
-        _logger.Log("INF", "Driver inventory collected", area);
 
-        return result;
+        return default;
     }
 
 

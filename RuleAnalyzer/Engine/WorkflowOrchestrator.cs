@@ -16,7 +16,6 @@
 #region
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 
 #endregion
 
@@ -47,15 +46,16 @@ public class WorkflowOrchestrator
 
 
     public async Task<WorkflowResultSet> RunAsync(
-        WorkflowContract workflow,
+        Workflow workflow,
         CancellationToken externalToken = default)
     {
         WorkflowResultSet resultSet = new()
         {
-            WorkflowName = workflow.WorkflowName,
+            ExecutionMode = "NA",
+            Message = "Workflow Execution Result Set",
+            RuleName = "NA",
             SchemaVersion = workflow.SchemaVersion,
-            Description = $"Execution of workflow {workflow.WorkflowName}",
-            StartedOn = DateTime.UtcNow
+            Timestamp = DateTime.UtcNow
         };
         CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(externalToken);
         /*
@@ -63,7 +63,7 @@ public class WorkflowOrchestrator
                         cts.CancelAfter(workflow.Constraints.Timeout);
             */
         List<RuleResult> results = [];
-
+        /*
         if (workflow.Constraints.RunSequentially)
         {
             foreach (RuleContract rule in workflow.Rules)
@@ -79,46 +79,45 @@ public class WorkflowOrchestrator
         }
         else
         {
-            // Parallel execution with dependency awareness
-            HashSet<string> remaining = [.. workflow.Rules.Select(r => r.RuleName)];
-            Dictionary<string, RuleContract> ruleLookup = workflow.Rules.ToDictionary(r => r.RuleName);
-            /*
-                while (remaining.Count > 0)
-                {
-                    var runnable = remaining
-                        .Select(name => ruleLookup[name])
-                        .Where(rc =>
-                        {
-                            var deps = rc.Execution?.DependsOn ?? Array.Empty<string>();
-                            return deps.All(d => results.Any(r => r.RuleName == d && r.Success));
-                        })
-                        .ToList();
-
-                    if (runnable.Count == 0) break; // deadlock
-
-                    var tasks = runnable.Select(async rc =>
+            */
+        // Parallel execution with dependency awareness
+        HashSet<string> remaining = [.. workflow.Rules.Select(r => r.RuleName)];
+        //       Dictionary<string, RuleContract> ruleLookup = workflow.Rules.ToDictionary(r => r.RuleName);
+        /*
+            while (remaining.Count > 0)
+            {
+                var runnable = remaining
+                    .Select(name => ruleLookup[name])
+                    .Where(rc =>
                     {
-                        var res = await ExecuteRuleAsync(rc, cts.Token);
-                        lock (results) results.Add(res);
-                        remaining.Remove(rc.RuleName);
-                    });
+                        var deps = rc.Execution?.DependsOn ?? Array.Empty<string>();
+                        return deps.All(d => results.Any(r => r.RuleName == d && r.Success));
+                    })
+                    .ToList();
 
-                    await Task.WhenAll(tasks);
-                }
-        */
-        }
+                if (runnable.Count == 0) break; // deadlock
 
-        resultSet.Results = results;
-        resultSet.CompletedOn = DateTime.UtcNow;
+                var tasks = runnable.Select(async rc =>
+                {
+                    var res = await ExecuteRuleAsync(rc, cts.Token);
+                    lock (results) results.Add(res);
+                    remaining.Remove(rc.RuleName);
+                });
 
-        return resultSet;
+                await Task.WhenAll(tasks);
+            }
+    */
+        return default;
     }
 
+  
+    
 
 
 
 
-    private async Task<RuleResult> ExecuteRuleAsync(RuleContract rule, CancellationToken token)
+
+    private Task<RuleResult> ExecuteRuleAsync(RuleContract rule, CancellationToken token)
     {
         RuleResult result = new()
         {
@@ -168,7 +167,8 @@ public class WorkflowOrchestrator
             }
 
         */
-        return await Task.FromResult(result);
+        return default;
+
     }
 
 

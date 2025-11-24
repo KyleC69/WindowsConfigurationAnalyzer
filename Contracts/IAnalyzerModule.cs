@@ -1,4 +1,4 @@
-//  Created:  2025/11/16
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  Contracts
 //        File:   IAnalyzerModule.cs
@@ -15,7 +15,7 @@
 
 #region
 
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
+using System.Collections.ObjectModel;
 
 #endregion
 
@@ -35,6 +35,19 @@ public interface IAnalyzerModule
     string Area { get; }
 
     Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken);
+
+
+}
+
+
+
+public class AreaResult
+{
+
+
+    public AreaResult(string area, object summary, object details, ICollection<Finding> asReadOnly, ICollection<string> warnings, List<string> errors)
+    {
+    }
 
 
 }

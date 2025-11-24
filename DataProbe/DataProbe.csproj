@@ -19,6 +19,33 @@
 		<MyProjectDir>$(MSBuildProjectDirectory)</MyProjectDir>
 	</PropertyGroup>
 
+
+	<ItemGroup>
+	  <Compile Remove="Models\**" />
+	  <Content Remove="Models\**" />
+	  <EmbeddedResource Remove="Models\**" />
+	  <None Remove="Models\**" />
+	  <Page Remove="Models\**" />
+	  <PRIResource Remove="Models\**" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Compile Remove="Core\DependencyInjection\ServiceCollectionExtensions.cs" />
+	  <Compile Remove="Core\Engine\AnalyzerRunner.cs" />
+	  <Compile Remove="Core\Engine\RuleEngine.cs" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <None Remove="Areas\Policy\AdmxValidator.cs.bk" />
+	  <None Remove="Areas\Policy\PolicyAnalyzer.cs.bk" />
+	  <None Remove="Areas\Security\SecurityAnalyzer.cs.bk" />
+	  <None Remove="Areas\Startup\StartupAnalyzer.cs.bk" />
+	  <None Remove="Core\Diagnostics\RuleEngine.cs.bk" />
+	  <None Remove="Core\Export\HtmlReportBuilder.cs.xxxx" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
 			<_Parameter1>ProjectDirectory</_Parameter1>
@@ -32,15 +59,15 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251106002" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
-		<PackageReference Include="RulesEngine" Version="6.0.0" />
-		<PackageReference Include="System.Management" Version="10.0.0" />
-		<PackageReference Include="System.Diagnostics.EventLog" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.*" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.*" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.*" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.*" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.*" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.*" />
+	
+		<PackageReference Include="System.Management" Version="9.0.*" />
+		<PackageReference Include="System.Diagnostics.EventLog" Version="9.0.*" />
 		<PackageReference Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
 		<PackageReference Include="System.Security.AccessControl" Version="6.0.1" />
 	</ItemGroup>
@@ -56,7 +83,12 @@
 
 
 	<ItemGroup>
-	  <Folder Include="Models\" />
+	  <Folder Include="Areas\Policy\" />
+	  <Folder Include="Areas\Security\" />
+	  <Folder Include="Areas\Startup\" />
+	  <Folder Include="Core\DependencyInjection\" />
+	  <Folder Include="Core\Diagnostics\" />
+	  <Folder Include="Core\Engine\" />
 	</ItemGroup>
 
 

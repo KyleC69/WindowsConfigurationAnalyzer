@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/15
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  UserInterface
 //        File:   RulesRunner.cs
@@ -23,6 +23,7 @@ using System.ServiceProcess;
 using System.Text;
 using System.Text.Json;
 
+using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Etw;
 
 using Microsoft.Win32;
@@ -66,11 +67,11 @@ public class RulesRunner
         //Testing method to run rules engine -- Feasibility study only
         string json = File.ReadAllText(Path.Combine(App.ProjectDir!, "Rules", "ProfileRule.json"));
         List<Workflow>? workflows = JsonSerializer.Deserialize<List<Workflow>>(json);
-        List<RuleResultTree>? results;
-        RulesEngine.RulesEngine rulesEngine = new(workflows?.ToArray());
+        List<RuleResult>? results;
+       
 
         UserProfileInput input = GatherCurrentUserProfile();
-
+        RulesAn
         results = await rulesEngine.ExecuteAllRulesAsync("UserProfileBaseline", input);
         if (results == null || results.Count == 0)
         {

@@ -60,7 +60,7 @@ public class AclReader : IProbe
         {
             Provider = Provider,
             Timestamp = DateTime.UtcNow,
-            Metadata = new Dictionary<string, object>()
+            Metadata = []
         };
         string? path = parameters["path"].ToString();
 
@@ -69,7 +69,10 @@ public class AclReader : IProbe
             // Implement ACL-specific probing logic here
             object? aclInfo = GetAclInformation(path);
             result.Value = aclInfo;
-            result.Metadata["path"] = path;
+            if (path != null)
+            {
+                result.Metadata["path"] = path;
+            }
 
             return await Task.FromResult(result);
         }

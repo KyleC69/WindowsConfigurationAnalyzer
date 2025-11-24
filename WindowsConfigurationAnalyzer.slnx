@@ -3,29 +3,26 @@
     <Platform Name="Any CPU" />
     <Platform Name="x64" />
   </Configurations>
-  <Project Path="ARoot.shproj" />
+  <Project Path="ARoot.shproj">
+    <Platform Project="AnyCPU" />
+  </Project>
   <Project Path="Contracts/Contracts.csproj">
     <Platform Solution="*|x64" Project="x64" />
-    <Build Solution="Debug|Any CPU" Project="false" />
   </Project>
   <Project Path="DataProbe/DataProbe.csproj">
+    <BuildDependency Project="UserInterface.Core/UserInterface.Core.csproj" />
     <Platform Solution="*|x64" Project="x64" />
-    <Build Solution="Debug|Any CPU" Project="false" />
   </Project>
   <Project Path="ETWManifest/Support.GenerateETWManifest.csproj">
     <Platform Solution="*|x64" Project="x64" />
-    <Build Solution="Debug|Any CPU" Project="false" />
   </Project>
   <Project Path="RuleAnalyzer/RuleAnalyzer.csproj">
     <Platform Solution="*|x64" Project="x64" />
-    <Build Solution="Debug|Any CPU" Project="false" />
   </Project>
   <Project Path="UserInterface.Core/UserInterface.Core.csproj">
     <Platform Solution="*|x64" Project="x64" />
-    <Build Solution="Debug|Any CPU" Project="false" />
   </Project>
   <Project Path="UserInterface/UserInterface.csproj">
     <Platform Solution="*|x64" Project="x64" />
-    <Build Solution="Debug|Any CPU" Project="false" />
   </Project>
 </Solution>

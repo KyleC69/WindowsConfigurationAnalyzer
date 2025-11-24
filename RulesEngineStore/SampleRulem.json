@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://kylec69.github.io/schemas/workflow.schema.json",
     "WorkflowName": "WindowsSecurityBaseline",
     "SchemaVersion": "1.0",
     "Author": "Kyle L Crowder",

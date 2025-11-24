@@ -1,4 +1,4 @@
-//  Created:  2025/11/16
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  Contracts
 //        File:   IAnomalyDetector.cs
@@ -15,8 +15,6 @@
 
 #region
 
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
-
 #endregion
 
 
@@ -30,7 +28,7 @@ public interface IAnomalyDetector
 {
 
 
-    IReadOnlyList<Finding> Detect(AnalyzerResult result);
+    //   IReadOnlyList<Finding> Detect(AnalyzerResult result);
 
 
 }

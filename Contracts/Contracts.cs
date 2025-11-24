@@ -1,4 +1,4 @@
-//  Created:  2025/11/16
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  Contracts
 //        File:   Contracts.cs
@@ -17,8 +17,6 @@
 
 using System.Runtime.CompilerServices;
 
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
-
 #endregion
 
 
@@ -36,7 +34,23 @@ public interface IRule
 
     string Area { get; }
 
+    //Finding? Evaluate(AnalyzerResult result);
+
+
     Finding? Evaluate(AnalyzerResult result);
+
+
+}
+
+
+
+public class Finding
+{
+
+
+    public Finding(string critical, string antivirusProductNotDetected)
+    {
+    }
 
 
 }

@@ -1,4 +1,4 @@
-//  Created:  2025/11/19
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  UserInterface
 //        File:   GlobalAssemblyInfo.cs
@@ -21,4 +21,4 @@ using System.Runtime.Versioning;
 
 
 
-[assembly: SupportedOSPlatform("windows")]
+[assembly: SupportedOSPlatform("windows10.0.19041.0")]

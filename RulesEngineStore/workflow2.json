@@ -1,5 +1,5 @@
 {
-  "$schema": "https://yourproject.org/schemas/workflow.schema.json",
+  "$schema": "https://kylec69.github.io/schemas/workflow.schema.json",
   "WorkflowName": "FileSystemAndACLChecks",
   "SchemaVersion": "1.0",
   "Author": "Test Suite",
@@ -15,16 +15,24 @@
         {
           "RuleName": "HostsFileExists",
           "Provider": "FileSystem",
-          "Parameters": { "Path": "C:\\Windows\\System32\\drivers\\etc\\hosts" },
-          "Condition": { "Operator": "Exists" },
+          "Parameters": {
+            "Path": "C:\\Windows\\System32\\drivers\\etc\\hosts"
+          },
+          "Condition": {
+            "Operator": "Exists"
+          },
           "Severity": 4,
           "Message": "Hosts file must exist"
         },
         {
           "RuleName": "System32FolderExists",
           "Provider": "FileSystem",
-          "Parameters": { "Path": "C:\\Windows\\System32" },
-          "Condition": { "Operator": "Exists" },
+          "Parameters": {
+            "Path": "C:\\Windows\\System32"
+          },
+          "Condition": {
+            "Operator": "Exists"
+          },
           "Severity": 6,
           "Message": "System32 folder must exist"
         }
@@ -36,16 +44,26 @@
         {
           "RuleName": "HostsFileRestricted",
           "Provider": "ACL",
-          "Parameters": { "Path": "C:\\Windows\\System32\\drivers\\etc\\hosts" },
-          "Condition": { "Operator": "Contains", "Expected": "Administrators" },
+          "Parameters": {
+            "Path": "C:\\Windows\\System32\\drivers\\etc\\hosts"
+          },
+          "Condition": {
+            "Operator": "Contains",
+            "Expected": "Administrators"
+          },
           "Severity": 9,
           "Message": "Hosts file must be restricted to Administrators"
         },
         {
           "RuleName": "System32FolderRestricted",
           "Provider": "ACL",
-          "Parameters": { "Path": "C:\\Windows\\System32" },
-          "Condition": { "Operator": "Contains", "Expected": "SYSTEM" },
+          "Parameters": {
+            "Path": "C:\\Windows\\System32"
+          },
+          "Condition": {
+            "Operator": "Contains",
+            "Expected": "SYSTEM"
+          },
           "Severity": 9,
           "Message": "System32 folder must be restricted to SYSTEM account"
         }

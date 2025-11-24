@@ -1,7 +1,7 @@
-﻿//  Created:  2025/10/29
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  UserInterface
-//        File:   ReportPage.xaml.cs
+//        File:   WorkflowPage.xaml.cs
 //  Author:    Kyle Crowder
 // 
 //     Unless required by applicable law or agreed to in writing, software
@@ -28,21 +28,22 @@ using Microsoft.UI.Xaml.Controls;
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 
-public sealed partial class ReportPage : Page
+public sealed partial class WorkflowPage : Page
 {
 
 
-    public ReportPage()
+    public WorkflowPage()
     {
         InitializeComponent();
-        ViewModel = App.GetService<ReportViewModel>();
+
+        ViewModel = App.GetService<WorkflowViewModel>();
     }
 
 
 
 
 
-    public ReportViewModel ViewModel { get; }
+    public WorkflowViewModel ViewModel { get; }
 
 
 }

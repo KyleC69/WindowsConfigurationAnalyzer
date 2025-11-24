@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/17
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  UserInterface
 //        File:   ExampleWorkflow.cs
@@ -16,7 +16,6 @@
 #region
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 
 #endregion
 

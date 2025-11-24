@@ -51,7 +51,7 @@ public class ProbeResult
     /// <summary>
     ///     Optional metadata (e.g. registry path, file path, WMI class).
     /// </summary>
-    public IDictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Metadata { get; set; } = [];
 
 
 }

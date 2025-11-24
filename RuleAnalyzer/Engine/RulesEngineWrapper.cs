@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/16
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  RuleAnalyzer
 //        File:   RulesEngineWrapper.cs
@@ -17,10 +17,11 @@
 
 using System.Text.Json;
 
+using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.RuleAnalyzer.Helpers;
-using KC.WindowsConfigurationAnalyzer.RuleAnalyzer.Models;
 
-using RulesEngine.Models;
+using ProbeFacts = KC.WindowsConfigurationAnalyzer.RuleAnalyzer.Models.ProbeFacts;
+using RuleResultArtifact = KC.WindowsConfigurationAnalyzer.RuleAnalyzer.Models.RuleResultArtifact;
 
 #endregion
 
@@ -104,13 +105,13 @@ public class RulesEngineWrapper
     ///     The name of the workflow to execute. This corresponds to a predefined workflow in the rules engine.
     /// </param>
     /// <param name="facts">
-    ///     The <see cref="ProbeFacts" /> object containing the input data and context required for rule evaluation.
+    ///     The <see cref="Models.ProbeFacts" /> object containing the input data and context required for rule evaluation.
     /// </param>
     /// <param name="operatorIdentity">
     ///     An optional identifier for the operator initiating the execution. Defaults to an empty string if not provided.
     /// </param>
     /// <returns>
-    ///     A <see cref="RuleResultArtifact" /> object containing the results of the rule execution,
+    ///     A <see cref="Models.RuleResultArtifact" /> object containing the results of the rule execution,
     ///     including raw rule results, helper outputs, and additional metadata.
     /// </returns>
     /// <exception cref="ArgumentNullException">

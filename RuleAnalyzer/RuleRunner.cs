@@ -1,4 +1,4 @@
-//  Created:  2025/11/16
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  RuleAnalyzer
 //        File:   RuleRunner.cs
@@ -14,8 +14,6 @@
 
 
 #region
-
-using System.Reflection;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 
@@ -49,43 +47,6 @@ public class RuleRunner
     public RuleRunner(IActivityLogger logger)
     {
         _logger = logger;
-    }
-
-
-
-
-
-    public static string? ProjectDir => Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "ProjectDirectory")?.Value;
-
-
-
-
-
-    public async Task RunRulesAsync()
-    {
-        string? SolutionDir = Directory.GetParent(ProjectDir!)?.Parent?.Parent?.FullName;
-        string RuleStore = Path.Combine(SolutionDir!, "RulesEngineStore");
-        string[] rulesFiles = Directory.GetFiles(RuleStore, "*.json", SearchOption.AllDirectories);
-
-        if (rulesFiles.Length == 0)
-        {
-            return;
-        }
-
-        string[] rulesJson = [];
-
-        foreach (string i in rulesFiles)
-        {
-            string json = await File.ReadAllTextAsync(i);
-            //rule = JsonSerializer.Deserialize<ProbeFacts>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new ProbeFacts();
-            //  jsonFacts = Directory.GetFiles(Path.GetDirectoryName(rulesFiles[i])!, "*.facts.json", SearchOption.TopDirectoryOnly);
-        }
-        //var artifact = await engine.ExecuteAsync(workflowName, facts, operatorIdentity: Environment.UserName);
-
-        // persist artifact for audit
-        string outPath = $"rule-result-{DateTime.UtcNow:yyyyMMddTHHmmssZ}.json";
-        //await File.WriteAllTextAsync(outPath, JsonSerializer.Serialize(artifact, new JsonSerializerOptions { WriteIndented = true }));
-        Console.WriteLine($"Rule execution completed. Artifact written to {outPath}");
     }
 
 

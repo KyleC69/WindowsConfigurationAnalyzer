@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/17
+﻿//  Created:  2025/11/23
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  Contracts
 //        File:   Constraints.cs
@@ -10,10 +10,7 @@
 //     See the License for the specific language governing permissions and
 //     limitations under the License.
 
-
-
-
-namespace KC.WindowsConfigurationAnalyzer.Contracts.Models;
+namespace KC.WindowsConfigurationAnalyzer.Contracts;
 
 
 public class ExecutionConstraints

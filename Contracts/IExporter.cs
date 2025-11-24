@@ -1,4 +1,4 @@
-//  Created:  2025/11/16
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  Contracts
 //        File:   IExporter.cs
@@ -15,8 +15,6 @@
 
 #region
 
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
-
 #endregion
 
 
@@ -31,6 +29,26 @@ public interface IExporter
 
 
     Task ExportAsync(AnalyzerResult result, string targetPath, CancellationToken cancellationToken);
+
+
+}
+
+
+
+public class AnalyzerResult
+{
+
+
+    public AnalyzerResult(string machineName, DateTimeOffset utcNow, List<AreaResult> areaResults, List<Finding> globalFindings, object areas)
+    {
+        Areas = areas;
+    }
+
+
+
+
+
+    public object Areas { get; set; }
 
 
 }

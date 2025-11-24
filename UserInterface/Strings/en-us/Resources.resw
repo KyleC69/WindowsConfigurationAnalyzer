@@ -123,8 +123,8 @@
   <data name="AppDescription" xml:space="preserve">
     <value>A forensic grade Windows configuration tool</value>
   </data>
-  <data name="Shell_Report.Content" xml:space="preserve">
-    <value>Report</value>
+  <data name="Shell_Workflow.Content" xml:space="preserve">
+    <value>Workflow</value>
   </data>
   <data name="Services_NoSelection.Text" xml:space="preserve">
     <value>Select an item from the list.</value>

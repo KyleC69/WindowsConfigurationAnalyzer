@@ -43,7 +43,7 @@ public static class ConditionEvaluator
             "RegexMatch" => Regex.IsMatch(actual?.ToString() ?? "", expected?.ToString() ?? ""),
             "Exists" => actual != null,
             "NotExists" => actual == null,
-            _ => false,
+            _ => false
         };
     }
 

@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net9.0-windows10.0.22601.0</TargetFramework>
+		<TargetFramework>net9.0-windows</TargetFramework>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<SupportedOSPlatform>windows10.0.22601.0</SupportedOSPlatform>
+		<SupportedOSPlatform>windows</SupportedOSPlatform>
 		<!-- Disable WindowsAppSDK self-contained mode to avoid mt.exe manifest merge during build -->
 		<WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -18,7 +18,7 @@
 		<Description>A Windows Forensic Configuration Analyzer</Description>
 		<Copyright>2025</Copyright>
 		<AssemblyName>KC.WindowsConfigurationAnalyzer</AssemblyName>
-		<WindowsPackageType>MSIX</WindowsPackageType>
+		<WindowsPackageType>none</WindowsPackageType>
 		<Platforms>AnyCPU;x64</Platforms>
 		<SignAssembly>True</SignAssembly>
 		<Title>Windows Configuration Analyzer</Title>
@@ -30,7 +30,15 @@
 
 	<PropertyGroup>
 		<MyProjectDir>$(MSBuildProjectDirectory)</MyProjectDir>
+		<AssemblyTitle>WindowsConfigurationAnalyzer</AssemblyTitle>
 	</PropertyGroup>
+
+
+	<ItemGroup>
+	  <Compile Remove="Helpers\ExampleWorkflow.cs" />
+	  <Compile Remove="Helpers\RulesRunner.cs" />
+	  <Compile Remove="Helpers\WorkflowEngine.cs" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
@@ -44,11 +52,11 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.*" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251106002" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
-		<PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.0" />
-		<PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.0" />
+		<PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.*" />
+		<PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.*" />
 		<PackageReference Include="WinUIEx" Version="2.9.0" />
 	</ItemGroup>
 
@@ -67,6 +75,12 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
+
+
+	<PropertyGroup Label="Globals">
+	  <WV2WinRTPlatformReferencesLevel>explicit</WV2WinRTPlatformReferencesLevel>
+	  <AssemblyOriginatorKeyFile></AssemblyOriginatorKeyFile>
+	</PropertyGroup>
 
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

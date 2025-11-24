@@ -1,7 +1,7 @@
-﻿//  Created:  2025/11/17
+﻿//  Created:  2025/11/23
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  Contracts
-//        File:   WorkflowResultSet.cs
+//        File:   RuleResult.cs
 //  Author:    Kyle Crowder
 // 
 //     Unless required by applicable law or agreed to in writing, software
@@ -10,22 +10,19 @@
 //     See the License for the specific language governing permissions and
 //     limitations under the License.
 
+namespace KC.WindowsConfigurationAnalyzer.Contracts;
 
 
-
-namespace KC.WindowsConfigurationAnalyzer.Contracts.Models;
-
-
-public class WorkflowResultSet
+public class RuleResult
 {
 
 
-    public string WorkflowName { get; set; } = string.Empty;
+    public string RuleName { get; set; } = string.Empty;
+    public bool Success { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public DateTime Timestamp { get; set; }
+    public int SeverityScore { get; set; }
     public string SchemaVersion { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public DateTime StartedOn { get; set; }
-    public DateTime CompletedOn { get; set; }
-    public List<RuleResult> Results { get; set; } = [];
 
 
 }

@@ -1,4 +1,4 @@
-//  Created:  2025/11/16
+//  Created:  2025/11/23
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  Contracts
 //        File:   AnalyzerContext.cs
@@ -21,10 +21,7 @@
 // All Rights Reserved 2025
 // Kyle L Crowder
 
-
-
-
-namespace KC.WindowsConfigurationAnalyzer.Contracts.Models;
+namespace KC.WindowsConfigurationAnalyzer.Contracts;
 
 
 public interface IAnalyzerContext

@@ -1,4 +1,4 @@
-﻿//  Created:  2025/10/29
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  UserInterface
 //        File:   PageService.cs
@@ -46,7 +46,7 @@ public class PageService : IPageService
 
     public PageService()
     {
-        Configure<ReportViewModel, ReportPage>();
+        Configure<WorkflowViewModel, WorkflowPage>();
         Configure<ServicesViewModel, ServicesPage>();
         Configure<DriversViewModel, DriversPage>();
         Configure<WmiRegistryViewModel, WmiRegistryPage>();

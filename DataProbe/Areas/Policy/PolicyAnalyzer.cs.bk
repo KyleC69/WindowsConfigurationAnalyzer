@@ -1,4 +1,4 @@
-//  Created:  2025/10/30
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  DataProbe
 //        File:   PolicyAnalyzer.cs
@@ -18,7 +18,6 @@
 using System.Xml;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
 
 #endregion
@@ -360,10 +359,10 @@ public sealed class PolicyAnalyzer : IAnalyzerModule
             Admx = admxResults,
             PolicyCompliance = compliance
         };
-        AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
+     //   AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
         _logger.Log("INF", "Complete: Policy and GPO collection completed", area);
 
-        return result;
+        return default;
     }
 
 

@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/17
+﻿//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  UserInterface
 //        File:   WorkflowEngine.cs
@@ -18,7 +18,6 @@
 using System.Reflection;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Etw;
 
 using Microsoft.Win32;
@@ -57,9 +56,9 @@ public class WorkflowEngine
     {
         WorkflowResultSet resultSet = new()
         {
-            WorkflowName = workflow.WorkflowName,
+ /*           WorkflowName = workflow.WorkflowName,
             SchemaVersion = workflow.SchemaVersion,
-            StartedOn = DateTime.UtcNow
+            StartedOn = DateTime.UtcNow*/
         };
 
         foreach (RuleContract rule in workflow.Rules)
@@ -77,7 +76,7 @@ public class WorkflowEngine
             }
         }
 
-        resultSet.CompletedOn = DateTime.UtcNow;
+   //     resultSet.CompletedOn = DateTime.UtcNow;
 
         return resultSet;
     }

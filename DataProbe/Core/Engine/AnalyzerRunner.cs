@@ -1,4 +1,4 @@
-//  Created:  2025/10/29
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  DataProbe
 //        File:   AnalyzerRunner.cs
@@ -18,7 +18,6 @@
 using System.Reflection;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 
 #endregion
 
@@ -89,11 +88,7 @@ public sealed class AnalyzerRunner
         {
             logger.Log("WRN", " No analyzer modules registered.", "AnalyzerRunner");
 
-            return new AnalyzerResult(
-                Environment.MachineName,
-                DateTimeOffset.UtcNow,
-                areaResults,
-                globalFindings);
+            return default;
         }
 
         IAnalyzerContext context = null!; // = new AnalyzerContext(logger, new RegistryReader(), new CimReader(logger), new EventLogReader(), new FirewallReader(), new EnvironmentReader());
@@ -113,26 +108,22 @@ public sealed class AnalyzerRunner
                 logger.Log("WRN", $" Analyzer {m.Name} canceled", $"{m.Area}");
 
                 return new AreaResult(m.Area, null, null, new List<Finding>().AsReadOnly(),
-                    new List<string>().AsReadOnly(), new List<string> { "Canceled" }.AsReadOnly());
+                    new List<string>().AsReadOnly(), new List<string>(new List<string> { "Canceled" }.AsReadOnly()));
             }
             catch (Exception ex)
             {
                 logger.Log("ERR", $" Exception thrown running analyzer {m.Name}", $"{m.Area}");
 
-                return new AreaResult(m.Area, null, null, new List<Finding>().AsReadOnly(),
-                    new List<string>().AsReadOnly(), new List<string> { ex.Message }.AsReadOnly());
+             //   return new AreaResult(m.Area, null, null, new List<Finding>().AsReadOnly(),                    new List<string>().AsReadOnly(), new List<string> { ex.Message }.AsReadOnly());
             }
+            return default;
         });
 
         AreaResult[] results = await Task.WhenAll(tasks).ConfigureAwait(false);
         areaResults.AddRange(results);
 
 
-        return new AnalyzerResult(
-            Environment.MachineName,
-            DateTimeOffset.UtcNow,
-            areaResults,
-            globalFindings);
+        return default;
     }
 
 

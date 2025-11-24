@@ -1,4 +1,4 @@
-//  Created:  2025/10/29
+//  Created:  2025/11/22
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  DataProbe
 //        File:   JsonExporter.cs
@@ -19,7 +19,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.Contracts.Models;
 
 #endregion
 
