@@ -13,14 +13,10 @@
 
 
 
-#region
-
 using System.Diagnostics.Eventing.Reader;
 using System.Security.Principal;
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
-
-#endregion
 
 
 

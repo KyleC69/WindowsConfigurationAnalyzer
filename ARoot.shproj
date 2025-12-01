@@ -46,7 +46,6 @@
     <None Include="WindowsConfigurationAnalyzer.slnx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="docs\AnalyzerArchitecture.txt" />
     <Content Include="EventSourceProviderIntegrityCheck.schema.json" />
     <Content Include="Microsoft.WindowsAppRuntime.pri.xml" />
     <Content Include="settings.VisualStudio.json" />
@@ -55,4 +54,9 @@
     <Compile Include="GlobalAssemblyInfo.cs" />
     <Compile Include="GlobalUsings.cs" />
   </ItemGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties rulesenginestore_4workflow-mega_1json__JsonSchema="http://kylec69.github.io/schemas/catalog.json" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

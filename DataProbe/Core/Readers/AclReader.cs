@@ -13,14 +13,10 @@
 
 
 
-#region
-
 using System.Security.AccessControl;
 using System.Security.Principal;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-
-#endregion
 
 
 
@@ -48,37 +44,40 @@ public class AclReader : IProbe
 
 
 
-    public string Provider => "Acl";
-
-
-
-
-
-    public async Task<ProbeResult> ExecuteAsync(IDictionary<string, object> parameters, CancellationToken token, string callerName = "", string callerFilePath = "")
+    public string Provider
     {
+        get => "Acl";
+    }
+
+
+
+
+
+    public async Task<ProbeResult> ExecuteAsync(IProviderParameters parameters, CancellationToken token)
+    {
+        var parms = (AclParameters)parameters;
+        var path = Environment.ExpandEnvironmentVariables(parms.Path);
+
+
         ProbeResult result = new()
         {
             Provider = Provider,
             Timestamp = DateTime.UtcNow,
             Metadata = []
         };
-        string? path = parameters["path"].ToString();
 
         try
         {
             // Implement ACL-specific probing logic here
-            object? aclInfo = GetAclInformation(path);
+            var aclInfo = GetAclInformation(path);
             result.Value = aclInfo;
-            if (path != null)
-            {
-                result.Metadata["path"] = path;
-            }
+
 
             return await Task.FromResult(result);
         }
         catch (Exception ex)
         {
-            _logger.Log("ERR", $"Error executing ACL on path: {path} probe: {ex.Message}, {callerName}, {callerFilePath}", "AclReader");
+            _logger.Log("ERR", $"Error executing ACL on path: {path} probe: {ex.Message}", "AclReader");
             result.ProbeSuccess = false;
             result.Message = "Error executing ACL probe.";
             result.Value = null;
@@ -104,7 +103,7 @@ public class AclReader : IProbe
         //Is path a directory or a file?
         try
         {
-            bool isDirectory = Directory.Exists(path);
+            var isDirectory = Directory.Exists(path);
             FileSystemSecurity securityInfo = isDirectory
                 ? new DirectoryInfo(path).GetAccessControl()
                 : new FileInfo(path).GetAccessControl();

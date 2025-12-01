@@ -13,14 +13,10 @@
 
 
 
-#region
-
 using System.Diagnostics.Tracing;
 using System.Globalization;
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Etw;
-
-#endregion
 
 
 
@@ -47,12 +43,9 @@ internal class Program
     private static void Main(string[] args)
     {
         string? outFilename = null;
-        for (int i = 0; i < args.Length; i++)
+        for (var i = 0; i < args.Length; i++)
         {
-            if (args[i] != "--outfile" || i + 1 >= args.Length)
-            {
-                continue;
-            }
+            if (args[i] != "--outfile" || i + 1 >= args.Length) continue;
 
             outFilename = args[i + 1];
 
@@ -60,10 +53,7 @@ internal class Program
         }
 
         // Validate the filename
-        if (string.IsNullOrEmpty(outFilename))
-        {
-            throw new ArgumentException("Missing or invalid --outfile argument");
-        }
+        if (string.IsNullOrEmpty(outFilename)) throw new ArgumentException("Missing or invalid --outfile argument");
 
         // This ensures the generates manifest uses the default en-US culture when the build process runs on a non-US operating system
         CultureInfo cultureInfo = new("en-US");
@@ -71,7 +61,7 @@ internal class Program
         Thread.CurrentThread.CurrentUICulture = cultureInfo;
 
         // Generate the manifest
-        string? manifest = EventSource.GenerateManifest(typeof(WCAEventSource), "WCA.Events.dll");
+        var manifest = EventSource.GenerateManifest(typeof(WCAEventSource), "WCA.Events.dll");
 
         // Save the manifest to a file
         if (manifest is not null)

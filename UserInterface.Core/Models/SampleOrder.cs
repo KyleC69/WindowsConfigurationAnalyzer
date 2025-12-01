@@ -47,11 +47,20 @@ public class SampleOrder
 
     public string? SymbolName { get; set; }
 
-    public char Symbol => (char)SymbolCode;
+
+    public char Symbol
+    {
+        get => (char)SymbolCode;
+    }
+
 
     public ICollection<SampleOrderDetail>? Details { get; set; }
 
-    public string ShortDescription => $"Order ID: {OrderID}";
+
+    public string ShortDescription
+    {
+        get => $"Order ID: {OrderID}";
+    }
 
 
 

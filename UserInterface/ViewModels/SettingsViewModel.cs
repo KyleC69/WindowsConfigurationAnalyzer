@@ -13,11 +13,11 @@
 
 
 
-#region
-
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Windows.Input;
+
+using Windows.ApplicationModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -26,10 +26,6 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 using Microsoft.UI.Xaml;
-
-using Windows.ApplicationModel;
-
-#endregion
 
 
 
@@ -158,8 +154,8 @@ public partial class SettingsViewModel : ObservableRecipient
                            ?? "logs/{yyyyMMdd-HHmm}.txt";
 
         // Load Activity Logging setting (default to false if missing)
-        string? raw = await _localSettings.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled");
-        bool parsed = false;
+        var raw = await _localSettings.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled");
+        var parsed = false;
         if (!string.IsNullOrWhiteSpace(raw))
         {
             // Accept JSON booleans (true/false) or string representations

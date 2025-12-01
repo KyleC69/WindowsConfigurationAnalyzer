@@ -13,21 +13,13 @@
 
 
 
-#region
-
-using KC.WindowsConfigurationAnalyzer.Contracts;
-
-#endregion
-
-
-
-
-
 namespace KC.WindowsConfigurationAnalyzer.RuleAnalyzer.docs;
 
 
 public class SampleRule
 {
+
+
     /*
 
     private RuleContract SampleRuleMethod()
@@ -74,7 +66,6 @@ public class SampleRule
 
         return registryRule;
     */
-    
 
 
 }

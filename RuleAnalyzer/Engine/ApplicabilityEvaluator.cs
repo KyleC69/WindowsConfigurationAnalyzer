@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/23
+﻿//  Created:  2025/11/24
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  RuleAnalyzer
 //        File:   ApplicabilityEvaluator.cs
@@ -13,11 +13,7 @@
 
 
 
-#region
-
 using System.Text.Json;
-
-#endregion
 
 
 
@@ -33,31 +29,25 @@ public class ApplicabilityEvaluator
     public bool IsApplicable(JsonElement applicability)
     {
         // Ensure the element is an object
-        if (applicability.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
+        if (applicability.ValueKind != JsonValueKind.Object) return false;
 
-        string? osFamily = TryGetString(applicability, "OSFamily");
-        string? minVersionStr = TryGetString(applicability, "MinVersion");
-        string? maxVersionStr = TryGetString(applicability, "MaxVersion");
-        string? product = TryGetString(applicability, "Product");
+        var osFamily = TryGetString(applicability, "OSFamily");
+        var minVersionStr = TryGetString(applicability, "MinVersion");
+        var maxVersionStr = TryGetString(applicability, "MaxVersion");
+        var product = TryGetString(applicability, "Product");
 
-        if (string.IsNullOrWhiteSpace(osFamily))
-        {
-            return false; // OSFamily is required for applicability
-        }
+        if (string.IsNullOrWhiteSpace(osFamily)) return false; // OSFamily is required for applicability
 
         Version currentVersion = Environment.OSVersion.Version;
         Version? minVersion = ParseVersion(minVersionStr);
         Version? maxVersion = ParseVersion(maxVersionStr);
 
-        string currentPlatform = Environment.OSVersion.Platform.ToString();
+        var currentPlatform = Environment.OSVersion.Platform.ToString();
 
-        bool osMatch = MatchesOsFamily(currentPlatform, osFamily);
-        bool versionInRange = (minVersion is null || currentVersion >= minVersion) &&
+        var osMatch = MatchesOsFamily(currentPlatform, osFamily);
+        var versionInRange = (minVersion is null || currentVersion >= minVersion) &&
                              (maxVersion is null || currentVersion <= maxVersion);
-        bool productMatch = string.IsNullOrWhiteSpace(product) || MatchesProduct(product);
+        var productMatch = string.IsNullOrWhiteSpace(product) || MatchesProduct(product);
 
         return osMatch && versionInRange && productMatch;
     }
@@ -77,15 +67,9 @@ public class ApplicabilityEvaluator
 
     private static Version? ParseVersion(string? version)
     {
-        if (string.IsNullOrWhiteSpace(version))
-        {
-            return null;
-        }
+        if (string.IsNullOrWhiteSpace(version)) return null;
 
-        if (Version.TryParse(version, out Version? v))
-        {
-            return v;
-        }
+        if (Version.TryParse(version, out Version? v)) return v;
 
         return null; // Ignore unparsable version
     }

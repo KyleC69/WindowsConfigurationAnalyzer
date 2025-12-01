@@ -13,8 +13,6 @@
 
 
 
-#region
-
 using System.Diagnostics.CodeAnalysis;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
@@ -23,8 +21,6 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
-
-#endregion
 
 
 
@@ -41,9 +37,16 @@ public class NavigationViewService(INavigationService navigationService, IPageSe
     private NavigationView? _navigationView;
 
 
-    public IList<object>? MenuItems => _navigationView?.MenuItems;
+    public IList<object>? MenuItems
+    {
+        get => _navigationView?.MenuItems;
+    }
 
-    public object? SettingsItem => _navigationView?.SettingsItem;
+
+    public object? SettingsItem
+    {
+        get => _navigationView?.SettingsItem;
+    }
 
 
 

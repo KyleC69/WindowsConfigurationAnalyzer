@@ -13,8 +13,6 @@
 
 
 
-#region
-
 using CommunityToolkit.Mvvm.ComponentModel;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
@@ -23,8 +21,6 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-
-#endregion
 
 
 

@@ -13,13 +13,9 @@
 
 
 
-#region
-
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
-
-#endregion
 
 
 
@@ -47,7 +43,7 @@ public sealed class EventLevelToBrushConverter : IValueConverter
                 level = (byte)i;
             else if (value is long l)
                 level = (byte)l;
-            else if (value is string str && byte.TryParse(str, out byte parsed)) level = parsed;
+            else if (value is string str && byte.TryParse(str, out var parsed)) level = parsed;
         }
         catch
         {

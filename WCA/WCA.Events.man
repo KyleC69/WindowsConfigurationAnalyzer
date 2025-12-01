@@ -84,6 +84,7 @@
   <keyword name="Configuration" message="$(string.keyword_Configuration)" mask="0x1000"/>
   <keyword name="RulesEngine" message="$(string.keyword_RulesEngine)" mask="0x2000"/>
   <keyword name="Action" message="$(string.keyword_Action)" mask="0x4000"/>
+  <keyword name="Failure" message="$(string.keyword_Failure)" mask="0x8000"/>
   <keyword name="Session3" message="$(string.keyword_Session3)" mask="0x100000000000"/>
   <keyword name="Session2" message="$(string.keyword_Session2)" mask="0x200000000000"/>
   <keyword name="Session1" message="$(string.keyword_Session1)" mask="0x400000000000"/>
@@ -124,7 +125,7 @@
   <event value="1001" version="0" level="win:Informational" symbol="SessionStart" keywords="Analyzer" opcode="win:Start" task="Control" channel="Operational" template="SessionStartArgs"/>
   <event value="1002" version="0" level="win:Informational" symbol="SessionStop" keywords="Analyzer" opcode="win:Stop" task="Control" channel="Operational" template="SessionStopArgs"/>
   <event value="1003" version="0" level="win:Error" symbol="ExceptionError" keywords="Analyzer" opcode="ExceptionFailure" task="Error" channel="Operational" template="ExceptionErrorArgs"/>
-  <event value="1004" version="0" level="win:Warning" symbol="ExceptionWarning" keywords="Analyzer" task="Warning" channel="Operational" template="ExceptionWarningArgs"/>
+  <event value="1004" version="0" level="win:Warning" symbol="ExceptionWarning" message="$(string.event_ExceptionWarning)" keywords="Analyzer" task="Warning" channel="Operational" template="ExceptionWarningArgs"/>
   <event value="3201" version="0" level="win:Informational" symbol="StartupCapture" keywords="Diagnostics" opcode="Capture" task="Module" channel="Operational" template="StartupCaptureArgs"/>
   <event value="3202" version="0" level="win:Informational" symbol="StartupAnalysis" keywords="Diagnostics" opcode="Analyze" task="Module" channel="Operational" template="StartupAnalysisArgs"/>
   <event value="3401" version="0" level="win:Informational" symbol="AuditCapture" keywords="Audit" opcode="AuditCaptureOp" task="Module" channel="Operational" template="AuditCaptureArgs"/>
@@ -134,13 +135,13 @@
   <event value="3610" version="0" level="win:Informational" symbol="ExportCompleted" keywords="Export" task="Export" channel="Operational" template="ExportCompletedArgs"/>
   <event value="3801" version="0" level="win:Informational" symbol="ReadersCapture" keywords="Readers" opcode="ReadersCaptureOp" task="Module" channel="Operational" template="ReadersCaptureArgs"/>
   <event value="3802" version="0" level="win:Informational" symbol="ReadersAnalysis" keywords="Readers" opcode="ReadersAnalyzeOp" task="Module" channel="Operational" template="ReadersAnalysisArgs"/>
-  <event value="4001" version="0" level="win:Error" symbol="ActivityLoggerFallback" keywords="UI" opcode="ActivityLoggerFallbackOp" task="Error" channel="Operational" template="ActivityLoggerFallbackArgs"/>
-  <event value="4300" version="0" level="win:Error" symbol="RulesEngineError" keywords="Analyzer" opcode="RulesEngineFailure" task="Error" channel="Operational" template="RulesEngineErrorArgs"/>
-  <event value="4305" version="0" level="win:Warning" symbol="RulesEngineWarning" opcode="RuleValidationError" task="RulesEngine" channel="Operational" template="RulesEngineWarningArgs"/>
-  <event value="4215" version="0" level="win:Informational" symbol="ActionStartWithRelated" keywords="Analyzer" opcode="win:Start" task="ActionRelated" channel="Operational" template="ActionStartWithRelatedArgs"/>
-  <event value="4220" version="0" level="win:Informational" symbol="ActionStop" keywords="Analyzer" opcode="win:Stop" task="Action" channel="Operational" template="ActionStopArgs"/>
-  <event value="4210" version="0" level="win:Informational" symbol="ActionStart" keywords="Action" opcode="win:Start" task="Action" channel="Operational" template="ActionStartArgs"/>
-  <event value="4211" version="0" level="win:Error" symbol="ActionFailed" keywords="Action" opcode="ActionFailure" task="Error" channel="Operational" template="ActionFailedArgs"/>
+  <event value="4001" version="0" level="win:Error" symbol="ActivityLoggerFallback" message="$(string.event_ActivityLoggerFallback)" keywords="UI" opcode="ActivityLoggerFallbackOp" task="Error" channel="Operational" template="ActivityLoggerFallbackArgs"/>
+  <event value="4300" version="0" level="win:Error" symbol="RulesEngineError" message="$(string.event_RulesEngineError)" keywords="Analyzer" opcode="RulesEngineFailure" task="Error" channel="Operational" template="RulesEngineErrorArgs"/>
+  <event value="4305" version="0" level="win:Warning" symbol="RulesEngineWarning" message="$(string.event_RulesEngineWarning)" opcode="RuleValidationError" task="RulesEngine" channel="Operational" template="RulesEngineWarningArgs"/>
+  <event value="4215" version="0" level="win:Informational" symbol="ActionStartWithRelated" message="$(string.event_ActionStartWithRelated)" keywords="Analyzer" opcode="win:Start" task="ActionRelated" channel="Operational" template="ActionStartWithRelatedArgs"/>
+  <event value="4220" version="0" level="win:Informational" symbol="ActionStop" message="$(string.event_ActionStop)" keywords="Analyzer" opcode="win:Stop" task="Action" channel="Operational" template="ActionStopArgs"/>
+  <event value="4210" version="0" level="win:Informational" symbol="ActionStart" message="$(string.event_ActionStart)" keywords="Action" opcode="win:Start" task="Action" channel="Operational" template="ActionStartArgs"/>
+  <event value="5001" version="0" level="win:Error" symbol="UnexpectedAppShutdown" message="$(string.event_UnexpectedAppShutdown)" keywords="Failure" opcode="OSFailure" task="Error" channel="Operational" template="UnexpectedAppShutdownArgs"/>
  </events>
  <templates>
   <template tid="EventSourceMessageArgs">
@@ -346,22 +347,14 @@
    <data name="CorrelationId" inType="win:UnicodeString"/>
   </template>
   <template tid="ExceptionErrorArgs">
-   <data name="SessionId" inType="win:UnicodeString"/>
-   <data name="CorrelationId" inType="win:UnicodeString"/>
    <data name="ExceptMessage" inType="win:UnicodeString"/>
    <data name="ExceptStack" inType="win:UnicodeString"/>
    <data name="Context" inType="win:UnicodeString"/>
   </template>
   <template tid="ExceptionWarningArgs">
-   <data name="SessionId" inType="win:UnicodeString"/>
-   <data name="CorrelationId" inType="win:UnicodeString"/>
    <data name="ExceptMessage" inType="win:UnicodeString"/>
-   <data name="ExceptStack" inType="win:UnicodeString"/>
-   <data name="Context" inType="win:UnicodeString"/>
   </template>
   <template tid="StartupCaptureArgs">
-   <data name="Module" inType="win:UnicodeString"/>
-   <data name="CorrelationId" inType="win:UnicodeString"/>
    <data name="ItemCount" inType="win:UInt32"/>
    <data name="DurationMs" inType="win:UInt32"/>
    <data name="Details" inType="win:UnicodeString"/>
@@ -439,9 +432,10 @@
   <template tid="ActionStartArgs">
    <data name="message" inType="win:UnicodeString"/>
   </template>
-  <template tid="ActionFailedArgs">
-   <data name="appInitializationHasFailed" inType="win:UnicodeString"/>
-   <data name="message" inType="win:UnicodeString"/>
+  <template tid="UnexpectedAppShutdownArgs">
+   <data name="toString" inType="win:UnicodeString"/>
+   <data name="eMessage" inType="win:UnicodeString"/>
+   <data name="exceptionStackTrace" inType="win:UnicodeString"/>
   </template>
  </templates>
 </provider>
@@ -450,7 +444,15 @@
 <localization>
  <resources culture="en-US">
   <stringTable>
+   <string id="event_ActionStart" value="Action Start: %1"/>
+   <string id="event_ActionStartWithRelated" value="Action (related) Start: %1"/>
+   <string id="event_ActionStop" value="Action Stop: %1"/>
+   <string id="event_ActivityLoggerFallback" value="There has been an internal error in the Activity Logger, event in the high speed logger are likely missing. The exception message is: %1"/>
+   <string id="event_ExceptionWarning" value="A non-fatal exception occurred: %1"/>
+   <string id="event_RulesEngineError" value="There has been a fatal error in the Rules Engine. Their may be further details available in other events surrounding this one.Exception Details: %1"/>
+   <string id="event_RulesEngineWarning" value="A workflow failed to pass the schema validation check. The Name is in the message of this event.  Rules Engine Validation Warning: %1"/>
    <string id="event_UINotification" value="User Interface Notification: %1"/>
+   <string id="event_UnexpectedAppShutdown" value="There has been an unhandled exception in the application. The application will now shutdown, more details may be available in previous events. ActivityId: %%1"/>
    <string id="keyword_Action" value="Action"/>
    <string id="keyword_Analyzer" value="Analyzer"/>
    <string id="keyword_Audit" value="Audit"/>
@@ -458,6 +460,7 @@
    <string id="keyword_Database" value="Database"/>
    <string id="keyword_Diagnostics" value="Diagnostics"/>
    <string id="keyword_Export" value="Export"/>
+   <string id="keyword_Failure" value="Failure"/>
    <string id="keyword_Integration" value="Integration"/>
    <string id="keyword_Network" value="Network"/>
    <string id="keyword_OS" value="OS"/>

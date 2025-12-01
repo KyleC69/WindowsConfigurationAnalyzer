@@ -6,40 +6,141 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels"
     xmlns:local="using:KC.WindowsConfigurationAnalyzer.Contracts"
-    xmlns:global="using:KC.WindowsConfigurationAnalyzer.Contracts"
-    mc:Ignorable="d"
-    xmlns:viewModels="using:KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels">
+    mc:Ignorable="d">
 
 
-
-    <Page.DataContext>
-        <viewModels:WorkflowViewModel />
-    </Page.DataContext>
-
-    
     <Grid x:Name="ContentArea">
-
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,10,10,0" VerticalAlignment="Top">
-            <ListBox x:Name="RuleListComboBox" Width="150" Height="30" Margin="0,0,10,0"
-                     ItemsSource="{x:Bind ViewModel.WorkFlows}" SelectionMode="Multiple">
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="Margin" Value="0" />
-                        <Setter Property="Padding" Value="0" />
-                    </Style>
-                </ListBox.ItemContainerStyle>
-                <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="local:Workflow">
-                        <StackPanel Orientation="Horizontal" Spacing="5">
-                            <TextBlock Width="180" Height="40" VerticalAlignment="Center" Text="{x:Bind WorkflowName}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="550" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Orientation="Vertical" Width="250" Spacing="10">
 
             <Button x:Name="RunRules" Content="Run Rules Engine" Width="180" Height="40" Margin="15"
                     Command="{x:Bind ViewModel.RunRulesCommand}" />
+            <Button x:Name="ValidateRules" Content="Validate Rules" Width="180" Height="40" Margin="15"
+                    Command="{x:Bind ViewModel.ValidateRulesCommand}" />
+            <Button x:Name="Cancel" Content="Cancel" Width="180" Height="40" Margin="15"
+                    Command="{x:Bind ViewModel.CancelCommand}" />
+        </StackPanel>
 
+
+        <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="10"
+                    HorizontalAlignment="Center">
+            <Border x:Name="PanelBorder" BorderThickness="2" BorderBrush="Gray" CornerRadius="5">
+
+                <StackPanel Margin="5" HorizontalAlignment="Center">
+                    <TextBlock Text="Available Workflows" FontSize="18" FontWeight="Bold" Margin="4" />
+                    <GridView x:Name="WorkflowGridView" Height="300" Margin="0" Padding="0"
+                              ItemsSource="{x:Bind ViewModel.Workflows}">
+
+                        <GridView.Resources>
+                            <Style TargetType="TextBox" x:Key="BoxStyle">
+                                <Setter Property="BorderBrush" Value="{ThemeResource AppBarBorderThemeBrush}" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="IsReadOnly" Value="True" />
+                            </Style>
+                        </GridView.Resources>
+                        <GridView.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0" HorizontalAlignment="Center">
+                                    <Border BorderBrush="LightGray" BorderThickness="1" Width="1000" Padding="0"
+                                            Margin="0">
+                                        <Grid Margin="0" Padding="0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="45" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Style="{StaticResource BoxStyle}" Text="WorkflowName"
+                                                     Grid.Column="1" Width="200" />
+                                            <TextBox Style="{StaticResource BoxStyle}" Text="Author" Grid.Column="2"
+                                                     Width="100" />
+                                            <TextBox Style="{StaticResource BoxStyle}" Text="LastRun" Grid.Column="3"
+                                                     Width="145" />
+                                            <TextBox Style="{StaticResource BoxStyle}" Text="LastRunResult"
+                                                     Grid.Column="4" Width="185" />
+                                            <TextBox Style="{StaticResource BoxStyle}" Text="Rules" Grid.Column="5"
+                                                     Width="65" />
+                                            <TextBox Style="{StaticResource BoxStyle}" Text="Applicability.OSFamily"
+                                                     Grid.Column="6" Width="145" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridView.HeaderTemplate>
+
+                        <GridView.ItemTemplate>
+
+
+                            <DataTemplate x:DataType="vm:WorkflowGridViewItem">
+                                <StackPanel Orientation="Horizontal" Margin="0" HorizontalAlignment="Center">
+                                    <Border BorderBrush="LightGray" BorderThickness="1" Width="700" Padding="0"
+                                            Margin="0">
+                                        <Grid Margin="0" Padding="0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="45" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox Grid.Column="0" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
+                                            <TextBox Style="{StaticResource BoxStyle}" Text="{x:Bind WorkflowName}"
+                                                     Grid.Column="1" Width="200" />
+                                            <TextBox Style="{StaticResource BoxStyle}" Text="{x:Bind Author}"
+                                                     Grid.Column="2" Width="100" />
+                                            <TextBox Style="{StaticResource BoxStyle}"
+                                                     Text="{x:Bind LastRun, Mode=TwoWay}"
+                                                     Grid.Column="3" Width="145" />
+                                            <TextBox Style="{StaticResource BoxStyle}"
+                                                     Text="{x:Bind LastRunResult, Mode=TwoWay}"
+                                                     Grid.Column="4" Width="185" />
+                                            <TextBox Style="{StaticResource BoxStyle}" Text="{x:Bind RuleCount}"
+                                                     Grid.Column="5" Width="65" />
+                                            <TextBox Style="{StaticResource BoxStyle}"
+                                                     Text="{x:Bind Applicability.OSFamily}" Grid.Column="6" Width="145" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridView.ItemTemplate>
+
+                        <GridView.ItemContainerStyle>
+                            <Style TargetType="GridViewItem">
+                                <Setter Property="Margin" Value="0" />
+                                <Setter Property="Padding" Value="0" />
+                            </Style>
+                        </GridView.ItemContainerStyle>
+                    </GridView>
+
+
+                    <!---->
+                    <ListView x:Name="JsonErrors" ItemsSource="{x:Bind ViewModel.JsonErrors}" Width="500">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Margin" Value="0" />
+                                <Setter Property="Padding" Value="0" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="local:WorkflowSerializationError">
+                                <StackPanel Orientation="Horizontal" Margin="5">
+                                    <TextBox Text="{x:Bind ErrorMessage}" FontWeight="SemiBold" Width="350" />
+                                    <TextBox Text="{x:Bind FilePath}" FontStyle="Italic" Width="100" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Border>
         </StackPanel>
 
     </Grid>

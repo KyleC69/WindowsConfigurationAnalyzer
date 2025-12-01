@@ -13,12 +13,8 @@
 
 
 
-#region
-
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
-
-#endregion
 
 
 
@@ -34,8 +30,16 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
     private IActivityLogger? _logger;
 
 
-    public string Name => "Performance Analyzer";
-    public string Area => "Performance";
+    public string Name
+    {
+        get => "Performance Analyzer";
+    }
+
+
+    public string Area
+    {
+        get => "Performance";
+    }
 
 
 
@@ -44,7 +48,7 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
     public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger;
-        string area = Area;
+        var area = Area;
         _logger.Log("INF", "Start: Collecting performance metrics", area);
         List<string> warnings = [];
         List<string> errors = [];
@@ -70,17 +74,14 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
             foreach (IDictionary<string, object?> os in osRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                object? lastBoot = os.GetOrDefault("LastBootUpTime");
-                if (lastBoot is string lb && TryParseDmtfDate(lb, out DateTimeOffset bootUtc))
-                {
-                    uptime = DateTimeOffset.UtcNow - bootUtc;
-                }
+                var lastBoot = os.GetOrDefault("LastBootUpTime");
+                if (lastBoot is string lb && TryParseDmtfDate(lb, out DateTimeOffset bootUtc)) uptime = DateTimeOffset.UtcNow - bootUtc;
 
-                double total = ToDouble(os.GetOrDefault("TotalVisibleMemorySize"));
-                double free = ToDouble(os.GetOrDefault("FreePhysicalMemory"));
+                var total = ToDouble(os.GetOrDefault("TotalVisibleMemorySize"));
+                var free = ToDouble(os.GetOrDefault("FreePhysicalMemory"));
                 if (total > 0)
                 {
-                    double used = total - free;
+                    var used = total - free;
                     memPct = Math.Round(used / total * 100.0, 2);
                 }
 
@@ -109,12 +110,12 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
             foreach (IDictionary<string, object?> row in cpuRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string name = row.GetOrDefault("Name")?.ToString() ?? string.Empty;
-                double total = ToDouble(row.GetOrDefault("PercentProcessorTime"));
-                double kernel = ToDouble(row.GetOrDefault("PercentPrivilegedTime"));
-                double user = ToDouble(row.GetOrDefault("PercentUserTime"));
-                double interrupts = ToDouble(row.GetOrDefault("InterruptsPerSec"));
-                double dpcs = ToDouble(row.GetOrDefault("DPCsQueuedPerSec"));
+                var name = row.GetOrDefault("Name")?.ToString() ?? string.Empty;
+                var total = ToDouble(row.GetOrDefault("PercentProcessorTime"));
+                var kernel = ToDouble(row.GetOrDefault("PercentPrivilegedTime"));
+                var user = ToDouble(row.GetOrDefault("PercentUserTime"));
+                var interrupts = ToDouble(row.GetOrDefault("InterruptsPerSec"));
+                var dpcs = ToDouble(row.GetOrDefault("DPCsQueuedPerSec"));
                 Dictionary<string, object?> item = new()
                 {
                     ["Name"] = name,
@@ -124,10 +125,7 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
                     ["InterruptsPerSec"] = interrupts,
                     ["DPCsQueuedPerSec"] = dpcs
                 };
-                if (string.Equals(name, "_Total", StringComparison.OrdinalIgnoreCase))
-                {
-                    cpuPct = total;
-                }
+                if (string.Equals(name, "_Total", StringComparison.OrdinalIgnoreCase)) cpuPct = total;
 
                 cpuAll.Add(item);
             }
@@ -281,12 +279,9 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
             foreach (IDictionary<string, object?> row in procRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string? name = row.GetOrDefault("Name")?.ToString();
+                var name = row.GetOrDefault("Name")?.ToString();
 
-                if (string.Equals(name, "_Total", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
+                if (string.Equals(name, "_Total", StringComparison.OrdinalIgnoreCase)) continue;
 
                 proc.Add(new Dictionary<string, object?>
                 {
@@ -343,17 +338,14 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
         utc = default;
         try
         {
-            if (dmtf.Length < 25)
-            {
-                return false;
-            }
+            if (dmtf.Length < 25) return false;
 
-            int year = int.Parse(dmtf.Substring(0, 4));
-            int month = int.Parse(dmtf.Substring(4, 2));
-            int day = int.Parse(dmtf.Substring(6, 2));
-            int hour = int.Parse(dmtf.Substring(8, 2));
-            int minute = int.Parse(dmtf.Substring(10, 2));
-            int second = int.Parse(dmtf.Substring(12, 2));
+            var year = int.Parse(dmtf.Substring(0, 4));
+            var month = int.Parse(dmtf.Substring(4, 2));
+            var day = int.Parse(dmtf.Substring(6, 2));
+            var hour = int.Parse(dmtf.Substring(8, 2));
+            var minute = int.Parse(dmtf.Substring(10, 2));
+            var second = int.Parse(dmtf.Substring(12, 2));
             DateTime dt = new(year, month, day, hour, minute, second, DateTimeKind.Local);
             utc = new DateTimeOffset(dt).ToUniversalTime();
 
@@ -371,10 +363,7 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
 
     private static double ToDouble(object? v)
     {
-        if (v is null)
-        {
-            return 0d;
-        }
+        if (v is null) return 0d;
 
         try
         {
@@ -382,7 +371,7 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
         }
         catch
         {
-            return double.TryParse(v.ToString(), out double d) ? d : 0d;
+            return double.TryParse(v.ToString(), out var d) ? d : 0d;
         }
     }
 
@@ -392,10 +381,7 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
 
     private static int ToInt(object? v)
     {
-        if (v is null)
-        {
-            return 0;
-        }
+        if (v is null) return 0;
 
         try
         {
@@ -403,7 +389,7 @@ public sealed class PerformanceAnalyzer : IAnalyzerModule
         }
         catch
         {
-            return int.TryParse(v.ToString(), out int i) ? i : 0;
+            return int.TryParse(v.ToString(), out var i) ? i : 0;
         }
     }
 

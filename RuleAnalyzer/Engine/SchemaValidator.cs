@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/23
+﻿//  Created:  2025/11/24
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  RuleAnalyzer
 //        File:   SchemaValidator.cs
@@ -13,21 +13,6 @@
 
 
 
-#region
-
-using System.Text.Json;
-
-using KC.WindowsConfigurationAnalyzer.Contracts;
-
-using NJsonSchema;
-using NJsonSchema.Validation;
-
-#endregion
-
-
-
-
-
 namespace KC.WindowsConfigurationAnalyzer.RuleAnalyzer.Engine;
 
 
@@ -35,24 +20,7 @@ public class SchemaValidator
 {
 
 
-    private readonly IActivityLogger _logger;
-    private readonly JsonSchema _ruleSchema;
-    private readonly JsonSchema _workflowSchema;
-
-
-
-
-
-    public SchemaValidator(string workflowSchemaPath, string ruleSchemaPath, IActivityLogger logger)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _workflowSchema = JsonSchema.FromUrlAsync(workflowSchemaPath).Result;
-        _ruleSchema = JsonSchema.FromUrlAsync(ruleSchemaPath).Result;
-
-        //    _logger!.Log("ERR", "Unable to reach Schema server, check internet options and try again.", "SchemaURLFailure");
-        //  WCAEventSource.Log.NetworkError("","https",workflowSchemaPath,443,$"Unable to reach Schema server ex.ToString()","");
-    }
-
+    /*
 
 
 
@@ -92,6 +60,7 @@ public class SchemaValidator
 
         return results.Count == 0;
     }
+    */
 
 
 }

@@ -21,24 +21,10 @@
 // All Rights Reserved 2025
 // Kyle L Crowder
 
+
+
+
 namespace KC.WindowsConfigurationAnalyzer.Contracts;
-
-
-public interface IAnalyzerContext
-{
-
-
-    DateTime Time { get; }
-    IActivityLogger ActionLogger { get; }
-    IRegistryReader Registry { get; }
-    ICimReader Cim { get; }
-    IEventLogReader EventLog { get; }
-    IFirewallReader Firewall { get; }
-    IEnvReader Environment { get; }
-
-
-}
-
 
 
 public sealed class AnalyzerContext : IAnalyzerContext

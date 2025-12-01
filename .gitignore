@@ -372,3 +372,6 @@ FodyWeavers.xsd
 /.gitignore
 /.gitignore
 /RuleAnalyzer/Engine/WorkflowConcurrentExecutor.cs.keep
+/WCA/WCA.Events.dll
+/WCA/WCA.Events.dll
+/Contracts/workflow-schema-1.0.0.json

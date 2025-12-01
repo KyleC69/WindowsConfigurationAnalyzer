@@ -1,4 +1,4 @@
-Windows Configuration Analyzer: A Comprehensive C# Library for Windows Configuration Analysis
+indows Configuration Analyzer: A Comprehensive C# Library for Windows Configuration Analysis
 =============================================================================================
 
 * * *

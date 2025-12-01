@@ -13,14 +13,10 @@
 
 
 
-#region
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 using Microsoft.UI.Xaml;
-
-#endregion
 
 
 
@@ -82,7 +78,7 @@ public class ThemeSelectorService(ILocalSettingsService localSettingsService) : 
 
     private async Task<ElementTheme> LoadThemeFromSettingsAsync()
     {
-        string? themeName = await localSettingsService.ReadApplicationSettingAsync<string>(SettingsKey);
+        var themeName = await localSettingsService.ReadApplicationSettingAsync<string>(SettingsKey);
 
         return Enum.TryParse(themeName, out ElementTheme cacheTheme) ? cacheTheme : ElementTheme.Default;
     }

@@ -13,11 +13,7 @@
 
 
 
-#region
-
 using Microsoft.Windows.ApplicationModel.Resources;
-
-#endregion
 
 
 

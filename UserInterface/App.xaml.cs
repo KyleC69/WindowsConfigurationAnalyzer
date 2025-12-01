@@ -13,11 +13,8 @@
 
 
 
-#region
-
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
-using System.Reflection;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
@@ -38,8 +35,6 @@ using WinUIEx;
 
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 
-#endregion
-
 
 
 
@@ -52,9 +47,6 @@ public partial class App : Application
 {
 
 
-    public static PerformanceCounter? LogCounter;
-
-
 
 
 
@@ -63,10 +55,8 @@ public partial class App : Application
         InitializeComponent();
 
 
-
         WCAEventSource.Log.SessionStart(Guid.NewGuid().ToString(), Environment.MachineName, "1.09.0.0", Guid.NewGuid().ToString());
         WCAEventSource.Log.ActionStart("App Initialization has started.");
-
 
 
         ActivityLogger.Initialize(true);
@@ -126,12 +116,12 @@ public partial class App : Application
 
 
                 ActivityLogger.Log("INF", "Analyzer Core Services Loading", "App.xaml.cs");
-       //         services.AddWcaCore();
+                //         services.AddWcaCore();
                 ActivityLogger.Log("INF", "Analyzer Services Loaded", "App.xaml.cs");
 
                 services.AddSingleton<IActivityLogger, ActivityLogAdapter>();
 
-     //           services.AddTransient<AnalyzerRunner>();
+                //           services.AddTransient<AnalyzerRunner>();
 
 
                 // Views and ViewModels
@@ -212,7 +202,19 @@ public partial class App : Application
 
 
 
-    public static string? ProjectDir => Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "ProjectDirectory")?.Value;
+    public static string? RulesStore
+    {
+        get => Environment.GetEnvironmentVariable("WCA_PROJECTDIR", EnvironmentVariableTarget.Process);
+    }
+
+
+    public static CancellationTokenSource ShutdownCts { get; } = new();
+
+
+
+
+
+
 
 
 
@@ -228,20 +230,10 @@ public partial class App : Application
 
     public static UIElement? AppTitlebar { get; set; }
 
-    public static Application AppHost => Current;
 
-
-
-
-
-    private void SaveManifestToFile(out string? message)
+    public static Application AppHost
     {
-        message = null!;
-
-        string? manifest = EventSource.GenerateManifest(typeof(WCAEventSource), "WCA-ProviderResources.dll", EventManifestOptions.Strict);
-        string manpath = Path.Combine(ProjectDir!, "WCA-Provider-Ops.man");
-        File.WriteAllText(manpath, manifest);
-        message = $"Manifest saved to {manpath}";
+        get => Current;
     }
 
 
@@ -263,8 +255,9 @@ public partial class App : Application
     private void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         ActivityLogger.Log("ERR", e.Message, "UnhandledException");
-        EventLog.WriteEntry("Windows Configuration Analyzer",
-            $"Unhandled Exception: {e.Message}\n{e.Exception.StackTrace}", EventLogEntryType.Error);
+        EventLog.WriteEntry("Windows Configuration Analyzer", $"Unhandled Exception: {e.Message}\n{e.Exception.StackTrace}", EventLogEntryType.Error);
+
+        WCAEventSource.Log.UnexpectedAppShutdown(EventSource.CurrentThreadActivityId.ToString(), e.Message, e.Exception.StackTrace);
 
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
     }
@@ -291,29 +284,6 @@ public partial class App : Application
             EventLog.WriteEntry("Windows Configuration Analyzer",
                 $"Fatal Exception during OnLaunched: {e.Message}\n{e.StackTrace}", EventLogEntryType.Error);
         }
-    }
-
-
-
-
-
-    private static bool SetupCounters()
-    {
-        if (!PerformanceCounterCategory.Exists("LoggingCountersCategory"))
-        {
-            CounterCreationDataCollection counterDataCollection =
-            [
-                new CounterCreationData("LogEntries", "Number of log entries", PerformanceCounterType.NumberOfItems32)
-            ];
-
-
-            PerformanceCounterCategory.Create("LoggingCountersCategory", "Logging performance counters",
-                PerformanceCounterCategoryType.SingleInstance, counterDataCollection);
-        }
-
-        LogCounter = new PerformanceCounter("LoggingCountersCategory", "LogEntries", false);
-
-        return true;
     }
 
 

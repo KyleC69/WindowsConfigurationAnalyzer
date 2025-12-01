@@ -13,12 +13,8 @@
 
 
 
-#region
-
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
-
-#endregion
 
 
 
@@ -34,8 +30,16 @@ public sealed class DriversAnalyzer : IAnalyzerModule
     private IActivityLogger? _logger;
 
 
-    public string Name => "Drivers Analyzer";
-    public string Area => "Drivers";
+    public string Name
+    {
+        get => "Drivers Analyzer";
+    }
+
+
+    public string Area
+    {
+        get => "Drivers";
+    }
 
 
 
@@ -54,10 +58,10 @@ public sealed class DriversAnalyzer : IAnalyzerModule
     /// </returns>
     /// <exception cref="OperationCanceledException">Thrown if the operation is canceled.</exception>
     /// <exception cref="Exception">Thrown if an unexpected error occurs during the analysis.</exception>
-    public async Task<AreaResult?> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
+    public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger;
-        string area = Area;
+        var area = Area;
         _logger.Log("INF", "{area} Start Collecting installed driver inventory", $"{area}");
         List<string> warnings = [];
         List<string> errors = [];
@@ -87,10 +91,7 @@ public sealed class DriversAnalyzer : IAnalyzerModule
                     MatchingDeviceId = d.GetOrDefault("MatchingDeviceId")?.ToString()
                 };
                 drivers.Add(entry);
-                if (d.GetOrDefault("IsSigned") is bool and false)
-                {
-                    problematic.Add(new { Reason = "Unsigned", Item = entry });
-                }
+                if (d.GetOrDefault("IsSigned") is bool and false) problematic.Add(new { Reason = "Unsigned", Item = entry });
             }
 
             _logger.Log(area, "PnPDrivers", $"Complete: count={drivers.Count}, issues={problematic.Count}");
@@ -143,7 +144,7 @@ public sealed class DriversAnalyzer : IAnalyzerModule
         var summary = new { Drivers = drivers.Count, ServiceDrivers = serviceDrivers.Count, Problematic = problematic.Count };
         var details = new { PnPSignedDrivers = drivers, ServiceDrivers = serviceDrivers, Problematic = problematic };
 
-        return default;
+        return default!;
     }
 
 

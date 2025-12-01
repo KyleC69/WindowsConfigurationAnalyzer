@@ -1,0 +1,74 @@
+{
+  "$schema": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+  "SchemaRef": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+  "WorkflowName": "User Profile and Environment Audit",
+  "SchemaVersion": "1.0.0",
+  "Author": "Kyle C.",
+  "CreatedOn": "2025-11-24T15:15:00Z",
+  "Constraints": { "RunSequentially": true, "Timeout": "00:15:00" },
+  "Applicability": {"OSFamily": "Windows", "MinVersion": "10.0.15063", "MaxVersion": "10.0.99999" },
+  "WorkflowDescription": "This workflow audits user profile configuration points that are critical to Windows stable operation.",
+  "Rules": [
+    {
+      "RuleName": "CheckUserProfilePath",
+      "Provider": "Registry",
+      "Parameters": {
+        "Hive": "HKEY_LOCAL_MACHINE",
+        "Path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList",
+        "Key": "ProfilesDirectory"
+      },
+      "Condition": { "Operator": "Contains", "Expected": "Users" },
+      "Severity": 6,
+      "Message": "ProfilesDirectory should point to Users folder"
+    },
+    {
+      "RuleName": "VerifyHomeDrive",
+      "Provider": "FileSystem",
+      "Parameters": {
+        "Path": "%HOMEDRIVE%\\%HOMEPATH%",
+        "Permissions": "Read",
+        "Recursive": true
+      },
+      "Condition": { "Operator": "Exists", "Expected": true },
+      "Severity": 7,
+      "Message": "Home drive path must exist and be readable"
+    },
+    {
+      "RuleName": "CheckProfileACL",
+      "Provider": "ACL",
+      "Parameters": {
+        "Path": "%USERPROFILE%",
+        "Identity": "%USERNAME%",
+        "Rights": "FullControl"
+      },
+      "Condition": { "Operator": "Equals", "Expected": "FullControl" },
+      "Severity": 8,
+      "Message": "User must have full control of their profile directory"
+    },
+    {
+      "RuleName": "CheckEnvironmentVariable",
+      "Provider": "Custom",
+      "Parameters": {
+        "Values": {
+          "Variable": "PATH",
+          "ExpectedContains": "System32"
+        }
+      },
+      "Condition": { "Operator": "Contains", "Expected": "System32" },
+      "Severity": 5,
+      "Message": "PATH must contain System32"
+    },
+    {
+      "RuleName": "CheckRunningShell",
+      "Provider": "Process",
+      "Parameters": {
+        "ProcessName": "powershell.exe",
+        "ExpectedCount": 1
+      },
+      "Condition": { "Operator": "GreaterThan", "Expected": 0 },
+      "Severity": 4,
+      "Message": "At least one PowerShell process should be running"
+    }
+  ],
+  "Results": [{  }]
+}

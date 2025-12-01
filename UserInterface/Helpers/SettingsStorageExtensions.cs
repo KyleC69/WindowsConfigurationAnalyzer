@@ -13,18 +13,14 @@
 
 
 
-#region
-
 using System.Runtime.Versioning;
-
-using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Helpers;
-
-using Microsoft.Win32;
 
 using Windows.Storage;
 using Windows.Storage.Streams;
 
-#endregion
+using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Helpers;
+
+using Microsoft.Win32;
 
 
 
@@ -71,7 +67,7 @@ public static class SettingsStorageExtensions
     public static bool IsRoamingStorageAvailable(this ApplicationData appData)
     {
         // Use presence of the user roaming AppData folder as an indicator
-        string roamingPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var roamingPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
         return !string.IsNullOrWhiteSpace(roamingPath) && Directory.Exists(roamingPath);
     }
@@ -97,9 +93,9 @@ public static class SettingsStorageExtensions
     {
         if (content is null) throw new ArgumentNullException(nameof(content));
 
-        string fullPath = Path.Combine(folder.Path, GetFileName(name));
+        var fullPath = Path.Combine(folder.Path, GetFileName(name));
         Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-        string fileContent = await Json.StringifyAsync(content);
+        var fileContent = await WcaJson.StringifyAsync(content);
 
         await File.WriteAllTextAsync(fullPath, fileContent);
     }
@@ -138,13 +134,13 @@ public static class SettingsStorageExtensions
     /// </example>
     public static async Task<T?> ReadAsync<T>(this StorageFolder folder, string name)
     {
-        string fullPath = Path.Combine(folder.Path, GetFileName(name));
+        var fullPath = Path.Combine(folder.Path, GetFileName(name));
 
         if (!File.Exists(fullPath)) return default;
 
-        string fileContent = await File.ReadAllTextAsync(fullPath);
+        var fileContent = await File.ReadAllTextAsync(fullPath);
 
-        return await Json.ToObjectAsync<T>(fileContent);
+        return await WcaJson.ToObjectAsync<T>(fileContent);
     }
 
 
@@ -168,7 +164,7 @@ public static class SettingsStorageExtensions
     {
         if (value is null) throw new ArgumentNullException(nameof(value));
 
-        string str = await Json.StringifyAsync(value);
+        var str = await WcaJson.StringifyAsync(value);
         SaveString(settings, key, str);
     }
 
@@ -227,9 +223,9 @@ public static class SettingsStorageExtensions
     public static async Task<T?> ReadAsync<T>(this ApplicationDataContainer settings, string key)
     {
         using RegistryKey? appKey = GetAppRegistryKey(false);
-        string? obj = appKey?.GetValue(key) as string;
+        var obj = appKey?.GetValue(key) as string;
 
-        return !string.IsNullOrEmpty(obj) ? await Json.ToObjectAsync<T>(obj) : default;
+        return !string.IsNullOrEmpty(obj) ? await WcaJson.ToObjectAsync<T>(obj) : default;
     }
 
 
@@ -264,10 +260,10 @@ public static class SettingsStorageExtensions
 
         if (string.IsNullOrEmpty(fileName)) throw new ArgumentException("Log filename is null or empty. Specify a valid file name.");
 
-        string fullPath = Path.Combine(folder.Path, fileName);
+        var fullPath = Path.Combine(folder.Path, fileName);
         Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
 
-        bool fileExists = File.Exists(fullPath);
+        var fileExists = File.Exists(fullPath);
 
         if (fileExists && options == CreationCollisionOption.FailIfExists) throw new IOException($"File already exists: {fullPath}");
 
@@ -307,10 +303,10 @@ public static class SettingsStorageExtensions
     /// <exception cref="FileNotFoundException">Thrown if the file is not found in the specified folder.</exception>
     public static async Task<byte[]?> ReadFileAsync(this StorageFolder folder, string fileName)
     {
-        string fullPath = Path.Combine(folder.Path, fileName);
+        var fullPath = Path.Combine(folder.Path, fileName);
         if (File.Exists(fullPath))
         {
-            byte[] content = await File.ReadAllBytesAsync(fullPath);
+            var content = await File.ReadAllBytesAsync(fullPath);
 
             return content;
         }
@@ -342,10 +338,10 @@ public static class SettingsStorageExtensions
     {
         if (file != null)
         {
-            string path = file.Path;
+            var path = file.Path;
             if (!string.IsNullOrEmpty(path) && File.Exists(path))
             {
-                byte[] bytes = await File.ReadAllBytesAsync(path);
+                var bytes = await File.ReadAllBytesAsync(path);
 
                 return bytes;
             }
@@ -378,7 +374,7 @@ public static class SettingsStorageExtensions
 
     private static RegistryKey? GetAppRegistryKey(bool writable)
     {
-        string subKey = $"Software\\{RegistryCompany}\\{RegistryProduct}";
+        var subKey = $"Software\\{RegistryCompany}\\{RegistryProduct}";
 
         return writable
             ? Registry.CurrentUser.CreateSubKey(subKey, true)

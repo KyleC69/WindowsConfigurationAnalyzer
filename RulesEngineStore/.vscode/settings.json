@@ -1,0 +1,8 @@
+{
+    "json.schemas": [
+        {
+            "fileMatch": ["*.workflow.json"],
+            "url":"https://kylec69.github.io/schemas/workflow-schema-1.0.0.json"
+        }
+    ]
+}

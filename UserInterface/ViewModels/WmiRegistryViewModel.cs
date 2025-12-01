@@ -13,8 +13,6 @@
 
 
 
-#region
-
 using System.Collections.ObjectModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -23,8 +21,6 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.ViewModels;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Services;
-
-#endregion
 
 
 

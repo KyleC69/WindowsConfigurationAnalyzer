@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/22
+﻿//  Created:  2025/11/24
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  RuleAnalyzer
 //        File:   InitializeEngine.cs
@@ -13,24 +13,11 @@
 
 
 
-#region
-
-#region
-
-using System.Reflection;
 using System.Text.Json;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Readers;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Etw;
-
-using Newtonsoft.Json;
-
-using NJsonSchema.Validation;
-
-#endregion
-
-#endregion
 
 
 
@@ -44,32 +31,22 @@ public class InitializeEngine
 
 
     private readonly ApplicabilityEvaluator _evaluator;
-
-
-
     private readonly IActivityLogger _logger;
-    private readonly SchemaValidator _validator;
-    private WorkflowOrchestrator _orchestrator = null!;
+    private readonly WorkflowOrchestrator _orchestrator = null!;
+    private readonly List<WorkflowContract> _workflows = null!;
 
 
 
 
 
-    public InitializeEngine(IActivityLogger logger)
+    public InitializeEngine(IActivityLogger logger, List<WorkflowContract> flowList)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _validator = new SchemaValidator(
-            "https://kylec69.github.io/schemas/workflow.schema.json",
-            "https://kylec69.github.io/schemas/rule.schema.json", logger);
         _evaluator = new ApplicabilityEvaluator();
+        _workflows = flowList ?? throw new ArgumentNullException(nameof(flowList));
+        _orchestrator = GetOrchestrator();
         WCAEventSource.Log.ActionStart("InitializeEngine:: Starting to Initialize Rules Engine.");
     }
-
-
-
-
-
-    public static string? ProjectDir => Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "ProjectDirectory")?.Value;
 
 
 
@@ -90,83 +67,24 @@ public class InitializeEngine
             new AclReader(_logger)
         ];
 
-
-
-        _orchestrator = new WorkflowOrchestrator(probes);
-
-        return _orchestrator;
+        return new WorkflowOrchestrator(probes);
     }
 
 
 
 
 
-
-
-
-
-    public async Task<ICollection<WorkflowResultSet>> StartRulesEngine()
+    public async Task<ICollection<WorkflowResultSet>> StartRulesEngine(CancellationToken token)
     {
-        WCAEventSource.Log.ActionStart("InitializeEngine:: Starting Rules Engine.");
-        _logger.Log("INF", "Starting Rules Engine", "InitializeEngine");
+        List<WorkflowResultSet> allResults = new();
+        token.ThrowIfCancellationRequested();
 
-
-        WCAEventSource.Log.ActionStop("InitializeEngine:: Rules Engine Initialization Complete.");
-
-        return await LoadRulesAsync();
-    }
-
-
-
-
-
-
-
-
-
-
-    public async Task<ICollection<WorkflowResultSet>> LoadRulesAsync()
-    {
-        //TODO: Remove hardcoded path
-        string? SolutionDir = Directory.GetParent(ProjectDir!)?.FullName;
-        string RuleStore = Path.Combine(SolutionDir!, "RulesEngineStore");
-        string[] rulesFiles = Directory.GetFiles(RuleStore, "*.json", SearchOption.AllDirectories);
-
-        ICollection<WorkflowResultSet> allResults = [];
-
-        if (rulesFiles.Length == 0)
+        // Process each workflow in parallel
+        await Parallel.ForEachAsync(_workflows, async (workflow, ct) =>
         {
-            await Task.FromResult(allResults);
-        }
-
-        string[] rulesJson = [];
-
-
-
-        foreach (string i in rulesFiles)
-        {
-            string json = await File.ReadAllTextAsync(i);
-
-
-            JsonDocument ruleDoc = JsonDocument.Parse(json);
-            //Validate the schema first, if it isn't right we don't want to proceed
-            ValidateSchema(ruleDoc, i, out bool IsValid);
-
-
-
-            ValidateOperatingSystem(ruleDoc, i, out bool isApplicable);
-
-            if (!IsValid || !isApplicable)
-            {
-                continue;
-            }
-
-            Workflow workflow = JsonConvert.DeserializeObject<Workflow>(json) ?? throw new InvalidOperationException();
-            if (workflow != null)
-            {
-                allResults.Add(await _orchestrator.RunAsync(workflow));
-            }
-        }
+            var result = await _orchestrator.RunAsync(workflow, ct);
+            allResults.Add(result);
+        });
 
         return allResults;
     }
@@ -175,28 +93,6 @@ public class InitializeEngine
 
 
 
-    private void ValidateSchema(JsonDocument ruleDoc, string i, out bool IsValid)
-    {
-        bool isValid = false;
-        try
-        {
-            IsValid = _validator.ValidateWorkflow(ruleDoc, out ICollection<ValidationError> results);
-            _logger.Log("INF", $"Validating rule file {i}. Result: {IsValid}", "InitializeEngine");
-            if (!IsValid)
-            {
-                _logger.Log("ERR", $"Rule file {i} failed schema validation: {results}", "InitializeEngine");
-                WCAEventSource.Log.RulesEngineWarning($"Rule file {i} failed schema validation: {results} Skipping rule. Check rule and try again.");
-            }
-
-            isValid = IsValid;
-        }
-        catch (Exception e)
-        {
-            WCAEventSource.Log.RulesEngineError($"Exception thrown while validating rule file {i}: {e.Message}");
-            _logger.Log("ERR", $"Error validating rule file {i}: {e.Message}", "InitializeEngine");
-            IsValid = false; // Ensure out parameter is always assigned
-        }
-    }
 
 
 
@@ -213,8 +109,6 @@ public class InitializeEngine
                 _logger.Log("INF", $"Rule file {i} is not applicable to this machine. Skipping.", "InitializeEngine");
                 WCAEventSource.Log.RulesEngineWarning($"Rule file {i} is not applicable to this machine. Skipping.");
             }
-
-            isApplicable = isApplicable;
         }
         catch (Exception e)
         {

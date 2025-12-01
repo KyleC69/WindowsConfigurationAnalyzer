@@ -13,9 +13,6 @@
 
 
 
-#region
-
-using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -26,8 +23,6 @@ using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
 
 // for assembly name
 // for caller info
-
-#endregion
 
 
 
@@ -43,8 +38,16 @@ public sealed class OSAnalyzer : IAnalyzerModule
     private IActivityLogger? _logger;
 
 
-    public string Name => "OS Analyzer";
-    public string Area => "OS";
+    public string Name
+    {
+        get => "OS Analyzer";
+    }
+
+
+    public string Area
+    {
+        get => "OS";
+    }
 
 
 
@@ -53,7 +56,7 @@ public sealed class OSAnalyzer : IAnalyzerModule
     public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger;
-        string area = Area;
+        var area = Area;
         _logger.Log("INF", "Start: Collecting OS and system information", Ctx(area));
         List<string> warnings = [];
         List<string> errors = [];
@@ -125,15 +128,9 @@ public sealed class OSAnalyzer : IAnalyzerModule
                 os["OSLanguage"] = o.GetOrDefault("OSLanguage");
                 os["InstallDateRaw"] = o.GetOrDefault("InstallDate");
                 os["LastBootUpTimeRaw"] = o.GetOrDefault("LastBootUpTime");
-                if (o.GetOrDefault("InstallDate") is string id && TryParseDmtfDate(id, out DateTimeOffset instUtc))
-                {
-                    install["InstallDateUtc"] = instUtc;
-                }
+                if (o.GetOrDefault("InstallDate") is string id && TryParseDmtfDate(id, out DateTimeOffset instUtc)) install["InstallDateUtc"] = instUtc;
 
-                if (o.GetOrDefault("LastBootUpTime") is string lb && TryParseDmtfDate(lb, out DateTimeOffset bootUtc))
-                {
-                    os["LastBootUpTimeUtc"] = bootUtc;
-                }
+                if (o.GetOrDefault("LastBootUpTime") is string lb && TryParseDmtfDate(lb, out DateTimeOffset bootUtc)) os["LastBootUpTimeUtc"] = bootUtc;
 
                 break;
             }
@@ -213,23 +210,15 @@ public sealed class OSAnalyzer : IAnalyzerModule
             foreach (IDictionary<string, object?> s in svcRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string? state = s.GetOrDefault("State")?.ToString();
-                string? start = s.GetOrDefault("StartMode")?.ToString();
+                var state = s.GetOrDefault("State")?.ToString();
+                var start = s.GetOrDefault("StartMode")?.ToString();
                 if (string.Equals(state, "Running", StringComparison.OrdinalIgnoreCase))
-                {
                     running++;
-                }
                 else if (string.Equals(state, "Stopped", StringComparison.OrdinalIgnoreCase))
-                {
                     stopped++;
-                }
-                else if (string.Equals(state, "Paused", StringComparison.OrdinalIgnoreCase))
-                {
-                    paused++;
-                }
+                else if (string.Equals(state, "Paused", StringComparison.OrdinalIgnoreCase)) paused++;
 
                 if (string.Equals(start, "Auto", StringComparison.OrdinalIgnoreCase) && !string.Equals(state, "Running", StringComparison.OrdinalIgnoreCase))
-                {
                     servicesAutoIssues.Add(new
                     {
                         Name = s.GetOrDefault("Name"),
@@ -238,7 +227,6 @@ public sealed class OSAnalyzer : IAnalyzerModule
                         State = state,
                         Path = s.GetOrDefault("PathName")
                     });
-                }
             }
 
             services["Running"] = running;
@@ -400,7 +388,7 @@ public sealed class OSAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "Locale: Start", Ctx(area));
-            foreach (string? name in new[] { "Locale", "LocaleName", "sShortDate", "sTimeFormat" })
+            foreach (var name in new[] { "Locale", "LocaleName", "sShortDate", "sTimeFormat" })
             {
                 try
                 {
@@ -457,17 +445,14 @@ public sealed class OSAnalyzer : IAnalyzerModule
         utc = default;
         try
         {
-            if (string.IsNullOrEmpty(dmtf) || dmtf.Length < 14)
-            {
-                return false;
-            }
+            if (string.IsNullOrEmpty(dmtf) || dmtf.Length < 14) return false;
 
-            int year = int.Parse(dmtf.Substring(0, 4));
-            int month = int.Parse(dmtf.Substring(4, 2));
-            int day = int.Parse(dmtf.Substring(6, 2));
-            int hour = int.Parse(dmtf.Substring(8, 2));
-            int minute = int.Parse(dmtf.Substring(10, 2));
-            int second = int.Parse(dmtf.Substring(12, 2));
+            var year = int.Parse(dmtf.Substring(0, 4));
+            var month = int.Parse(dmtf.Substring(4, 2));
+            var day = int.Parse(dmtf.Substring(6, 2));
+            var hour = int.Parse(dmtf.Substring(8, 2));
+            var minute = int.Parse(dmtf.Substring(10, 2));
+            var second = int.Parse(dmtf.Substring(12, 2));
             DateTime dt = new(year, month, day, hour, minute, second, DateTimeKind.Local);
             utc = new DateTimeOffset(dt).ToUniversalTime();
 
@@ -487,12 +472,9 @@ public sealed class OSAnalyzer : IAnalyzerModule
     {
         try
         {
-            foreach (string name in context.Registry.EnumerateSubKeys(key))
+            foreach (var name in context.Registry.EnumerateSubKeys(key))
             {
-                if (string.Equals(name, subKeyName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
+                if (string.Equals(name, subKeyName, StringComparison.OrdinalIgnoreCase)) return true;
             }
 
             return false;
@@ -509,8 +491,8 @@ public sealed class OSAnalyzer : IAnalyzerModule
 
     private static string Ctx(string module, [CallerMemberName] string member = "", [CallerFilePath] string file = "")
     {
-        string asm = Assembly.GetExecutingAssembly().GetName().Name ?? "Analyzer";
-        string f = Path.GetFileName(file);
+        var asm = Assembly.GetExecutingAssembly().GetName().Name ?? "Analyzer";
+        var f = Path.GetFileName(file);
 
         return $"{asm} - {module} - {member} - {f}";
     }

@@ -1,0 +1,45 @@
+{
+    "$schema": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+    "WorkflowName": "WMI and Process Checks",
+    "WorkflowDescription": "This workflow audits user profile configuration points that are critical to Windows stable operation.",
+    "SchemaRef": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+    "SchemaVersion": "1.0.0",
+    "Author": "Kyle C.",
+    "CreatedOn": "2025-11-24T14:50:00Z",
+    "Applicability": { "OSFamily": "Windows","MinVersion": "10.0.19041.0"},
+    "Constraints": {"RunSequentially": false,"StopOnFailure": false,"Timeout": "00:05:00"},
+    "Rules": [
+        {
+            "RuleName": "CheckWmiProperty",
+            "Provider": "WMI",
+            "Parameters": {
+                "Namespace": "root\\cimv2",
+                "Class": "Win32_OperatingSystem",
+                "Property": "Caption"
+            },
+            "Condition": {
+                "Operator": "Contains",
+                "Expected": "Windows"
+            },
+            "Severity": 4,
+            "Message": "Operating system caption must contain 'Windows'"
+        },
+        {
+            "RuleName": "CheckProcessCount",
+            "Provider": "Process",
+            "Parameters": {
+                "ProcessName": "explorer.exe",
+                "ExpectedCount": 1
+            },
+            "Condition": {
+                "Operator": "Equals",
+                "Expected": 1
+            },
+            "Severity": 5,
+            "Message": "Explorer.exe must be running exactly once"
+        }
+    ],
+    "Results": [
+    
+    ]
+}

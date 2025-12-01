@@ -13,8 +13,6 @@
 
 
 
-#region
-
 using CommunityToolkit.Mvvm.ComponentModel;
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
@@ -24,8 +22,6 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 using Microsoft.UI.Xaml.Controls;
 
 using ApplicationsPage = KC.WindowsConfigurationAnalyzer.UserInterface.Views.ApplicationsPage;
-
-#endregion
 
 
 
@@ -81,7 +77,7 @@ public class PageService : IPageService
     {
         lock (_pages)
         {
-            string key = typeof(TVm).FullName!;
+            var key = typeof(TVm).FullName!;
 
             if (_pages.ContainsKey(key)) throw new ArgumentException($"The key {key} is already configured in PageService");
 

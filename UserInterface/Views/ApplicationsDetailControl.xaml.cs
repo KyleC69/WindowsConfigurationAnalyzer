@@ -13,14 +13,10 @@
 
 
 
-#region
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-
-#endregion
 
 
 

@@ -13,11 +13,7 @@
 
 
 
-#region
-
 using KC.WindowsConfigurationAnalyzer.Contracts;
-
-#endregion
 
 
 
@@ -49,7 +45,10 @@ public class FileSystemReader : IProbe
     ///     Unique provider name (e.g. "Registry", "WMI", "FileSystem").
     ///     Used to match against Rule.Provider in the workflow.
     /// </summary>
-    public string Provider => "FileSystem";
+    public string Provider
+    {
+        get => "FileSystem";
+    }
 
 
 
@@ -60,22 +59,26 @@ public class FileSystemReader : IProbe
     /// </summary>
     /// <param name="parameters">Provider-specific parameters from the rule JSON.</param>
     /// <param name="token"></param>
-    /// <param name="callerName"></param>
-    /// <param name="callerFilePath"></param>
     /// <returns>ProbeResult containing the raw value and provenance.</returns>
-    public async Task<ProbeResult> ExecuteAsync(IDictionary<string, object> parameters, CancellationToken token, string callerName = "", string callerFilePath = "")
+    public async Task<ProbeResult> ExecuteAsync(IProviderParameters parameters, CancellationToken token)
     {
-        string? path = parameters["path"]?.ToString();
+        token.ThrowIfCancellationRequested();
+
+        var parm = parameters as FileSystemParameters;
+        // Check if System environment variables exist in path
+        if (parm!.Path != null && parm!.Path!.Contains("%")) parm.Path = Environment.ExpandEnvironmentVariables(parm.Path);
+
+
         ProbeResult result = new()
         {
             Provider = Provider,
             Timestamp = DateTime.UtcNow,
             Metadata = []
         };
-        result.Metadata["path"] = path ?? string.Empty;
+        result.Metadata["path"] = parm?.Path ?? string.Empty;
 
 
-        if (string.IsNullOrEmpty(path))
+        if (string.IsNullOrEmpty(parm?.Path))
         {
             result.ProbeSuccess = false;
             result.Message = "The 'path' parameter is missing or empty.";
@@ -86,12 +89,12 @@ public class FileSystemReader : IProbe
 
         try
         {
-            if (Directory.Exists(path))
+            if (Directory.Exists(parm?.Path))
             {
                 result.Value = "Directory exists";
                 result.ProbeSuccess = true;
             }
-            else if (File.Exists(path))
+            else if (File.Exists(parm?.Path))
             {
                 result.Value = "File exists";
                 result.ProbeSuccess = true;
@@ -99,18 +102,18 @@ public class FileSystemReader : IProbe
             else
             {
                 result.ProbeSuccess = false;
-                result.Message = $"The specified path does not exist: {path}";
+                result.Message = $"The specified path does not exist: {parm?.Path}";
                 _logger.Log("WARNING", result.Message, "FileSystemReader");
             }
         }
         catch (Exception ex)
         {
             result.ProbeSuccess = false;
-            result.Message = $"An error occurred while checking the path '{path}': {ex.Message}";
+            result.Message = $"An error occurred while checking the path '{parm?.Path}': {ex.Message}";
             _logger.Log("ERROR", result.Message, "FileSystemReader");
         }
 
-        _logger.Log("INFO", $"FileSystemReader invoked by {callerName} in {callerFilePath}", "FileSystemReader");
+
 
         return await Task.FromResult(result);
     }

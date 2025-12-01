@@ -13,19 +13,15 @@
 
 
 
-#region
-
 using System.Runtime.InteropServices;
-
-using Microsoft.UI;
-using Microsoft.UI.Xaml;
 
 using Windows.UI;
 using Windows.UI.ViewManagement;
 
-using WinRT.Interop;
+using Microsoft.UI;
+using Microsoft.UI.Xaml;
 
-#endregion
+using WinRT.Interop;
 
 
 
@@ -114,7 +110,7 @@ internal class TitleBarHelper
 
             App.MainWindow.AppWindow.TitleBar.BackgroundColor = Colors.Transparent;
 
-            nint hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+            var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
             if (hwnd == GetActiveWindow())
             {
                 SendMessage(hwnd, Wmactivate, Wainactive, IntPtr.Zero);
@@ -134,7 +130,7 @@ internal class TitleBarHelper
 
     public static void ApplySystemThemeToCaptionButtons()
     {
-        FrameworkElement? frame = App.AppTitlebar as FrameworkElement;
+        var frame = App.AppTitlebar as FrameworkElement;
         if (frame != null) UpdateTitleBar(frame.ActualTheme);
     }
 

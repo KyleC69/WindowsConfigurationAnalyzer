@@ -1,0 +1,46 @@
+{
+  "$schema": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+  "WorkflowName": "EventLog and Custom Provider",
+  "WorkflowDescription": "This workflow audits user profile configuration points that are critical to Windows stable operation.",
+  "SchemaRef": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+  "SchemaVersion": "1.0.0",
+  "Author": "Kyle C.",
+  "CreatedOn": "2025-11-24T14:55:00Z",
+  "Applicability": {"OSFamily": "Windows","MinVersion": "10.0.19041.0","MaxVersion": "10.0.22621.0"},
+  "Constraints": {"RunSequentially":false ,"StopOnFailure": false,"Timeout": "00:30:00"},
+  "Rules": [
+    {
+      "RuleName": "CheckEventLogEntry",
+      "Provider": "EventLog",
+      "Parameters": {
+        "LogName": "Application",
+        "Source": "MyApp",
+        "EventId": 1001,
+        "Since": "2025-11-01T00:00:00Z"
+      },
+      "Condition": {
+        "Operator": "Exists",
+        "Expected": true
+      },
+      "Severity": 6,
+      "Message": "Application log must contain event 1001 since November"
+    },
+    {
+      "RuleName": "CustomSubsystemCheck",
+      "Provider": "Custom",
+      "Parameters": {
+        "Values": {
+          "Target": "MySubsystem",
+          "Threshold": 3,
+          "Mode": "Strict"
+        }
+      },
+      "Condition": {
+        "Operator": "GreaterThan",
+        "Expected": 2
+      },
+      "Severity": 9,
+      "Message": "Custom subsystem threshold must be greater than 2"
+    }
+  ]
+}

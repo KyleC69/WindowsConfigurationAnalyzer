@@ -13,12 +13,8 @@
 
 
 
-#region
-
 using System.Runtime.Versioning;
 
-#endregion
 
 
-
-[assembly: SupportedOSPlatform("windows10.0.19041.0")]
+[assembly: SupportedOSPlatform("windows10.0.22601.0")]

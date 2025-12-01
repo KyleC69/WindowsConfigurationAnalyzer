@@ -13,13 +13,9 @@
 
 
 
-#region
-
 using System.Globalization;
 
 using Newtonsoft.Json;
-
-#endregion
 
 
 
@@ -28,46 +24,33 @@ using Newtonsoft.Json;
 namespace KC.WindowsConfigurationAnalyzer.UserInterface.Core.Helpers;
 
 
-public static class Json
+public static class WcaJson
 {
 
 
     public static async Task<T?> ToObjectAsync<T>(string value)
     {
-        if (value is null)
-        {
-            return default;
-        }
+        if (value is null) return default;
 
         // Fast-path for string targets: value is already the desired result
-        if (typeof(T) == typeof(string))
-        {
-            return (T)(object)value;
-        }
+        if (typeof(T) == typeof(string)) return (T)(object)value;
 
-        string trimmed = value.Trim();
+        var trimmed = value.Trim();
 
         // If target is an enum, try parsing directly from the token (common case like "Dark")
         if (typeof(T).IsEnum)
-        {
-            if (Enum.TryParse(typeof(T), trimmed, true, out object? enumVal))
-            {
+            if (Enum.TryParse(typeof(T), trimmed, true, out var enumVal))
                 return (T)enumVal;
-            }
-        }
 
         // Detect whether the input already looks like JSON. If not, quote it so Json.NET can parse it as a string.
-        bool looksLikeJson = trimmed.StartsWith("{") || trimmed.StartsWith("[") || trimmed.StartsWith("\"")
+        var looksLikeJson = trimmed.StartsWith("{") || trimmed.StartsWith("[") || trimmed.StartsWith("\"")
                             || string.Equals(trimmed, "true", StringComparison.OrdinalIgnoreCase)
                             || string.Equals(trimmed, "false", StringComparison.OrdinalIgnoreCase)
                             || string.Equals(trimmed, "null", StringComparison.OrdinalIgnoreCase)
                             || double.TryParse(trimmed, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
 
-        string jsonInput = value;
-        if (!looksLikeJson)
-        {
-            jsonInput = '"' + trimmed.Replace("\"", "\\\"") + '"';
-        }
+        var jsonInput = value;
+        if (!looksLikeJson) jsonInput = '"' + trimmed.Replace("\"", "\\\"") + '"';
 
         try
         {

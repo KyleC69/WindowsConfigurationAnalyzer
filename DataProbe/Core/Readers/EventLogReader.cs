@@ -13,14 +13,10 @@
 
 
 
-#region
-
 using System.Diagnostics;
 using System.Security;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-
-#endregion
 
 
 
@@ -39,12 +35,9 @@ public sealed class EventLogReader : IEventLogReader
         {
             using EventLog ev = new(logName);
 
-            if (ev.Entries == null || ev.Entries.Count == 0)
-            {
-                return new EventLogSummary(logName, 0, null);
-            }
+            if (ev.Entries == null || ev.Entries.Count == 0) return new EventLogSummary(logName, 0, null);
 
-            int lastIndex = ev.Entries.Count - 1;
+            var lastIndex = ev.Entries.Count - 1;
             EventLogEntry? last = ev.Entries[lastIndex];
             DateTime lastUtc = DateTime.SpecifyKind(last.TimeGenerated, DateTimeKind.Local).ToUniversalTime();
 

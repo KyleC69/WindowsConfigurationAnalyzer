@@ -13,9 +13,9 @@
 
 
 
-#region
-
 using System.Runtime.Versioning;
+
+using Windows.System;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
@@ -24,10 +24,6 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-
-using Windows.System;
-
-#endregion
 
 
 
@@ -129,7 +125,7 @@ public sealed partial class ShellPage : Page
     {
         INavigationService navigationService = App.GetService<INavigationService>();
 
-        bool result = navigationService.GoBack();
+        var result = navigationService.GoBack();
 
         args.Handled = result;
     }

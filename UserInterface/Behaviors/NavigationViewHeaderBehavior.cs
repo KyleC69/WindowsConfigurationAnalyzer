@@ -13,16 +13,12 @@
 
 
 
-#region
-
 using KC.WindowsConfigurationAnalyzer.Contracts;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Xaml.Interactivity;
-
-#endregion
 
 
 
@@ -179,7 +175,7 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
             }
             else
             {
-                object headerFromPage = GetHeaderContext(_currentPage);
+                var headerFromPage = GetHeaderContext(_currentPage);
                 AssociatedObject.Header = headerFromPage;
                 AssociatedObject.AlwaysShowHeader = headerMode == NavigationViewHeaderMode.Always;
             }

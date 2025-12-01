@@ -13,12 +13,8 @@
 
 
 
-#region
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
-
-#endregion
 
 
 
@@ -37,7 +33,7 @@ public class EnumToBooleanConverter : IValueConverter
         {
             if (!Enum.IsDefined(typeof(ElementTheme), value)) throw new ArgumentException("ExceptionEnumToBooleanConverterValueMustBeAnEnum");
 
-            object enumValue = Enum.Parse(typeof(ElementTheme), enumString);
+            var enumValue = Enum.Parse(typeof(ElementTheme), enumString);
 
             return enumValue.Equals(value);
         }

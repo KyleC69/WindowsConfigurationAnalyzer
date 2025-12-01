@@ -13,16 +13,6 @@
 
 
 
-#region
-
-using System.Collections.ObjectModel;
-
-#endregion
-
-
-
-
-
 namespace KC.WindowsConfigurationAnalyzer.Contracts;
 
 
@@ -35,19 +25,6 @@ public interface IAnalyzerModule
     string Area { get; }
 
     Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken);
-
-
-}
-
-
-
-public class AreaResult
-{
-
-
-    public AreaResult(string area, object summary, object details, ICollection<Finding> asReadOnly, ICollection<string> warnings, List<string> errors)
-    {
-    }
 
 
 }

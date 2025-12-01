@@ -13,11 +13,7 @@
 
 
 
-#region
-
 using System.Diagnostics.Tracing;
-
-#endregion
 
 
 
@@ -380,7 +376,7 @@ public sealed class WCAEventSource : EventSource
         Keywords = Keywords.Analyzer, Channel = EventChannel.Operational)]
     public void SessionStop(string SessionId, int Areas, int Warnings, int Errors, double ElapsedSeconds, string CorrelationId)
     {
-        WriteEvent(1002, SessionId, Areas, Warnings, Errors, ElapsedSeconds, CorrelationId);
+        WriteEvent(1002, Warnings, Errors, ElapsedSeconds);
     }
 
 
@@ -390,20 +386,19 @@ public sealed class WCAEventSource : EventSource
     // Exception events for catch blocks
     [Event(1003, Level = EventLevel.Error, Task = Tasks.Error, Opcode = Opcodes.ExceptionFailure,
         Keywords = Keywords.Analyzer, Channel = EventChannel.Operational)]
-    public void ExceptionError(string SessionId, string CorrelationId, string ExceptMessage, string? ExceptStack, string Context)
+    public void ExceptionError(string ExceptMessage, string? ExceptStack, string Context)
     {
-        WriteEvent(1003, SessionId, CorrelationId, ExceptMessage, ExceptStack, Context);
+        WriteEvent(1003, ExceptMessage, ExceptStack, Context);
     }
 
 
 
 
 
-    [Event(1004, Level = EventLevel.Warning, Task = Tasks.Warning, Opcode = EventOpcode.Info,
-        Keywords = Keywords.Analyzer, Channel = EventChannel.Operational)]
-    public void ExceptionWarning(string SessionId, string CorrelationId, string ExceptMessage, string ExceptStack, string Context)
+    [Event(1004, Level = EventLevel.Warning, Task = Tasks.Warning, Opcode = EventOpcode.Info, Message = "A non-fatal exception occurred: {0}", Keywords = Keywords.Analyzer, Channel = EventChannel.Operational)]
+    public void ExceptionWarning(string ExceptMessage)
     {
-        WriteEvent(1004, SessionId, CorrelationId, ExceptMessage, ExceptStack, Context);
+        WriteEvent(1004, ExceptMessage);
     }
 
 
@@ -416,9 +411,9 @@ public sealed class WCAEventSource : EventSource
     // --- Startup/Autoruns (3200–3399) ---
     [Event(3201, Level = EventLevel.Informational, Task = Tasks.Module, Opcode = Opcodes.Capture,
         Keywords = Keywords.Diagnostics, Channel = EventChannel.Operational)]
-    public void StartupCapture(string Module, string CorrelationId, uint ItemCount, uint DurationMs, string Details)
+    public void StartupCapture(uint ItemCount, uint DurationMs, string Details)
     {
-        WriteEvent(3201, Module, CorrelationId, ItemCount, DurationMs, Details);
+        WriteEvent(3201, ItemCount, DurationMs, Details);
     }
 
 
@@ -517,7 +512,8 @@ public sealed class WCAEventSource : EventSource
 
 
 
-    [Event(4001, Level = EventLevel.Error, Task = Tasks.Error, Opcode = Opcodes.ActivityLoggerFallbackOp, Keywords = Keywords.UI, Channel = EventChannel.Operational)]
+    [Event(4001, Level = EventLevel.Error, Task = Tasks.Error, Opcode = Opcodes.ActivityLoggerFallbackOp, Keywords = Keywords.UI, Channel = EventChannel.Operational,
+        Message = "There has been an internal error in the Activity Logger, event in the high speed logger are likely missing. The exception message is: {0}")]
     public void ActivityLoggerFallback(string error)
     {
         WriteEvent(4001, error);
@@ -528,7 +524,8 @@ public sealed class WCAEventSource : EventSource
 
 
 
-    [Event(4300, Level = EventLevel.Error, Task = Tasks.Error, Opcode = Opcodes.RulesEngineFailure, Keywords = Keywords.Analyzer, Channel = EventChannel.Operational)]
+    [Event(4300, Level = EventLevel.Error, Message = "There has been a fatal error in the Rules Engine. Their may be further details available in other events surrounding this one.Exception Details: {0}",
+        Task = Tasks.Error, Opcode = Opcodes.RulesEngineFailure, Keywords = Keywords.Analyzer, Channel = EventChannel.Operational)]
     public void RulesEngineError(string noResultsFromRuleExecution)
     {
         WriteEvent(4300, noResultsFromRuleExecution);
@@ -538,26 +535,21 @@ public sealed class WCAEventSource : EventSource
 
 
 
-    [Event(4305, Level = EventLevel.Warning, Task = Tasks.RulesEngine, Opcode = Opcodes.RuleValidationError, Channel = EventChannel.Operational)]
+    [Event(4305, Level = EventLevel.Warning, Task = Tasks.RulesEngine, Opcode = Opcodes.RuleValidationError, Channel = EventChannel.Operational,
+        Message = "A workflow failed to pass the schema validation check. The Name is in the message of this event.  Rules Engine Validation Warning: {0}")]
     public void RulesEngineWarning(string warningMessage)
     {
-        if (IsEnabled(EventLevel.Warning, Keywords.RulesEngine))
-        {
-            WriteEvent(4305, warningMessage);
-        }
+        if (IsEnabled(EventLevel.Warning, Keywords.RulesEngine)) WriteEvent(4305, warningMessage);
     }
 
 
 
 
 
-    [Event(4215, Level = EventLevel.Informational, Task = Tasks.ActionRelated, Opcode = EventOpcode.Start, Keywords = Keywords.Analyzer, Channel = EventChannel.Operational)]
+    [Event(4215, Level = EventLevel.Informational, Task = Tasks.ActionRelated, Opcode = EventOpcode.Start, Keywords = Keywords.Analyzer, Channel = EventChannel.Operational, Message = "Action (related) Start: {0}")]
     public void ActionStartWithRelated(string message)
     {
-        if (!IsEnabled())
-        {
-            return;
-        }
+        if (!IsEnabled()) return;
 
         // Get the parent activity ID from the thread's current activity
         // This assumes ActionStart was called previously on this thread
@@ -576,7 +568,7 @@ public sealed class WCAEventSource : EventSource
 
 
 
-    [Event(4220, Level = EventLevel.Informational, Task = Tasks.Action, Opcode = EventOpcode.Stop, Keywords = Keywords.Analyzer, Channel = EventChannel.Operational)]
+    [Event(4220, Level = EventLevel.Informational, Task = Tasks.Action, Opcode = EventOpcode.Stop, Keywords = Keywords.Analyzer, Channel = EventChannel.Operational, Message = "Action Stop: {0}")]
     public void ActionStop(string message)
     {
         // CurrentThreadActivityId is already set
@@ -587,7 +579,7 @@ public sealed class WCAEventSource : EventSource
 
 
 
-    [Event(4210, Level = EventLevel.Informational, Task = Tasks.Action, Opcode = EventOpcode.Start, Keywords = Keywords.Action, Channel = EventChannel.Operational)]
+    [Event(4210, Level = EventLevel.Informational, Task = Tasks.Action, Opcode = EventOpcode.Start, Keywords = Keywords.Action, Channel = EventChannel.Operational, Message = "Action Start: {0}")]
     public void ActionStart(string message)
     {
         SetCurrentThreadActivityId(Guid.NewGuid());
@@ -598,10 +590,11 @@ public sealed class WCAEventSource : EventSource
 
 
 
-    [Event(4211, Level = EventLevel.Error, Task = Tasks.Error, Opcode = Opcodes.ActionFailure, Keywords = Keywords.Action, Channel = EventChannel.Operational)]
-    public void ActionFailed(string appInitializationHasFailed, string message)
+    [Event(5001, Level = EventLevel.Error, Task = Tasks.Error, Opcode = Opcodes.OSFailure, Keywords = Keywords.Failure, Channel = EventChannel.Operational,
+        Message = "There has been an unhandled exception in the application. The application will now shutdown, more details may be available in previous events. ActivityId: %1")]
+    public void UnexpectedAppShutdown(string toString, string eMessage, string? exceptionStackTrace)
     {
-        WriteEvent(4211, appInitializationHasFailed, message);
+        WriteEvent(5001, toString, eMessage, exceptionStackTrace);
     }
 
 
@@ -628,6 +621,7 @@ public sealed class WCAEventSource : EventSource
         internal const EventKeywords Configuration = (EventKeywords)0x0000000000001000;
         internal const EventKeywords RulesEngine = (EventKeywords)0x0000000000002000;
         internal const EventKeywords Action = (EventKeywords)0x0000000000004000;
+        internal const EventKeywords Failure = (EventKeywords)0x0000000000008000;
 
 
     }

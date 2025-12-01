@@ -13,16 +13,6 @@
 
 
 
-#region
-
-using System.Runtime.CompilerServices;
-
-#endregion
-
-
-
-
-
 namespace KC.WindowsConfigurationAnalyzer.Contracts;
 
 
@@ -48,10 +38,8 @@ public interface IProbe
     /// </summary>
     /// <param name="parameters">Provider-specific parameters from the rule JSON.</param>
     /// <param name="token"></param>
-    /// <param name="callerName"></param>
-    /// <param name="callerFilePath"></param>
     /// <returns>ProbeResult containing the raw value and provenance.</returns>
-    Task<ProbeResult> ExecuteAsync(IDictionary<string, object> parameters, CancellationToken token, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "");
+    Task<ProbeResult> ExecuteAsync(IProviderParameters parameters, CancellationToken token);
 
 
 }

@@ -13,13 +13,7 @@
 
 
 
-#region
-
-using System.Collections;
-
 using KC.WindowsConfigurationAnalyzer.Contracts;
-
-#endregion
 
 
 
@@ -47,11 +41,34 @@ public sealed class EnvironmentReader : IProbe
 
 
 
-    public string MachineName => Environment.MachineName;
-    public string OSVersionString => Environment.OSVersion.VersionString;
-    public bool Is64BitOS => Environment.Is64BitOperatingSystem;
-    public string UserName => Environment.UserName;
-    public string UserDomainName => Environment.UserDomainName;
+    public string MachineName
+    {
+        get => Environment.MachineName;
+    }
+
+
+    public string OSVersionString
+    {
+        get => Environment.OSVersion.VersionString;
+    }
+
+
+    public bool Is64BitOS
+    {
+        get => Environment.Is64BitOperatingSystem;
+    }
+
+
+    public string UserName
+    {
+        get => Environment.UserName;
+    }
+
+
+    public string UserDomainName
+    {
+        get => Environment.UserDomainName;
+    }
 
 
 
@@ -61,7 +78,10 @@ public sealed class EnvironmentReader : IProbe
     ///     Unique provider name (e.g. "Registry", "WMI", "FileSystem").
     ///     Used to match against Rule.Provider in the workflow.
     /// </summary>
-    public string Provider => "Environment";
+    public string Provider
+    {
+        get => "Environment";
+    }
 
 
 
@@ -75,44 +95,20 @@ public sealed class EnvironmentReader : IProbe
     /// <param name="callerName"></param>
     /// <param name="callerFilePath"></param>
     /// <returns>ProbeResult containing the raw value and provenance.</returns>
-    public async Task<ProbeResult> ExecuteAsync(IDictionary<string, object> parameters, CancellationToken token, string callerName = "", string callerFilePath = "")
+    public async Task<ProbeResult> ExecuteAsync(IProviderParameters parameters, CancellationToken token)
     {
         ProbeResult result = new()
         {
             Provider = Provider,
             Metadata = new Dictionary<string, object>
             {
-                { "Timestamp", DateTime.UtcNow },
-                { "CallerName", callerName },
-                { "CallerFilePath", callerFilePath }
+                { "Timestamp", DateTime.UtcNow }
             }
         };
-
+        //  var parms = parameters as EnvironmentParameters;
 
         //TODO: Support parameters to get specific environment variables or info
-
-
-        return result;
-    }
-
-
-
-
-
-    public IReadOnlyDictionary<string, string?> GetEnvironmentVariables()
-    {
-        Dictionary<string, string?> dict = [];
-        foreach (DictionaryEntry kvp in Environment.GetEnvironmentVariables())
-        {
-            string key = kvp.Key?.ToString() ?? string.Empty;
-            string? val = kvp.Value?.ToString();
-            if (!dict.ContainsKey(key))
-            {
-                dict[key] = val;
-            }
-        }
-
-        return dict;
+        throw new NotImplementedException("EnvironmentReader currently does not support parameters.");
     }
 
 

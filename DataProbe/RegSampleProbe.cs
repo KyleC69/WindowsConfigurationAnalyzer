@@ -13,13 +13,9 @@
 
 
 
-#region
-
 using KC.WindowsConfigurationAnalyzer.Contracts;
 
 using Microsoft.Win32;
-
-#endregion
 
 
 
@@ -32,7 +28,10 @@ public class RegistryProbe : IProbe
 {
 
 
-    public string Provider => "Registry";
+    public string Provider
+    {
+        get => "Registry";
+    }
 
 
 
@@ -46,15 +45,16 @@ public class RegistryProbe : IProbe
     /// <param name="callerName"></param>
     /// <param name="callerFilePath"></param>
     /// <returns>ProbeResult containing the raw value and provenance.</returns>
-    public async Task<ProbeResult> ExecuteAsync(IDictionary<string, object> parameters, CancellationToken token, string callerName = "", string callerFilePath = "")
+    public async Task<ProbeResult> ExecuteAsync(IProviderParameters parameters, CancellationToken token)
     {
         ProbeResult result = new() { Provider = Provider };
+        var p = parameters as RegistryParameters;
         try
         {
-            string keyPath = parameters["KeyPath"].ToString()!;
-            string valueName = parameters["ValueName"].ToString()!;
+            var keyPath = p?.Hive + "\\" + p?.Path!;
+            var valueName = p?.Key!;
 
-            object? key = Registry.GetValue(keyPath, valueName, null);
+            var key = Registry.GetValue(keyPath, valueName, null);
             result.Value = key;
             result.ProbeSuccess = key != null;
             result.Message = key != null ? "Value retrieved" : "Value not found";

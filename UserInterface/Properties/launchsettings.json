@@ -5,6 +5,9 @@
     },
     "LaunchUI": {
       "commandName": "Project",
+      "environmentVariables": {
+        "DEBUG": "true"
+      },
       "hotReloadEnabled": false
     }
   }

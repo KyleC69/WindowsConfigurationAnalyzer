@@ -13,8 +13,6 @@
 
 
 
-#region
-
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
@@ -34,8 +32,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 using WinUIEx;
-
-#endregion
 
 
 
@@ -120,7 +116,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
         set
         {
-            if (int.TryParse(value, out int result)) HoursBack = result;
+            if (int.TryParse(value, out var result)) HoursBack = result;
         }
     }
 
@@ -220,11 +216,11 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
         List<string> names = [];
         EventLogSession session = new();
         List<string> activeLogs = [];
-        double timeWindowMs = TimeSpan.FromHours(HoursBack).TotalMilliseconds;
+        var timeWindowMs = TimeSpan.FromHours(HoursBack).TotalMilliseconds;
 
         try
         {
-            foreach (string? logName in session.GetLogNames())
+            foreach (var logName in session.GetLogNames())
             {
                 try
                 {
@@ -247,7 +243,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                     else
                     {
                         // Check if the log has at least one event in the time window
-                        string query = "*[System[TimeCreated[timediff(@SystemTime) <= " + timeWindowMs + "]]]";
+                        var query = "*[System[TimeCreated[timediff(@SystemTime) <= " + timeWindowMs + "]]]";
                         EventLogQuery logQuery = new(logName, PathType.LogName, query);
 
                         using EventLogReader reader = new(logQuery);
@@ -340,11 +336,11 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
             return new EventLogQuery(logName, PathType.LogName);
 
         // Convert hours to milliseconds safely using 64-bit arithmetic
-        long milliseconds = HoursBack * 60L * 60L * 1000L;
+        var milliseconds = HoursBack * 60L * 60L * 1000L;
         // If zero hours, produce a query that yields no results; fallback later will show all
         if (milliseconds <= 0) milliseconds = 0;
 
-        string xPath = BuildTimediffQueryMilliseconds(milliseconds);
+        var xPath = BuildTimediffQueryMilliseconds(milliseconds);
 
         return new EventLogQuery(logName, PathType.LogName, xPath);
     }
@@ -372,8 +368,8 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
         if (string.IsNullOrWhiteSpace(SelectedLogName)) return;
 
-        string logName = SelectedLogName!;
-        bool overrideAll = OverrideLimit;
+        var logName = SelectedLogName!;
+        var overrideAll = OverrideLimit;
 
         // Collect results off the UI thread then batch add for fewer dispatcher hops.
         List<EventLogRecordClone> collected = [];
@@ -457,7 +453,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
             {
                 if (string.IsNullOrWhiteSpace(SelectedLogName)) return null;
 
-                long timeWindowMs = (long)TimeSpan.FromHours(HoursBack).TotalMilliseconds;
+                var timeWindowMs = (long)TimeSpan.FromHours(HoursBack).TotalMilliseconds;
                 EventLogQuery query = BuildEventLogQuery(SelectedLogName, OverrideLimit);
                 query.ReverseDirection = true; // newest first
 
@@ -552,11 +548,11 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
         {
             foreach (PropertyInfo prop in SelectedLogEvent.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                string name = prop.Name;
+                var name = prop.Name;
                 string valueStr;
                 try
                 {
-                    object? val = prop.GetValue(SelectedLogEvent);
+                    var val = prop.GetValue(SelectedLogEvent);
                     valueStr = val?.ToString() ?? string.Empty;
                 }
                 catch
@@ -587,7 +583,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
     /// <returns>A <see cref="Task" /> representing the asynchronous operation.</returns>
     private async Task SearchAsync()
     {
-        string? term = SearchText;
+        var term = SearchText;
 
         if (string.IsNullOrWhiteSpace(term)) return;
 
@@ -598,7 +594,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
         await Task.Run(() =>
         {
-            foreach (string log in logsToSearch)
+            foreach (var log in logsToSearch)
             {
                 try
                 {
@@ -614,7 +610,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
                         if (record is null) break;
 
-                        bool match = false;
+                        var match = false;
                         try
                         {
                             if (!match && record.ProviderName?.Contains(term, StringComparison.OrdinalIgnoreCase) ==
@@ -703,7 +699,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
         try
         {
             // Handle the selection change event Expected type is EventLogRecordClone
-            EventLogRecordClone? _selected = e.AddedItems[0] as EventLogRecordClone;
+            var _selected = e.AddedItems[0] as EventLogRecordClone;
             await ShowEventAsAspxAsync(_selected);
         }
         catch (Exception ex)
@@ -761,18 +757,18 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
 
         foreach (PropertyInfo prop in typeof(EventLogRecordClone).GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            string name = prop.Name;
+            var name = prop.Name;
             if (name == "Properties")
             {
                 // Handle Properties separately if needed
                 if (prop.GetValue(evt) is IList<EventProperty> properties)
                 {
                     StackPanel propertiesPanel = new() { Orientation = Orientation.Vertical, Spacing = 4 };
-                    int index = 0;
+                    var index = 0;
                     foreach (EventProperty property in properties)
                     {
                         propertiesPanel.Children.Add(new TextBlock
-                        { Text = $"property{index}: {property.Value}", FontSize = 14 });
+                            { Text = $"property{index}: {property.Value}", FontSize = 14 });
                         index++;
                     }
 
@@ -782,10 +778,10 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                 continue;
             }
 
-            string valueStr = string.Empty;
+            var valueStr = string.Empty;
             try
             {
-                object? value = prop.GetValue(evt);
+                var value = prop.GetValue(evt);
                 valueStr = FormatValue(value);
             }
             catch
@@ -826,7 +822,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
         if (value is IEnumerable enumerable and not string)
         {
             List<string> items = [];
-            foreach (object? item in enumerable)
+            foreach (var item in enumerable)
             {
                 items.Add(item?.ToString() ?? string.Empty);
             }
@@ -859,7 +855,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
             // - EventData/Data elements
             // - UserData text
             // We still validate each candidate with EventContainsGuid to ensure accuracy.
-            string guidString = targetGuid.Value.ToString();
+            var guidString = targetGuid.Value.ToString();
 
             try
             {
@@ -867,7 +863,7 @@ public partial class EventingViewModel : ObservableRecipient, INavigationAware
                            throw new InvalidOperationException();
                 // Compose a broad but still selective XPath; multiple OR branches combined at root with union via "or".
                 // Note: Using contains(...) for string occurrences; exact matches first for efficiency.
-                string xPath =
+                var xPath =
                     $"*[(System[(ActivityID='{guidString}') or (RelatedActivityID='{guidString}')])]" +
                     $"|(*[EventData[Data='{guidString}' or Data[contains(.,'{guidString}')]]])" +
                     $"|(*[UserData[.='{guidString}' or contains(.,'{guidString}')]])";

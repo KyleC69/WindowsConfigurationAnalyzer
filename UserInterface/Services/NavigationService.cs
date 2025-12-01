@@ -13,8 +13,6 @@
 
 
 
-#region
-
 using System.Diagnostics.CodeAnalysis;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
@@ -24,8 +22,6 @@ using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-
-#endregion
 
 
 
@@ -70,7 +66,10 @@ public class NavigationService(IPageService pageService) : INavigationService
 
 
     [MemberNotNullWhen(true, nameof(Frame), nameof(_frame))]
-    public bool CanGoBack => Frame != null && Frame.CanGoBack;
+    public bool CanGoBack
+    {
+        get => Frame != null && Frame.CanGoBack;
+    }
 
 
 
@@ -80,7 +79,7 @@ public class NavigationService(IPageService pageService) : INavigationService
     {
         if (CanGoBack)
         {
-            object? vmBeforeNavigation = _frame.GetPageViewModel();
+            var vmBeforeNavigation = _frame.GetPageViewModel();
             _frame.GoBack();
             if (vmBeforeNavigation is INavigationAware navigationAware) navigationAware.OnNavigatedFrom();
 
@@ -103,8 +102,8 @@ public class NavigationService(IPageService pageService) : INavigationService
                                (parameter != null && !parameter.Equals(_lastParameterUsed))))
         {
             _frame.Tag = clearNavigation;
-            object? vmBeforeNavigation = _frame.GetPageViewModel();
-            bool navigated = _frame.Navigate(pageType, parameter);
+            var vmBeforeNavigation = _frame.GetPageViewModel();
+            var navigated = _frame.Navigate(pageType, parameter);
             if (navigated)
             {
                 _lastParameterUsed = parameter;
@@ -143,7 +142,7 @@ public class NavigationService(IPageService pageService) : INavigationService
     {
         if (sender is Frame frame)
         {
-            bool clearNavigation = (bool)frame.Tag;
+            var clearNavigation = (bool)frame.Tag;
             if (clearNavigation) frame.BackStack.Clear();
 
             if (frame.GetPageViewModel() is INavigationAware navigationAware) navigationAware.OnNavigatedTo(e.Parameter);

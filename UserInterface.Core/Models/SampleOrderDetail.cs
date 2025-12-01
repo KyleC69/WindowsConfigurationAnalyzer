@@ -39,7 +39,11 @@ public class SampleOrderDetail
 
     public double Total { get; set; }
 
-    public string ShortDescription => $"Product ID: {ProductID} - {ProductName}";
+
+    public string ShortDescription
+    {
+        get => $"Product ID: {ProductID} - {ProductName}";
+    }
 
 
 }

@@ -13,23 +13,16 @@
 
 
 
-#region
-
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Export;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
-using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Etw;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Helpers;
 
 using Microsoft.Extensions.DependencyInjection;
-
-#endregion
 
 
 
@@ -111,7 +104,10 @@ public partial class AnalyzerViewModel : ObservableRecipient
 
     public AnalyzerViewModel(IServiceProvider services)
     {
-        OpenFolderCommand = new RelayCommand(() => { /*OpenExportsFolder();*/ });
+        OpenFolderCommand = new RelayCommand(() =>
+        {
+            /*OpenExportsFolder();*/
+        });
         _services = services;
         _localSettings = services.GetRequiredService<ILocalSettingsService>();
         _activityLogger = services.GetRequiredService<IActivityLogger>();
@@ -222,122 +218,125 @@ public partial class AnalyzerViewModel : ObservableRecipient
             return;
         }
 
-        string correlationIdString = Guid.NewGuid().ToString("N"); // Unique correlation ID per run
+        var correlationIdString = Guid.NewGuid().ToString("N"); // Unique correlation ID per run
         IsRunning = true;
+    }
 
-    }  
-        
-        
-        /*
-        try
+
+
+
+
+    /*
+    try
+    {
+        // Run only selected modules
+        AnalyzerRunner runner = new(selected);
+        AnalyzerResult result = await runner.RunAllAsync(correlationIdString, _activityLogger, cts.Token);
+
+        // Evaluate comprehensive rules
+        IRule[] rules = new IRule[]
         {
-            // Run only selected modules
-            AnalyzerRunner runner = new(selected);
-            AnalyzerResult result = await runner.RunAllAsync(correlationIdString, _activityLogger, cts.Token);
+            new AvMissingRule(),
+            new DuplicateDnsRule(),
+            new FirewallDisabledRule(),
+            new HighCpuRule(),
+            new LowMemoryRule(),
+            new SuspiciousAutorunsRule(),
+            new RdpExposedRule()
+        };
 
-            // Evaluate comprehensive rules
-            IRule[] rules = new IRule[]
-            {
-                new AvMissingRule(),
-                new DuplicateDnsRule(),
-                new FirewallDisabledRule(),
-                new HighCpuRule(),
-                new LowMemoryRule(),
-                new SuspiciousAutorunsRule(),
-                new RdpExposedRule()
-            };
+        RuleEngine ruleEngine = new(rules);
+        IReadOnlyList<Finding> extraFindings = ruleEngine.Evaluate(result);
+        AnalyzerResult merged = result with { GlobalFindings = result.GlobalFindings.Concat(extraFindings).ToList() };
 
-            RuleEngine ruleEngine = new(rules);
-            IReadOnlyList<Finding> extraFindings = ruleEngine.Evaluate(result);
-            AnalyzerResult merged = result with { GlobalFindings = result.GlobalFindings.Concat(extraFindings).ToList() };
+        // Export per area, per run using template
+        string exportTemplate = await _localSettings.ReadApplicationSettingAsync<string>("ExportPathTemplate")
+                             ?? Path.Combine(
+                                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                                 "WindowsConfigurationAnalyzer",
+                                 "exports",
+                                 "{MachineName}",
+                                 "{yyyy-MM-dd}",
+                                 "{HHmm}.json");
 
-            // Export per area, per run using template
-            string exportTemplate = await _localSettings.ReadApplicationSettingAsync<string>("ExportPathTemplate")
-                                 ?? Path.Combine(
-                                     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                                     "WindowsConfigurationAnalyzer",
-                                     "exports",
-                                     "{MachineName}",
-                                     "{yyyy-MM-dd}",
-                                     "{HHmm}.json");
+        string applied = ApplyTemplate(exportTemplate);
+        string exportDir = GetExportDirectory(applied);
 
-            string applied = ApplyTemplate(exportTemplate);
-            string exportDir = GetExportDirectory(applied);
-
-            int exportCount = 0;
-            WCAEventSource.Log.SessionStart(SessionId: Guid.NewGuid().ToString("N"), Environment.MachineName, "1.0.0", correlationIdString);
-            foreach (AreaResult area in merged.Areas)
-            {
-                try
-                {
-                    if (!string.IsNullOrEmpty(exportDir)) Directory.CreateDirectory(exportDir);
-
-                    string file = Path.Combine(exportDir, $"{area.Area}.json");
-                    await new JsonExporter().ExportAsync(
-                        new AnalyzerResult(merged.ComputerName, merged.ExportTimestampUtc, [area], merged.GlobalFindings),
-                        file,
-                        CancellationToken.None);
-                    exportCount++;
-                }
-                catch (Exception e)
-                {
-                    WCAEventSource.Log.ExceptionError(SessionId: _sessionId.ToString("N"), CorrelationId: correlationIdString, e.Message, e.StackTrace, Context: "Exporting area results");
-                }
-            }
-
+        int exportCount = 0;
+        WCAEventSource.Log.SessionStart(SessionId: Guid.NewGuid().ToString("N"), Environment.MachineName, "1.0.0", correlationIdString);
+        foreach (AreaResult area in merged.Areas)
+        {
             try
             {
-                // Write a consolidated HTML report to help verify report generation
-                string htmlPath = Path.Combine(exportDir, "Report.html");
-                await new HtmlReportBuilder().ExportAsync(merged, htmlPath, CancellationToken.None);
+                if (!string.IsNullOrEmpty(exportDir)) Directory.CreateDirectory(exportDir);
+
+                string file = Path.Combine(exportDir, $"{area.Area}.json");
+                await new JsonExporter().ExportAsync(
+                    new AnalyzerResult(merged.ComputerName, merged.ExportTimestampUtc, [area], merged.GlobalFindings),
+                    file,
+                    CancellationToken.None);
+                exportCount++;
             }
             catch (Exception e)
             {
-                WCAEventSource.Log.ExceptionError(SessionId: _sessionId.ToString("N"), CorrelationId: correlationIdString, ExceptMessage: e.Message, ExceptStack: e.StackTrace, Context: "Exporting HTML report");
+                WCAEventSource.Log.ExceptionError(SessionId: _sessionId.ToString("N"), CorrelationId: correlationIdString, e.Message, e.StackTrace, Context: "Exporting area results");
             }
-
-            if (exportCount == 0) Log("No area results were exported. Check analyzers and export path template.");
-
-            Log($"Completed. Exports at: {exportDir}");
         }
-        catch (Exception ex)
-        {
-            Log($"Error: {ex.Message}");
-            WCAEventSource.Log.ExceptionError(SessionId: _sessionId.ToString("N"), CorrelationId: correlationIdString, ExceptMessage: ex.Message, ExceptStack: ex.StackTrace, Context: "Running analyzer");
-        }
-        finally
-        {
-            IsRunning = false;
-            //WCAEventSource.Log.SessionStop(SessionId: _sessionId.ToString("N"), Areas: merged.Areas, CorrelationId: correlationIdString); TODO: Fix params to pass necessary data
-        }
-    }
-            */
 
-
-
-        /*
-
-    private void OpenExportsFolder()
-    {
         try
         {
-            string exportRoot = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                "WindowsConfigurationAnalyzer",
-                "exports");
-            if (!Directory.Exists(exportRoot)) Directory.CreateDirectory(exportRoot);
-
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = exportRoot,
-                UseShellExecute = true
-            });
-            Log($"Opened exports folder: {exportRoot}");
+            // Write a consolidated HTML report to help verify report generation
+            string htmlPath = Path.Combine(exportDir, "Report.html");
+            await new HtmlReportBuilder().ExportAsync(merged, htmlPath, CancellationToken.None);
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            Log($"Open folder failed: {ex.Message}");
+            WCAEventSource.Log.ExceptionError(SessionId: _sessionId.ToString("N"), CorrelationId: correlationIdString, ExceptMessage: e.Message, ExceptStack: e.StackTrace, Context: "Exporting HTML report");
         }
-        */
-    }
 
+        if (exportCount == 0) Log("No area results were exported. Check analyzers and export path template.");
+
+        Log($"Completed. Exports at: {exportDir}");
+    }
+    catch (Exception ex)
+    {
+        Log($"Error: {ex.Message}");
+        WCAEventSource.Log.ExceptionError(SessionId: _sessionId.ToString("N"), CorrelationId: correlationIdString, ExceptMessage: ex.Message, ExceptStack: ex.StackTrace, Context: "Running analyzer");
+    }
+    finally
+    {
+        IsRunning = false;
+        //WCAEventSource.Log.SessionStop(SessionId: _sessionId.ToString("N"), Areas: merged.Areas, CorrelationId: correlationIdString); TODO: Fix params to pass necessary data
+    }
+}
+        */
+
+
+
+    /*
+
+private void OpenExportsFolder()
+{
+    try
+    {
+        string exportRoot = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "WindowsConfigurationAnalyzer",
+            "exports");
+        if (!Directory.Exists(exportRoot)) Directory.CreateDirectory(exportRoot);
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = exportRoot,
+            UseShellExecute = true
+        });
+        Log($"Opened exports folder: {exportRoot}");
+    }
+    catch (Exception ex)
+    {
+        Log($"Open folder failed: {ex.Message}");
+    }
+    */
+
+
+}

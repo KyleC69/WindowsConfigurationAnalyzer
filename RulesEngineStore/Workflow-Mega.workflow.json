@@ -1,0 +1,77 @@
+{
+  "$schema": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+  "SchemaVersion": "1.0.0",
+  "SchemaRef": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+  "WorkflowName": "Kitchen Sink Validation",
+  "WorkflowDescription": "This workflow audits user profile configuration points that are critical to Windows stable operation.",
+  "Author": "Kyle C.",
+  "CreatedOn": "2025-11-24T15:15:00Z",
+  "Constraints": { "RunSequentially": true, "Timeout": "00:20:00" },
+  "Applicability": {"OSFamily": "Windows","MinVersion": "10.0.19041.0","MaxVersion": "10.0.22621.0"},
+  "Rules": [
+    {
+      "RuleName": "RegistryCheck",
+      "Provider": "Registry",
+      "Parameters": { "Hive": "HKEY_LOCAL_MACHINE", "Path": "SOFTWARE\\MyApp", "Key": "InstallPath" },
+      "Condition": { "Operator": "Exists", "Expected": true },
+      "Severity": 5,
+      "Message": "InstallPath registry key must exist"
+    },
+    {
+      "RuleName": "FileSystemCheck",
+      "Provider": "FileSystem",
+      "Parameters": { "Path": "C:\\Program Files\\MyApp", "Permissions": "Read", "Recursive": true },
+      "Condition": { "Operator": "Equals", "Expected": "Read" },
+      "Severity": 6,
+      "Message": "MyApp folder must be readable"
+    },
+    {
+      "RuleName": "AclCheck",
+      "Provider": "ACL",
+      "Parameters": { "Path": "C:\\ProgramData", "Identity": "Administrators", "Rights": "FullControl" },
+      "Condition": { "Operator": "Equals", "Expected": "FullControl" },
+      "Severity": 8,
+      "Message": "Administrators must have full control of ProgramData"
+    },
+    {
+      "RuleName": "WmiCheck",
+      "Provider": "WMI",
+      "Parameters": { "Namespace": "root\\cimv2", "Class": "Win32_OperatingSystem", "Property": "Caption" },
+      "Condition": { "Operator": "Contains", "Expected": "Windows" },
+      "Severity": 4,
+      "Message": "OS caption must contain 'Windows'"
+    },
+    {
+      "RuleName": "EventLogCheck",
+      "Provider": "EventLog",
+      "Parameters": { "LogName": "Application", "Source": "MyApp", "EventId": 1001 },
+      "Condition": { "Operator": "Exists", "Expected": true },
+      "Severity": 7,
+      "Message": "Application log must contain event 1001"
+    },
+    {
+      "RuleName": "ServiceCheck",
+      "Provider": "Service",
+      "Parameters": { "ServiceName": "w32time", "ExpectedStatus": "Running" },
+      "Condition": { "Operator": "Equals", "Expected": "Running" },
+      "Severity": 7,
+      "Message": "Windows Time service must be running"
+    },
+    {
+      "RuleName": "ProcessCheck",
+      "Provider": "Process",
+      "Parameters": { "ProcessName": "explorer.exe", "ExpectedCount": 1 },
+      "Condition": { "Operator": "Equals", "Expected": 1 },
+      "Severity": 5,
+      "Message": "Explorer.exe must be running exactly once"
+    },
+    {
+      "RuleName": "CustomCheck",
+      "Provider": "Custom",
+      "Parameters": { "Values": { "Target": "MySubsystem", "Threshold": 3, "Mode": "Strict" } },
+      "Condition": { "Operator": "GreaterThan", "Expected": 2 },
+      "Severity": 9,
+      "Message": "Custom subsystem threshold must be greater than 2"
+    }
+  ]
+}

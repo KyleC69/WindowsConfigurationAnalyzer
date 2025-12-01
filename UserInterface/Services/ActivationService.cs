@@ -13,16 +13,12 @@
 
 
 
-#region
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.Activation;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Views;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-
-#endregion
 
 
 

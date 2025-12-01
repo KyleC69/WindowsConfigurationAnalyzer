@@ -13,16 +13,12 @@
 
 
 
-#region
-
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
-
-#endregion
 
 
 
@@ -38,8 +34,16 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
     private IActivityLogger? _logger;
 
 
-    public string Name => "Software Analyzer";
-    public string Area => "Software";
+    public string Name
+    {
+        get => "Software Analyzer";
+    }
+
+
+    public string Area
+    {
+        get => "Software";
+    }
 
 
 
@@ -48,7 +52,7 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
     public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        string area = Area;
+        var area = Area;
         _logger.Log("INF", "Start: Collecting software inventory", area);
         List<string> warnings = [];
         List<string> errors = [];
@@ -57,7 +61,7 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "Installed: Start", area);
-            foreach (string? relPath in new[] { "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall", "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall" })
+            foreach (var relPath in new[] { "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall", "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall" })
             {
                 ReadUninstallKey(context, installed, $"HKLM\\{relPath}");
                 ReadUninstallKey(context, installed, $"HKCU\\{relPath}");
@@ -93,12 +97,9 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
                         continue;
                     }
 
-                    if (pid is 0 or 4)
-                    {
-                        continue; // skip Idle/System
-                    }
+                    if (pid is 0 or 4) continue; // skip Idle/System
 
-                    string name = string.Empty;
+                    var name = string.Empty;
                     string? path = null;
 
                     // These property accesses can fail for protected processes; ignore per-item failures.
@@ -230,14 +231,14 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "ProvisionedAppx: Start", area);
-            string root = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Appx\\AppxAllUserStore\\Applications";
-            foreach (string app in context.Registry.EnumerateSubKeys(root))
+            var root = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Appx\\AppxAllUserStore\\Applications";
+            foreach (var app in context.Registry.EnumerateSubKeys(root))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string baseKey = $"{root}\\{app}";
-                string? fullName = context.Registry.GetValue(baseKey, "PackageFullName")?.ToString();
-                string? moniker = context.Registry.GetValue(baseKey, "PackageMoniker")?.ToString();
-                string? idName = context.Registry.GetValue(baseKey, "PackageIdName")?.ToString();
+                var baseKey = $"{root}\\{app}";
+                var fullName = context.Registry.GetValue(baseKey, "PackageFullName")?.ToString();
+                var moniker = context.Registry.GetValue(baseKey, "PackageMoniker")?.ToString();
+                var idName = context.Registry.GetValue(baseKey, "PackageIdName")?.ToString();
                 provisionedAppx.Add(new { Key = app, PackageFullName = fullName, PackageMoniker = moniker, PackageIdName = idName });
             }
 
@@ -258,7 +259,7 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
         try
         {
             _logger.Log("INF", "ProvisioningPkgs: Start", area);
-            foreach (string? dir in new[]
+            foreach (var dir in new[]
                      {
                          Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Recovery", "Customizations"),
                          Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Provisioning", "Packages")
@@ -266,13 +267,11 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (Directory.Exists(dir))
-                {
-                    foreach (string ppkg in Directory.EnumerateFiles(dir, "*.ppkg", SearchOption.AllDirectories))
+                    foreach (var ppkg in Directory.EnumerateFiles(dir, "*.ppkg", SearchOption.AllDirectories))
                     {
                         FileInfo fi = new(ppkg);
                         provisioningPkgs.Add(new { Path = ppkg, Size = fi.Length, LastWriteUtc = fi.LastWriteTimeUtc });
                     }
-                }
             }
 
             _logger.Log("INF", $"ProvisioningPkgs: Complete: count={provisioningPkgs.Count}", area);
@@ -311,19 +310,16 @@ public sealed class SoftwareAnalyzer : IAnalyzerModule
 
     private static void ReadUninstallKey(IAnalyzerContext context, List<object> target, string hiveAndPath)
     {
-        foreach (string sub in context.Registry.EnumerateSubKeys(hiveAndPath))
+        foreach (var sub in context.Registry.EnumerateSubKeys(hiveAndPath))
         {
-            string basePath = $"{hiveAndPath}\\{sub}";
-            string? name = context.Registry.GetValue(basePath, "DisplayName")?.ToString();
+            var basePath = $"{hiveAndPath}\\{sub}";
+            var name = context.Registry.GetValue(basePath, "DisplayName")?.ToString();
 
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                continue;
-            }
+            if (string.IsNullOrWhiteSpace(name)) continue;
 
-            string? ver = context.Registry.GetValue(basePath, "DisplayVersion")?.ToString();
-            string? pub = context.Registry.GetValue(basePath, "Publisher")?.ToString();
-            string? installDate = context.Registry.GetValue(basePath, "InstallDate")?.ToString();
+            var ver = context.Registry.GetValue(basePath, "DisplayVersion")?.ToString();
+            var pub = context.Registry.GetValue(basePath, "Publisher")?.ToString();
+            var installDate = context.Registry.GetValue(basePath, "InstallDate")?.ToString();
             target.Add(new { Name = name, Version = ver, Publisher = pub, InstallDate = installDate, Key = basePath });
         }
     }
@@ -367,17 +363,14 @@ internal static class Native
 
     public static string? TryGetImagePath(int pid)
     {
-        nint h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
+        var h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
 
-        if (h == IntPtr.Zero)
-        {
-            return null;
-        }
+        if (h == IntPtr.Zero) return null;
 
         try
         {
             StringBuilder sb = new(1024);
-            int len = sb.Capacity;
+            var len = sb.Capacity;
 
             return QueryFullProcessImageName(h, 0, sb, ref len) ? sb.ToString(0, len) : null;
         }

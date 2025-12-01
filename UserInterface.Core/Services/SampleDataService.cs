@@ -13,12 +13,8 @@
 
 
 
-#region
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Models;
-
-#endregion
 
 
 

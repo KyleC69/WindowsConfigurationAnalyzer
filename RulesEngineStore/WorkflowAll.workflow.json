@@ -1,0 +1,38 @@
+{
+  "$schema": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+  "WorkflowName": "Registry and FileSystem Audit",
+  "WorkflowDescription": "Workflow inspects random items in Registry and file system to test the probes",
+  "SchemaRef": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+  "SchemaVersion": "1.0.0",
+  "Author": "Kyle C.",
+  "CreatedOn": "2025-11-24T14:40:00Z",
+  "Applicability": { "OSFamily": "Windows", "MinVersion": "10.0.19041" },
+  "Constraints": { "RunSequentially": true, "Timeout": "00:10:00" },
+  "Rules": [
+    {
+      "RuleName": "CheckRegistryKey",
+      "Provider": "Registry",
+      "Parameters": {
+        "Hive": "HKEY_LOCAL_MACHINE",
+        "Path": "SOFTWARE\\MyApp",
+        "Key": "InstallPath"
+      },
+      "Condition": { "Operator": "Exists", "Expected": true },
+      "Severity": 5,
+      "Message": "InstallPath registry key must exist",
+      "Tags": ["registry", "baseline"]
+    },
+    {
+      "RuleName": "VerifyFilePermissions",
+      "Provider": "FileSystem",
+      "Parameters": {
+        "Path": "C:\\Program Files\\MyApp",
+        "Permissions": "Read",
+        "Recursive": true
+      },
+      "Condition": { "Operator": "Equals", "Expected": "Read" },
+      "Severity": 6,
+      "Message": "MyApp folder must be readable"
+    }
+  ]
+}

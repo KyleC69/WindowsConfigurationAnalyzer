@@ -13,14 +13,6 @@
 
 
 
-#region
-
-#endregion
-
-
-
-
-
 namespace KC.WindowsConfigurationAnalyzer.Contracts;
 
 
@@ -29,26 +21,6 @@ public interface IExporter
 
 
     Task ExportAsync(AnalyzerResult result, string targetPath, CancellationToken cancellationToken);
-
-
-}
-
-
-
-public class AnalyzerResult
-{
-
-
-    public AnalyzerResult(string machineName, DateTimeOffset utcNow, List<AreaResult> areaResults, List<Finding> globalFindings, object areas)
-    {
-        Areas = areas;
-    }
-
-
-
-
-
-    public object Areas { get; set; }
 
 
 }

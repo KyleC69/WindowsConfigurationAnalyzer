@@ -13,16 +13,12 @@
 
 
 
-#region
-
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Core.Etw;
-
-#endregion
 
 
 
@@ -110,7 +106,7 @@ public static class ActivityLogger
 
         try
         {
-            string? raw = await localSettingsService.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled")
+            var raw = await localSettingsService.ReadApplicationSettingAsync<string>("IsActivityLoggingEnabled")
                 .ConfigureAwait(false);
             if (string.Equals(raw, "false", StringComparison.OrdinalIgnoreCase))
             {
@@ -154,7 +150,7 @@ public static class ActivityLogger
             _cts?.Cancel();
 
             // Drain remaining entries without throwing
-            while (_queue.TryDequeue(out string? line))
+            while (_queue.TryDequeue(out var line))
             {
                 try
                 {
@@ -240,8 +236,8 @@ public static class ActivityLogger
         try
         {
             // Build CSV line with minimal allocations
-            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            string line = $"{Escape(timestamp)},{Escape(level)},{Escape(message)},{Escape(context)}";
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            var line = $"{Escape(timestamp)},{Escape(level)},{Escape(message)},{Escape(context)}";
 
             // Bounded enqueue using atomic counter to avoid using Count on ConcurrentQueue
             if (Interlocked.Increment(ref _pendingCount) > MaxPending)
@@ -259,7 +255,7 @@ public static class ActivityLogger
             // Never throw from logging
             try
             {
-                WCAEventSource.Log.ActivityLoggerFallback($"LOGGING FAILED: {ex.Message}");
+                WCAEventSource.Log.ActivityLoggerFallback(ex.Message);
                 LogFallback($"Log enqueue failed: {ex.Message}");
             }
             catch
@@ -310,7 +306,7 @@ public static class ActivityLogger
         try
         {
             // Wait briefly for worker to drain
-            Stopwatch sw = Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
             while (_pendingCount > 0 && sw.Elapsed < TimeSpan.FromSeconds(2))
             {
                 Thread.Sleep(50);
@@ -354,7 +350,7 @@ public static class ActivityLogger
                     /* swallow */
                 }
 
-            while (_queue.TryDequeue(out string? line))
+            while (_queue.TryDequeue(out var line))
             {
                 try
                 {
@@ -417,8 +413,8 @@ public static class ActivityLogger
             try
             {
                 Directory.CreateDirectory(LogDirectory);
-                string fileName = $"ActivityLog_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-                string logFilePath = Path.Combine(LogDirectory, fileName);
+                var fileName = $"ActivityLog_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                var logFilePath = Path.Combine(LogDirectory, fileName);
 
                 FileStream fs = new(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
                 _writer = new StreamWriter(fs, Encoding.UTF8) { AutoFlush = false };
@@ -447,7 +443,7 @@ public static class ActivityLogger
                 if (_isEnabled) EnsureWriter();
 
                 // Dequeue and write as many as available
-                while (_queue.TryDequeue(out string? line))
+                while (_queue.TryDequeue(out var line))
                 {
                     Interlocked.Decrement(ref _pendingCount);
 

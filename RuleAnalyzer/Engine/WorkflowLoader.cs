@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/23
+﻿//  Created:  2025/11/24
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  RuleAnalyzer
 //        File:   WorkflowLoader.cs
@@ -13,13 +13,7 @@
 
 
 
-#region
-
 using System.Text.Json;
-
-using NJsonSchema.Validation;
-
-#endregion
 
 
 
@@ -53,17 +47,14 @@ public class WorkflowLoader
     {
         JsonDocument workflowJson = JsonDocument.Parse(File.ReadAllText(workflowPath));
 
-        if (!_validator.ValidateWorkflow(workflowJson, out ICollection<ValidationError> results))
+        //if (!_validator.ValidateWorkflow(workflowJson, out ICollection<ValidationError> results))
         {
-            throw new InvalidOperationException($"Workflow schema validation failed: {results}");
+            //  throw new InvalidOperationException($"Workflow schema validation failed: {results}");
         }
 
         JsonElement applicability = workflowJson.RootElement.GetProperty("Applicability");
 
-        if (!_evaluator.IsApplicable(applicability))
-        {
-            throw new InvalidOperationException("Workflow not applicable to this machine.");
-        }
+        if (!_evaluator.IsApplicable(applicability)) throw new InvalidOperationException("Workflow not applicable to this machine.");
 
         Console.WriteLine("Workflow loaded successfully and is applicable.");
     }

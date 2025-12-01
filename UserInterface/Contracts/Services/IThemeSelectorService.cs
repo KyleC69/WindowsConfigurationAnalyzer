@@ -13,11 +13,7 @@
 
 
 
-#region
-
 using Microsoft.UI.Xaml;
-
-#endregion
 
 
 

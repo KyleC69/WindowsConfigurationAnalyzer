@@ -1,0 +1,37 @@
+{
+  "$schema": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+  "WorkflowName": "ACL and Service Health",
+  "WorkflowDescription": "This workflow audits user profile configuration points that are critical to Windows stable operation.",
+  "SchemaRef": "https://kylec69.github.io/schemas/workflow-schema-1.0.0.json",
+  "Constraints": {"RunSequentially": false,"StopOnFailure": false,"Timeout": "00:30:00"},
+  "SchemaVersion": "1.0.0",
+  "Author": "Kyle C.",
+  "CreatedOn": "2025-11-24T14:45:00Z",
+  "Applicability": {"OSFamily": "Windows","MinVersion": "10.0.19041.0","MaxVersion": "10.0.99999.0"},
+  "Rules": [
+    {
+      "RuleName": "CheckAclRights",
+      "Provider": "ACL",
+      "Parameters": {
+        "Path": "C:\\ProgramData",
+        "Identity": "Administrators",
+        "Rights": "FullControl"
+      },
+      "Condition": { "Operator": "Equals", "Expected": "FullControl" },
+      "Severity": 8,
+      "Message": "Administrators must have full control of ProgramData"
+    },
+    {
+      "RuleName": "VerifyServiceStatus",
+      "Provider": "Service",
+      "Parameters": {
+        "ServiceName": "w32time",
+        "ExpectedStatus": "Running"
+      },
+      "Condition": { "Operator": "Equals", "Expected": "Running" },
+      "Severity": 7,
+      "Message": "Windows Time service must be running"
+    }
+  ],
+  "Results": []
+}

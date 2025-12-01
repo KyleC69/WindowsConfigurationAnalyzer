@@ -13,14 +13,10 @@
 
 
 
-#region
-
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
-
-#endregion
 
 
 
@@ -45,13 +41,10 @@ public sealed class JsonExporter : IExporter
 
     public async Task ExportAsync(AnalyzerResult result, string targetPath, CancellationToken cancellationToken)
     {
-        string? dir = Path.GetDirectoryName(targetPath);
-        if (!string.IsNullOrEmpty(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
+        var dir = Path.GetDirectoryName(targetPath);
+        if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
 
-        string tmp = targetPath + ".tmp";
+        var tmp = targetPath + ".tmp";
         await using (FileStream fs = File.Create(tmp))
         {
             await JsonSerializer.SerializeAsync(fs, result, Options, cancellationToken);
@@ -59,10 +52,7 @@ public sealed class JsonExporter : IExporter
         }
 
         // Atomic move
-        if (File.Exists(targetPath))
-        {
-            File.Delete(targetPath);
-        }
+        if (File.Exists(targetPath)) File.Delete(targetPath);
 
         File.Move(tmp, targetPath);
     }

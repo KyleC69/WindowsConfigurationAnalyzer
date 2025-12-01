@@ -13,15 +13,11 @@
 
 
 
-#region
-
 using CommunityToolkit.WinUI.UI.Controls;
 
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
-
-#endregion
 
 
 

@@ -13,13 +13,9 @@
 
 
 
-#region
-
 using KC.WindowsConfigurationAnalyzer.UserInterface.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
-
-#endregion
 
 
 

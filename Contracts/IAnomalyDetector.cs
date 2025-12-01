@@ -13,14 +13,6 @@
 
 
 
-#region
-
-#endregion
-
-
-
-
-
 namespace KC.WindowsConfigurationAnalyzer.Contracts;
 
 

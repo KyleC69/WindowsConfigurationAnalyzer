@@ -13,11 +13,7 @@
 
 
 
-#region
-
 using System.Runtime.Versioning;
-
-#endregion
 
 
 

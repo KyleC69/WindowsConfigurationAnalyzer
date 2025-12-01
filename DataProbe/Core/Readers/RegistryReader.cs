@@ -13,13 +13,9 @@
 
 
 
-#region
-
 using KC.WindowsConfigurationAnalyzer.Contracts;
 
 using Microsoft.Win32;
-
-#endregion
 
 
 
@@ -51,7 +47,10 @@ public sealed class RegistryReader : IProbe
     ///     Unique provider name (e.g. "Registry", "WMI", "FileSystem").
     ///     Used to match against Rule.Provider in the workflow.
     /// </summary>
-    public string Provider => "Registry";
+    public string Provider
+    {
+        get => "Registry";
+    }
 
 
 
@@ -65,24 +64,60 @@ public sealed class RegistryReader : IProbe
     /// <param name="callerName"></param>
     /// <param name="callerFilePath"></param>
     /// <returns>ProbeResult containing the raw value and provenance.</returns>
-    public async Task<ProbeResult> ExecuteAsync(IDictionary<string, object> parameters, CancellationToken token, string callerName = "", string callerFilePath = "")
+    public async Task<ProbeResult> ExecuteAsync(IProviderParameters parameters, CancellationToken token)
     {
-        _logger.Log("INF", $"RegistryReader: Executing probe for caller {callerName} in file {callerFilePath}", "RegReader");
+        _logger.Log("INF", "RegistryReader: Executing probe for caller", "RegReader");
         ProbeResult res = new()
         {
             Provider = Provider,
             Timestamp = DateTime.UtcNow
         };
+
+        var parm = parameters as RegistryParameters;
+
+        //parameters are <hive><key><name>
         try
         {
-            await GetValueAsync(parameters, res, token);
+            var path = CombineHiveAndPath(parm?.Hive, parm?.Path);
+            await GetValueAsync(path, parm?.Key, res, token);
         }
         catch (Exception ex)
         {
-            _logger.Log("ERR", $"RegistryReader: Error executing probe for caller {callerName} in file {callerFilePath}: {ex.Message}", "RegReader");
+            _logger.Log("ERR", $"RegistryReader: Error executing probe for caller: {ex.Message}", "RegReader");
         }
 
         return res;
+    }
+
+
+
+
+
+    /// <summary>
+    ///     Combines a registry hive and subkey path into a normalized string.
+    ///     Ensures exactly one backslash between hive and path, and no trailing slash.
+    /// </summary>
+    /// <param name="hive">Registry hive (e.g., "HKEY_LOCAL_MACHINE").</param>
+    /// <param name="subKeyPath">Registry path (e.g., "Software\\Microsoft").</param>
+    /// <returns>Normalized registry path string.</returns>
+    public static string CombineHiveAndPath(string? hive, string? subKeyPath)
+    {
+        if (string.IsNullOrWhiteSpace(hive))
+            throw new ArgumentException("Hive cannot be null or empty.", nameof(hive));
+
+        // Normalize hive: trim spaces and trailing slashes
+        hive = hive.Trim().TrimEnd('\\');
+
+        // Normalize path: trim spaces and leading/trailing slashes
+        if (!string.IsNullOrWhiteSpace(subKeyPath))
+        {
+            subKeyPath = subKeyPath.Trim().Trim('\\');
+
+            return $"{hive}\\{subKeyPath}";
+        }
+
+        // If no path provided, just return hive
+        return hive;
     }
 
 
@@ -124,7 +159,7 @@ public sealed class RegistryReader : IProbe
 
     private static RegistryKey? OpenSubKey(string hiveAndPath)
     {
-        (string? hive, string? path) = SplitHive(hiveAndPath);
+        var (hive, path) = SplitHive(hiveAndPath);
         RegistryKey? baseKey = hive switch
         {
             "HKLM" or "HKEY_LOCAL_MACHINE" => Registry.LocalMachine,
@@ -144,12 +179,9 @@ public sealed class RegistryReader : IProbe
 
     private static (string hive, string path) SplitHive(string hiveAndPath)
     {
-        int idx = hiveAndPath.IndexOf('\\');
+        var idx = hiveAndPath.IndexOf('\\');
 
-        if (idx < 0)
-        {
-            return (hiveAndPath, string.Empty);
-        }
+        if (idx < 0) return (hiveAndPath, string.Empty);
 
         return (hiveAndPath.Substring(0, idx), hiveAndPath[(idx + 1)..]);
     }
@@ -158,12 +190,9 @@ public sealed class RegistryReader : IProbe
 
 
 
-    private async Task<ProbeResult> GetValueAsync(IDictionary<string, object> parameters, ProbeResult res, CancellationToken token)
+    private async Task<ProbeResult> GetValueAsync(string hivepath, string? name, ProbeResult res, CancellationToken token)
     {
-        string? hiveAndPath = parameters["hiveAndPath"]?.ToString();
-        string? name = parameters["name"]?.ToString();
-
-        if (hiveAndPath == null || name == null)
+        if (hivepath == null || name == null)
         {
             _logger.Log("ERR", "RegistryReader: Missing parameters for GetValueAsync", "RegReader");
             res.Message = "Missing required parameters 'hiveAndPath' or 'name'.";
@@ -173,7 +202,7 @@ public sealed class RegistryReader : IProbe
 
         try
         {
-            object? value = GetValue(hiveAndPath, name);
+            var value = GetValue(hivepath, name);
             res.Value = value;
         }
         catch (Exception e)

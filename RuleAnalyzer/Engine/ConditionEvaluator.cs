@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/22
+﻿//  Created:  2025/11/24
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  RuleAnalyzer
 //        File:   ConditionEvaluator.cs
@@ -13,11 +13,7 @@
 
 
 
-#region
-
 using System.Text.RegularExpressions;
-
-#endregion
 
 
 

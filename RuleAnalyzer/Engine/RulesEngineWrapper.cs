@@ -1,4 +1,4 @@
-﻿//  Created:  2025/11/22
+﻿//  Created:  2025/11/24
 // Solution:  WindowsConfigurationAnalyzer
 //   Project:  RuleAnalyzer
 //        File:   RulesEngineWrapper.cs
@@ -13,8 +13,6 @@
 
 
 
-#region
-
 using System.Text.Json;
 
 using KC.WindowsConfigurationAnalyzer.Contracts;
@@ -22,8 +20,6 @@ using KC.WindowsConfigurationAnalyzer.RuleAnalyzer.Helpers;
 
 using ProbeFacts = KC.WindowsConfigurationAnalyzer.RuleAnalyzer.Models.ProbeFacts;
 using RuleResultArtifact = KC.WindowsConfigurationAnalyzer.RuleAnalyzer.Models.RuleResultArtifact;
-
-#endregion
 
 
 
@@ -46,13 +42,10 @@ public class RulesEngineWrapper
     public RulesEngineWrapper(string rulesetJson)
     {
         // Accept either a single workflow JSON or an array of workflows
-        Workflow[] workflows = JsonSerializer.Deserialize<Workflow[]>(rulesetJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-                               ?? Array.Empty<Workflow>();
+        WorkflowContract[] workflows = JsonSerializer.Deserialize<WorkflowContract[]>(rulesetJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                                       ?? Array.Empty<WorkflowContract>();
 
-        if (workflows.Length == 0)
-        {
-            throw new ArgumentException("No workflows found in the provided JSON ruleset.");
-        }
+        if (workflows.Length == 0) throw new ArgumentException("No workflows found in the provided JSON ruleset.");
 
         RegisterHelpers();
     }
@@ -128,7 +121,7 @@ public class RulesEngineWrapper
     /// </remarks>
     public async Task<RuleResultArtifact> ExecuteAsync(string workflowName, ProbeFacts facts, string operatorIdentity = "")
     {
-        object[] input = new object[] { facts };
+        var input = new object[] { facts };
         //List<RuleResultTree>? result = await _engine.ExecuteAllRulesAsync(workflowName, facts);
         RuleResultArtifact artifact = new()
         {
@@ -163,7 +156,7 @@ public class RulesEngineWrapper
     // Load JSON ruleset from file
     public static RulesEngineWrapper FromFile(string rulesJsonPath)
     {
-        string json = File.ReadAllText(rulesJsonPath);
+        var json = File.ReadAllText(rulesJsonPath);
 
         return new RulesEngineWrapper(json);
     }

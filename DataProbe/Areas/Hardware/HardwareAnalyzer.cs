@@ -13,8 +13,6 @@
 
 
 
-#region
-
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -25,8 +23,6 @@ using KC.WindowsConfigurationAnalyzer.DataProbe.Core.Utilities;
 
 // added
 // added
-
-#endregion
 
 
 
@@ -42,8 +38,16 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
     private IActivityLogger? _logger;
 
 
-    public string Name => "Hardware Analyzer";
-    public string Area => "Hardware";
+    public string Name
+    {
+        get => "Hardware Analyzer";
+    }
+
+
+    public string Area
+    {
+        get => "Hardware";
+    }
 
 
 
@@ -52,7 +56,7 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
     public async Task<AreaResult> AnalyzeAsync(IActivityLogger logger, IAnalyzerContext context, CancellationToken cancellationToken)
     {
         _logger = logger;
-        string area = Area;
+        var area = Area;
         _logger.Log("INF", "Start: Collecting hardware inventory via CIM", Ctx(area));
         List<string> warnings = [];
         List<string> errors = [];
@@ -112,11 +116,8 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
             foreach (IDictionary<string, object?> mo in compRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                object? bytes = mo.GetOrDefault("TotalPhysicalMemory");
-                if (bytes is ulong ul)
-                {
-                    totalMemGb = Math.Round(ul / 1024d / 1024d / 1024d, 2);
-                }
+                var bytes = mo.GetOrDefault("TotalPhysicalMemory");
+                if (bytes is ulong ul) totalMemGb = Math.Round(ul / 1024d / 1024d / 1024d, 2);
 
                 break;
             }
@@ -161,8 +162,8 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
             foreach (IDictionary<string, object?> mo in diskRows)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                object? s = mo.GetOrDefault("Size");
-                double sizeGb = s is ulong sz ? Math.Round(sz / 1024d / 1024d / 1024d, 2) : 0d;
+                var s = mo.GetOrDefault("Size");
+                var sizeGb = s is ulong sz ? Math.Round(sz / 1024d / 1024d / 1024d, 2) : 0d;
                 disks.Add(new
                 {
                     Index = Convert.ToInt32(mo.GetOrDefault("Index") ?? 0),
@@ -298,7 +299,7 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
             _logger.Log("ERR", $"Board: Baseboard/enclosure query failed {ex.GetType().Name}: {ex.Message}", Ctx(area));
         }
 
-        bool tpmPresent = false;
+        var tpmPresent = false;
         try
         {
             _logger.Log("INF", "TPM: Start", Ctx(area));
@@ -377,10 +378,10 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
             TPM = tpm,
             Battery = battery
         };
-      //  AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
+        //  AreaResult result = new(area, summary, details, new List<Finding>().AsReadOnly(), warnings, errors);
         _logger.Log("INF", "Complete: Hardware inventory collected", Ctx(area));
 
-        return default;
+        return null!;
     }
 
 
@@ -393,7 +394,7 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
         {
             return v is ulong ul ? Math.Round(ul / 1024d / 1024d / 1024d, 2)
                 : v is long l ? Math.Round(l / 1024d / 1024d / 1024d, 2)
-                : v is string s && ulong.TryParse(s, out ulong p) ? Math.Round(p / 1024d / 1024d / 1024d, 2) : 0d;
+                : v is string s && ulong.TryParse(s, out var p) ? Math.Round(p / 1024d / 1024d / 1024d, 2) : 0d;
         }
         catch
         {
@@ -407,8 +408,8 @@ public sealed class HardwareAnalyzer : IAnalyzerModule
 
     private static string Ctx(string module, [CallerMemberName] string member = "", [CallerFilePath] string file = "")
     {
-        string asm = Assembly.GetExecutingAssembly().GetName().Name ?? "Analyzer";
-        string f = Path.GetFileName(file);
+        var asm = Assembly.GetExecutingAssembly().GetName().Name ?? "Analyzer";
+        var f = Path.GetFileName(file);
 
         return $"{asm} - {module} - {member} - {f}";
     }

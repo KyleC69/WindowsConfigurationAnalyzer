@@ -13,8 +13,6 @@
 
 
 
-#region
-
 using System.Collections.Specialized;
 using System.Web;
 
@@ -22,8 +20,6 @@ using KC.WindowsConfigurationAnalyzer.Contracts;
 using KC.WindowsConfigurationAnalyzer.UserInterface.Contracts.Services;
 
 using Microsoft.Windows.AppNotifications;
-
-#endregion
 
 
 
